@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SarvamSai — A Centenary Offering</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#hero">SarvamSai</a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#about" onclick="closeMenu()">About Baba</a></li>
+    <li><a href="#cta" onclick="closeMenu()">Join the Offering</a></li>
+    <li><a href="#product" onclick="closeMenu()">Figurine</a></li>
+    <li><a href="#carousel-section" onclick="closeMenu()">Swaroopas</a></li>
+    <li><a href="#mission" onclick="closeMenu()">The Universe</a></li>
+    <li><a href="#team" onclick="closeMenu()">Team</a></li>
+  </ul>
+  <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- SECTION 1: HERO -->
+<section id="hero">
+  <span class="hero-badge">100 Days · 100 Mystery Boxes Daily · Opens 24 April 2026</span>
+
+  <div class="hero-content">
+    <div class="hero-image-wrap">
+      <img
+        src="https://raw.githubusercontent.com/Auraaz/sticqr-labels-client/refs/heads/main/client/satyasai_100.webp"
+        alt="SarvamSai — Centenary Offering"
+        class="hero-image"
+      />
+      <div class="hero-image-glow"></div>
+    </div>
+
+    <div class="hero-text">
+      <h1 class="hero-title">
+        Sarvam Sai
+        <span class="line-accent">A Centenary Offering</span>
+      </h1>
+
+      <svg class="hero-ornament" width="200" height="18" viewBox="0 0 200 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1="9" x2="78" y2="9" stroke="#b8922a" stroke-width="0.6" opacity="0.5"/>
+        <path d="M88 9 L100 3 L112 9 L100 15 Z" stroke="#b8922a" stroke-width="0.6" fill="none" opacity="0.7"/>
+        <circle cx="100" cy="9" r="2" fill="#b8922a" opacity="0.5"/>
+        <circle cx="83" cy="9" r="1.2" fill="#b8922a" opacity="0.35"/>
+        <circle cx="117" cy="9" r="1.2" fill="#b8922a" opacity="0.35"/>
+        <line x1="122" y1="9" x2="200" y2="9" stroke="#b8922a" stroke-width="0.6" opacity="0.5"/>
+      </svg>
+
+      <p class="hero-sub">Born November 23, 1926. A hundred years of grace, truth, and boundless love. This is our offering to that light — a limited edition physical figurine, consecrated in His centenary year.</p>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
+
+<!-- SECTION: ABOUT BABA -->
+<section id="about">
+  <div class="about-inner">
+    <span class="eyebrow" style="justify-content:center;">Who He Was</span>
+    <h2 class="section-title">Bhagawan Sri Sathya Sai Baba</h2>
+    <div class="about-body">
+      <p class="about-text">Sathya Sai Baba was born on November 23, 1926, in Puttaparthi, a small village in Andhra Pradesh, India. In a life spanning 85 years, He touched the hearts of millions across the world — through unconditional love, selfless service, and the simple, timeless call to become fully human.</p>
+      <p class="about-text">He gave the world five Human Values to live by: <em>Satya</em> — Truth. <em>Dharma</em> — Righteousness. <em>Shanti</em> — Peace. <em>Prema</em> — Love. <em>Ahimsa</em> — Non-harm. Not as philosophy — as practice. Not as belief — as being.</p>
+      <p class="about-text">November 23, 2026 marks one hundred years since His birth. SarvamSai is our humble tribute of that centenary — a devotional object crafted in His spirit, made without profit, in the hope that His grace reaches every hand that holds it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: CTA -->
+<section id="cta">
+  <span class="eyebrow" style="justify-content:center;">A Physical Figurine · Launching 24 April 2026</span>
+  <h2 class="section-title">Join the Offering,<br>Receive Your Blessing</h2>
+  <p class="section-body" style="text-align:center;margin:0 auto;">One hundred days. One hundred figurines each day — physical, hand-finished, and time-stamped. Register to receive your purchase invitation when your blessing day arrives.</p>
+
+  <!-- STATE 1: Not registered -->
+  <div class="cta-buttons" id="cta-register-btns">
+    <button class="btn-primary" onclick="showRegisterForm()">Join the Offering</button>
+    <button class="btn-secondary" onclick="openInviteShare()">Invite a Devotee</button>
+  </div>
+
+  <!-- Registration form -->
+  <div id="register-form-wrap" style="display:none;margin-top:2.5rem;width:100%;max-width:420px;">
+    <div style="background:var(--ivory);border:1px solid var(--border-str);padding:2.5rem;position:relative;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent);"></div>
+      <h3 style="font-family:'Cinzel',serif;font-size:1.2rem;color:var(--burgundy);letter-spacing:0.08em;margin-bottom:0.4rem;">Join the Offering</h3>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--ink-soft);font-size:1rem;margin-bottom:1.5rem;line-height:1.7;">Each figurine finds its devotee. Enter your name and WhatsApp number — we will let you know when your blessing is ready.</p>
+      <input id="reg-name" class="modal-input" type="text" placeholder="Your Name" />
+      <input id="reg-phone" class="modal-input" type="tel" placeholder="WhatsApp Number (with country code)" />
+      <p id="reg-error" style="color:#c0392b;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.1em;margin-bottom:0.8rem;display:none;"></p>
+      <button class="modal-submit" id="reg-submit-btn" onclick="submitRegistration()">Receive My Blessing</button>
+      <button onclick="hideRegisterForm()" style="display:block;width:100%;margin-top:0.8rem;background:none;border:none;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.15em;color:var(--muted);cursor:pointer;text-transform:uppercase;">Return</button>
+    </div>
+  </div>
+
+  <!-- STATE 2: Registered -->
+  <div id="cta-registered" style="display:none;margin-top:2.5rem;width:100%;max-width:560px;">
+    <div style="background:var(--ivory);border:1px solid var(--border-str);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent);"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-bottom:1px solid var(--border);">
+        <div style="background:var(--ivory);padding:1.5rem;text-align:center;">
+          <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--burgundy);line-height:1;" id="user-rank">—</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:0.4rem;">Your Place</div>
+        </div>
+        <div style="background:var(--cream);padding:1.5rem;text-align:center;position:relative;">
+          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent);"></div>
+          <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--burgundy);line-height:1;" id="user-invites">0</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:0.4rem;">Devotees Invited</div>
+        </div>
+      </div>
+
+      <div style="padding:1.5rem 2rem;">
+        <p style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem;">Your Invitation Link</p>
+        <div style="display:flex;gap:0.6rem;align-items:center;">
+          <div style="flex:1;background:var(--cream);border:1px solid var(--border-str);padding:0.7rem 1rem;font-family:'EB Garamond',serif;font-size:0.9rem;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="user-invite-link">sarvamsai.in/?ref=...</div>
+          <button onclick="copyInviteLink()" style="background:var(--burgundy);color:var(--gold-pale);border:none;padding:0.7rem 1.2rem;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background 0.3s;" onmouseover="this.style.background='#7a2230'" onmouseout="this.style.background='#5a1520'" id="copy-btn">Copy</button>
+        </div>
+        <button onclick="shareOnWhatsApp()" style="width:100%;margin-top:0.8rem;background:#25D366;color:#fff;border:none;padding:0.85rem;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;transition:background 0.3s;" onmouseover="this.style.background='#1ebe5d'" onmouseout="this.style.background='#25D366'">
+          Share on WhatsApp
+        </button>
+        <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.9rem;color:var(--muted);text-align:center;margin-top:1rem;line-height:1.6;">Each devotee you invite moves you closer to your blessing</p>
+      </div>
+    </div>
+
+    <!-- Community -->
+    <div style="margin-top:1px;background:var(--ivory);border:1px solid var(--border-str);">
+      <div style="padding:1.2rem 2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);">Community of Devotees</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Growing Daily</span>
+      </div>
+      <div id="leaderboard-list" style="padding:0.5rem 0;">
+        <div style="padding:1rem 2rem;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--muted);font-size:0.95rem;">Loading...</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: PRODUCT -->
+<section id="product">
+  <span class="eyebrow" style="justify-content:center;">The Mystery Box</span>
+  <h2 class="section-title" style="text-align:center;">Crafted. Consecrated. Unrevealed.</h2>
+
+  <div class="scene">
+    <div class="box">
+      <div class="face face-front"></div>
+      <div class="face face-back"></div>
+      <div class="face face-right"></div>
+      <div class="face face-left"></div>
+      <div class="face face-top"></div>
+      <div class="face face-bottom"></div>
+    </div>
+  </div>
+
+  <p class="box-caption">What lies within will be revealed on <strong>24 April 2026</strong>. Until then, the figurine remains known only to Baba. Each Mystery Box is time-stamped with its blessing date — only 100 exist per day. Once midnight passes, that date is consecrated forever.</p>
+
+  <!-- PRODUCT SPECS -->
+  <div class="product-specs">
+    <div class="spec-item">
+      <div class="spec-label">Size</div>
+      <div class="spec-value">10 cm figurine · Box: 5×5×15 cm</div>
+    </div>
+    <div class="spec-item">
+      <div class="spec-label">Material</div>
+      <div class="spec-value">PLA (Polylactic Acid) · Eco-conscious · Ahimsa</div>
+    </div>
+    <div class="spec-item">
+      <div class="spec-label">What's Inside</div>
+      <div class="spec-value">Figurine · Gift box · Numbered certificate of authenticity</div>
+    </div>
+    <div class="spec-item">
+      <div class="spec-label">Delivery</div>
+      <div class="spec-value">Ships within 5 days of purchase confirmation</div>
+    </div>
+  </div>
+
+  
+
+  <!-- DISCOVERY BOX EXPLANATION -->
+  <div class="discovery-wrap">
+
+    <div class="discovery-header">
+      <svg width="80" height="14" viewBox="0 0 80 14" fill="none">
+        <line x1="0" y1="7" x2="28" y2="7" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
+        <circle cx="40" cy="7" r="2" fill="#9a7520" opacity="0.5"/>
+        <line x1="52" y1="7" x2="80" y2="7" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
+      </svg>
+      <p class="discovery-intro">The figurine within is Baba's secret until April 24, 2026 — revealed in His own time. Each Mystery Box contains one of four Swaroopas, distributed in a sacred ratio that mirrors the abundance of His grace:</p>
+    </div>
+
+    <div class="discovery-ratio">
+      <div class="ratio-bar">
+        <div class="ratio-segment ratio-orange" style="flex:4">
+          <span class="ratio-num">4</span>
+          <span class="ratio-name">Satya</span>
+        </div>
+        <div class="ratio-segment ratio-yellow" style="flex:3">
+          <span class="ratio-num">3</span>
+          <span class="ratio-name">Dharma</span>
+        </div>
+        <div class="ratio-segment ratio-white" style="flex:2">
+          <span class="ratio-num">2</span>
+          <span class="ratio-name">Shanti</span>
+        </div>
+        <div class="ratio-segment ratio-red" style="flex:1">
+          <span class="ratio-num">1</span>
+          <span class="ratio-name">Prema</span>
+        </div>
+      </div>
+      <p class="ratio-caption">Within every ten, the rarer the Swaroopa — the deeper the grace</p>
+    </div>
+
+    <div class="discovery-note">
+      <p>The figurine is Baba's secret until April 24, 2026.<br>You do not choose your Swaroopa. You receive the one that was always meant for you.</p>
+    </div>
+
+  </div>
+
+  <div class="drop-stats">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-days">100</div>
+      <div class="stat-label">Days of Blessings</div>
+    </div>
+    <div class="stat-card stat-card--accent">
+      <div class="stat-num" id="countdown">--:--:--</div>
+      <div class="stat-label" id="countdown-label">Until the Offering Opens</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">100</div>
+      <div class="stat-label">Mystery Boxes Per Day</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">10K</div>
+      <div class="stat-label">Mystery Boxes Total</div>
+    </div>
+  </div>
+
+  <div class="mint-band">
+    <div class="mint-band-label">Blessing Window</div>
+    <div class="mint-band-dates">24 APR 2026</div>
+    <div class="mint-band-arrow">→</div>
+    <div class="mint-band-dates">01 AUG 2026</div>
+    <div class="mint-band-label">100 unique dates · 100 figurines each</div>
+  </div>
+</section>
+
+<!-- SECTION 4: CAROUSEL -->
+<section id="carousel-section">
+  <div class="carousel-header">
+    <span class="eyebrow" style="justify-content:center;">The Four Swaroopas</span>
+    <h2 class="section-title">His Robes.<br>His Values.</h2>
+    <p class="section-body" style="text-align:center;margin:0 auto 2rem;">Satya, Dharma, Shanti, Prema — four of the five Human Values of Sai Baba, each embodied in the colour of a robe He wore. The fifth Human Value, Ahimsa, is not symbolic — it is lived in the making of every figurine.</p>
+  </div>
+
+  <div class="carousel-wrap">
+    <div class="carousel-track" id="carouselTrack">
+
+      <div class="slide slide-orange">
+        <span class="slide-num">01</span>
+        <div class="slide-tag">Saffron Robe · First Value</div>
+        <h3 class="slide-h">Satya Swaroopa</h3>
+        <div class="slide-meaning">Embodiment of Truth</div>
+        <p class="slide-p">Satya — the first of His Human Values. Baba's saffron robe carried the fire of absolute truth, of renunciation, of a life lived without pretence. This figurine is a daily reminder: truth is not spoken, it is lived.</p>
+      </div>
+
+      <div class="slide slide-yellow">
+        <span class="slide-num">02</span>
+        <div class="slide-tag">Golden Robe · Second Value</div>
+        <h3 class="slide-h">Dharma Swaroopa</h3>
+        <div class="slide-meaning">Embodiment of Righteousness</div>
+        <p class="slide-p">Dharma — the second of His Human Values. Baba's golden robe radiated right action — duty performed without desire, service offered without expectation. This figurine honours the path of righteousness He illuminated for all.</p>
+      </div>
+
+      <div class="slide slide-white">
+        <span class="slide-num">03</span>
+        <div class="slide-tag">White Robe · Third Value</div>
+        <h3 class="slide-h">Shanti Swaroopa</h3>
+        <div class="slide-meaning">Embodiment of Peace</div>
+        <p class="slide-p">Shanti — the third of His Human Values. Baba's white robe was purity distilled — stillness made visible, peace made tangible. This figurine carries the silence He offered the world, a world that needed it most.</p>
+      </div>
+
+      <div class="slide slide-red">
+        <span class="slide-num">04</span>
+        <div class="slide-tag">Crimson Robe · Fourth Value</div>
+        <h3 class="slide-h">Prema Swaroopa</h3>
+        <div class="slide-meaning">Embodiment of Love</div>
+        <p class="slide-p">Prema — the fourth Human Value, and the one Baba embodied above all others. His crimson robe was love made flesh — boundless, unconditional, without exception. The rarest edition. The deepest truth. Prema Swaroopa.</p>
+      </div>
+
+    </div>
+
+    <div class="carousel-controls">
+      <button class="carousel-btn" onclick="prevSlide()">&#8592;</button>
+      <div class="carousel-dots" id="carouselDots"></div>
+      <button class="carousel-btn" onclick="nextSlide()">&#8594;</button>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: PROCESS -->
+<section id="process">
+  <div class="process-inner">
+    <div class="process-header">
+      <span class="eyebrow">The Path</span>
+      <h2 class="section-title">How Your<br>Blessing Arrives</h2>
+      <p class="process-desc">Each blessing finds its devotee in order of devotion. Those who invite others move closer to the front. Here is the path from intention to your hands.</p>
+    </div>
+
+    <div class="process-steps">
+      <div class="step">
+        <div class="step-line"></div>
+        <div class="step-num">01</div>
+        <div class="step-title">Express Your Devotion</div>
+        <p class="step-desc">Register your name and WhatsApp number. Your place in the offering is confirmed within 24 hours.</p>
+      </div>
+      <div class="step">
+        <div class="step-line"></div>
+        <div class="step-num">02</div>
+        <div class="step-title">Invite a Devotee</div>
+        <p class="step-desc">Share your personal invitation link. Every devotee who joins through you moves you closer to your blessing.</p>
+      </div>
+      <div class="step">
+        <div class="step-line"></div>
+        <div class="step-num">03</div>
+        <div class="step-title">Receive Your Invitation</div>
+        <p class="step-desc">When the day of your blessing arrives, you receive a personal invitation on WhatsApp. A window of time — enough to say yes with intention.</p>
+      </div>
+      <div class="step">
+        <div class="step-line"></div>
+        <div class="step-num">04</div>
+        <div class="step-title">Your Figurine Arrives</div>
+        <p class="step-desc">Make your offering and within five days your Mystery Box arrives — sealed, hand-finished, time-stamped. The Swaroopa within will be revealed on April 24, 2026, along with every devotee who received one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION: MISSION -->
+<section id="mission">
+  <div class="mission-inner">
+
+    <svg class="mission-ornament-top" width="120" height="18" viewBox="0 0 120 18" fill="none">
+      <line x1="0" y1="9" x2="46" y2="9" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
+      <path d="M52 9 L60 3 L68 9 L60 15 Z" stroke="#9a7520" stroke-width="0.5" fill="none" opacity="0.7"/>
+      <circle cx="60" cy="9" r="1.5" fill="#9a7520" opacity="0.5"/>
+      <line x1="74" y1="9" x2="120" y2="9" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
+    </svg>
+
+    <p class="mission-quote">
+      "This is a limited release, offered at net zero profit.<br>
+      Every offering received goes toward unlocking<br>
+      the <em>Sarvam Sai Universe</em>."
+    </p>
+
+    <div class="mission-phases">
+
+      <div class="mission-phase">
+        <div class="mission-phase-num">I</div>
+        <div class="mission-phase-body">
+          <div class="mission-phase-title">The Centenary Drop</div>
+          <div class="mission-phase-detail">100 days · 100 figurines · 10 cm · Apr 24 – Aug 1, 2026</div>
+          <p class="mission-phase-desc">The first offering — a Mystery Box containing one of the four Swaroopas, revealed on April 24, 2026. Each figurine time-stamped with the date of its blessing, crafted in the spirit of Ahimsa. If this is received with grace, the universe unlocks Phase II.</p>
+        </div>
+      </div>
+
+      <div class="mission-phase-arrow">↓</div>
+
+      <div class="mission-phase">
+        <div class="mission-phase-num">II</div>
+        <div class="mission-phase-body">
+          <div class="mission-phase-title">The Expanded Form</div>
+          <div class="mission-phase-detail">100 days · 100 figurines · 15 cm · Unlocked by Phase I</div>
+          <p class="mission-phase-desc">A taller, more considered expression of the same devotion. Across the next 100 days, a 15 cm figurine — deeper in detail, fuller in grace — continues the offering.</p>
+        </div>
+      </div>
+
+      <div class="mission-phase-arrow">↓</div>
+
+      <div class="mission-phase">
+        <div class="mission-phase-num">III</div>
+        <div class="mission-phase-body">
+          <div class="mission-phase-title">The Centenary Masterpiece</div>
+          <div class="mission-phase-detail">10 pieces · 30 cm · November 23, 2026 — Baba's Centenary Birthday</div>
+          <p class="mission-phase-desc">November 23, 2026. One hundred years to the day. Ten figurines, 30 cm, hand-crafted. Released on the most auspicious day of the century — the rarest objects in the Sarvam Sai Universe. Forever.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIZE COMPARISON CHART -->
+    <div class="size-compare">
+      <p class="size-compare-title">Size at a Glance</p>
+      <div class="size-compare-stage">
+
+        <!-- Phase I: 5×5×15 cm box -->
+        <div class="size-box-wrap">
+          <div class="size-box-label-top">Phase I</div>
+          <div class="size-box phase-i">
+            <span class="size-box-dims">5×5×15 cm</span>
+          </div>
+          <div class="size-box-label-bottom">10 cm Figurine</div>
+          <div class="size-box-sub">100 per day · 100 days</div>
+        </div>
+
+        <!-- Phase II: 7.5×7.5×20 cm box -->
+        <div class="size-box-wrap">
+          <div class="size-box-label-top">Phase II</div>
+          <div class="size-box phase-ii">
+            <span class="size-box-dims">7.5×7.5×20 cm</span>
+          </div>
+          <div class="size-box-label-bottom">15 cm Figurine</div>
+          <div class="size-box-sub">100 per day · 100 days</div>
+        </div>
+
+        <!-- Phase III: 15×15×36 cm box -->
+        <div class="size-box-wrap">
+          <div class="size-box-label-top">Phase III</div>
+          <div class="size-box phase-iii">
+            <span class="size-box-dims">15×15×36 cm</span>
+          </div>
+          <div class="size-box-label-bottom">30 cm Figurine</div>
+          <div class="size-box-sub">10 pieces only · Nov 23, 2026</div>
+        </div>
+
+      </div>
+      <p class="size-compare-note">All boxes are actual proportions relative to each other</p>
+    </div>
+
+    <svg class="mission-ornament-top" width="120" height="18" viewBox="0 0 120 18" fill="none" style="transform:rotate(180deg)">
+      <line x1="0" y1="9" x2="46" y2="9" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
+      <path d="M52 9 L60 3 L68 9 L60 15 Z" stroke="#9a7520" stroke-width="0.5" fill="none" opacity="0.7"/>
+      <circle cx="60" cy="9" r="1.5" fill="#9a7520" opacity="0.5"/>
+      <line x1="74" y1="9" x2="120" y2="9" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
+    </svg>
+
+  </div>
+</section>
+
+<!-- SECTION 7: TEAM -->
+<section id="team">
+  <div class="team-inner">
+    <span class="eyebrow" style="justify-content:center;">The Makers</span>
+    <h2 class="section-title">The Team</h2>
+
+    <div class="team-grid">
+
+      <div class="team-card">
+        <div class="team-card-line"></div>
+        <div class="team-avatar">K</div>
+        <div class="team-role">Creative Technologist</div>
+        <div class="team-name">Kamayya<br>Gupta Vinnakota</div>
+        <div class="team-bio">Blessed by Bhagawan Sri Sathya Sai Baba, who personally performed his Aksharabhyasam — the sacred initiation into learning. Every creation since has been in His name. Co-Founder, AuRaaZ Technologies. 25+ years across CG, digital creation & technology.</div>
+        <svg class="team-ornament" width="60" height="12" viewBox="0 0 60 12" fill="none">
+          <line x1="0" y1="6" x2="22" y2="6" stroke="#9a7520" stroke-width="0.6"/>
+          <circle cx="30" cy="6" r="2" fill="#9a7520"/>
+          <line x1="38" y1="6" x2="60" y2="6" stroke="#9a7520" stroke-width="0.6"/>
+        </svg>
+        <a href="https://www.linkedin.com/in/kgvinnakota/" target="_blank" class="team-linkedin">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+      </div>
+
+      <div class="team-card">
+        <div class="team-card-line"></div>
+        <div class="team-avatar">S</div>
+        <div class="team-role">Content &amp; Concepts</div>
+        <div class="team-name">Satyadev<br>Vasigala</div>
+        <div class="team-bio">Co-Founder, AuRaaZ Technologies. Writer, strategist, and keeper of the conceptual vision behind SarvamSai.</div>
+        <svg class="team-ornament" width="60" height="12" viewBox="0 0 60 12" fill="none">
+          <line x1="0" y1="6" x2="22" y2="6" stroke="#9a7520" stroke-width="0.6"/>
+          <circle cx="30" cy="6" r="2" fill="#9a7520"/>
+          <line x1="38" y1="6" x2="60" y2="6" stroke="#9a7520" stroke-width="0.6"/>
+        </svg>
+        <a href="https://www.linkedin.com/in/vasdev/" target="_blank" class="team-linkedin">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+      </div>
+
+      <div class="team-card">
+        <div class="team-card-line"></div>
+        <div class="team-avatar">A</div>
+        <div class="team-role">Artisan</div>
+        <div class="team-name">Anish<br>Mohan</div>
+        <div class="team-bio">CG Supervisor & 3D artist. Specialist in sculpting, modelling & toy prototyping. Former supervisor at Phantom FX & The Mill. Creator of the SarvamSai figurines.</div>
+        <svg class="team-ornament" width="60" height="12" viewBox="0 0 60 12" fill="none">
+          <line x1="0" y1="6" x2="22" y2="6" stroke="#9a7520" stroke-width="0.6"/>
+          <circle cx="30" cy="6" r="2" fill="#9a7520"/>
+          <line x1="38" y1="6" x2="60" y2="6" stroke="#9a7520" stroke-width="0.6"/>
+        </svg>
+        <a href="https://www.linkedin.com/in/anishmations/" target="_blank" class="team-linkedin">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SHARE SECTION -->
+<div class="share-section">
+  <div class="share-label">Carry His Grace Forward</div>
+  <div class="share-buttons">
+
+    <a class="share-btn wa" onclick="shareTo('whatsapp')" href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      WhatsApp
+    </a>
+
+    <a class="share-btn tw" onclick="shareTo('twitter')" href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.259 5.629L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X / Twitter
+    </a>
+
+    <a class="share-btn fb" onclick="shareTo('facebook')" href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Facebook
+    </a>
+
+    <a class="share-btn ig" onclick="shareTo('instagram')" href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      Instagram
+    </a>
+
+    <a class="share-btn li" onclick="shareTo('linkedin')" href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      LinkedIn
+    </a>
+
+    <a class="share-btn tg" onclick="shareTo('telegram')" href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      Telegram
+    </a>
+
+  </div>
+</div>
+
+<!-- SECTION 8: FOOTER -->
+<footer id="footer">
+  <div class="footer-inner">
+
+    <svg class="footer-ornament" viewBox="0 0 800 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="0" y1="8" x2="372" y2="8" stroke="#b8922a" stroke-width="0.5"/>
+      <path d="M386 8 L400 2 L414 8 L400 14 Z" stroke="#b8922a" stroke-width="0.5" fill="none"/>
+      <circle cx="400" cy="8" r="2" fill="#b8922a" opacity="0.55"/>
+      <circle cx="379" cy="8" r="1.2" fill="#b8922a" opacity="0.38"/>
+      <circle cx="421" cy="8" r="1.2" fill="#b8922a" opacity="0.38"/>
+      <line x1="428" y1="8" x2="800" y2="8" stroke="#b8922a" stroke-width="0.5"/>
+    </svg>
+
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="nav-logo" href="#hero">SarvamSai</a>
+        <p class="footer-tagline">Offered with devotion. Crafted with Ahimsa. Each figurine, a moment of His grace, sealed in time.</p>
+        <p class="footer-baba-quote">&ldquo;Love all. Serve all.&rdquo;<br><em>— Bhagawan Sri Sathya Sai Baba</em></p>
+      </div>
+      <div>
+        <p class="footer-col-title">Navigate</p>
+        <ul class="footer-links">
+          <li><a href="#hero">Home</a></li>
+          <li><a href="#cta">Join the Offering</a></li>
+          <li><a href="#product">Figurine</a></li>
+          <li><a href="#carousel-section">His Robes</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-col-title">Support</p>
+        <ul class="footer-links">
+          <li><a href="#">FAQ <em style="font-size:0.75em;opacity:0.6;">coming soon</em></a></li>
+          <li><a href="#">Shipping Policy <em style="font-size:0.75em;opacity:0.6;">coming soon</em></a></li>
+          <li><a href="mailto:vinnakota.gupta@gmail.com" style="color:var(--burgundy);">vinnakota.gupta@gmail.com</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-col-title">Legal</p>
+        <ul class="footer-links">
+          <li><a href="#" onclick="showPrivacy(); return false;">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Cookie Settings</a></li>
+          <li><a href="#">Accessibility</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 SarvamSai. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- modals removed — buttons now use WhatsApp directly -->
+
+<script src="main.js"></script>
+
+<!-- PRIVACY MODAL -->
+<div id="privacy-modal" style="display:none;position:fixed;inset:0;background:rgba(30,20,9,0.6);backdrop-filter:blur(6px);z-index:300;overflow-y:auto;padding:2rem;">
+  <div style="max-width:640px;margin:2rem auto;background:var(--ivory);border:1px solid var(--border-str);padding:3rem;position:relative;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent);"></div>
+    <button onclick="document.getElementById('privacy-modal').style.display='none'" style="position:absolute;top:1rem;right:1.5rem;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);">✕</button>
+    <h2 style="font-family:'Cinzel',serif;font-size:1.4rem;color:var(--burgundy);letter-spacing:0.08em;margin-bottom:1.5rem;">Privacy Policy</h2>
+    <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--ink-soft);line-height:1.9;">
+      <p style="margin-bottom:1rem;"><strong>SarvamSai</strong> collects only your name and WhatsApp number for the purpose of managing your place in the blessing queue and notifying you when your Mystery Box is ready.</p>
+      <p style="margin-bottom:1rem;">We do not sell, share, or use your data for any purpose other than fulfilling your order and communicating about the SarvamSai offering.</p>
+      <p style="margin-bottom:1rem;">Your WhatsApp number is used as your unique identifier and referral link. It is never displayed publicly in full — only the last four digits appear in the Community of Devotees.</p>
+      <p style="margin-bottom:1rem;">We do not use cookies for tracking or advertising. This site has no third-party analytics.</p>
+      <p style="margin-bottom:1rem;">To have your data removed, contact us at <a href="mailto:vinnakota.gupta@gmail.com" style="color:var(--burgundy);">vinnakota.gupta@gmail.com</a>.</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;margin-top:1.5rem;color:var(--muted);">This policy is offered in the spirit of Satya — truth without concealment.</p>
+    </div>
+  </div>
+</div>
+
+<script src="main.js"></script>
+<script>
+(function() {
+  function tick() {
+    var cd = document.getElementById('countdown');
+    var cl = document.getElementById('countdown-label');
+    var sd = document.getElementById('stat-days');
+    if (!cd || !cl || !sd) return;
+    var now   = new Date();
+    var start = new Date('2026-04-24T00:00:00');
+    var end   = new Date('2026-08-02T00:00:00');
+    if (now >= end) {
+      cd.textContent = 'CLOSED'; cl.textContent = 'Season Complete'; sd.textContent = '0'; return;
+    }
+    if (now >= start) {
+      sd.textContent = 100 - Math.floor((now - start) / 86400000);
+      var tom = new Date(now); tom.setHours(24,0,0,0);
+      var d = tom - now;
+      cd.textContent = p(Math.floor(d/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
+      cl.textContent = 'Until Next Blessing';
+    } else {
+      var d = start - now;
+      var days = Math.floor(d/86400000);
+      cd.textContent = days+'d '+p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
+      cl.textContent = 'Until the Offering Opens';
+    }
+  }
+  function p(n){ return String(n).padStart(2,'0'); }
+  function showPrivacy(){ document.getElementById('privacy-modal').style.display='block'; }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>

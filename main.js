@@ -1,0 +1,247 @@
+// ─── COUNTDOWN ───
+function updateCountdown() {
+  const now = new Date();
+  const dropStart = new Date('2026-04-24T00:00:00');
+  const dropEnd   = new Date('2026-08-02T00:00:00');
+
+  if (now >= dropEnd) {
+    document.getElementById('countdown').textContent = 'CLOSED';
+    document.getElementById('countdown-label').textContent = 'Season Complete';
+    document.getElementById('stat-days').textContent = '0';
+    return;
+  }
+  if (now >= dropStart) {
+    const daysPassed = Math.floor((now - dropStart) / 86400000);
+    document.getElementById('stat-days').textContent = 100 - daysPassed;
+    const tomorrow = new Date(now);
+    tomorrow.setHours(24, 0, 0, 0);
+    const diff = tomorrow - now;
+    const h = String(Math.floor(diff / 3600000)).padStart(2,'0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
+    document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
+    document.getElementById('countdown-label').textContent = 'Until Next Blessing';
+  } else {
+    const diff = dropStart - now;
+    const days = Math.floor(diff / 86400000);
+    const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
+    document.getElementById('countdown').textContent = days > 0 ? `${days}d ${h}:${m}` : `${h}:${m}:${s}`;
+    document.getElementById('countdown-label').textContent = 'Until the Offering Opens';
+  }
+}
+if (document.getElementById('countdown')) {
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+}
+
+// ─── CAROUSEL ───
+let current = 0;
+const total = 4;
+const track = document.getElementById('carouselTrack');
+const dotsContainer = document.getElementById('carouselDots');
+
+for (let i = 0; i < total; i++) {
+  const dot = document.createElement('div');
+  dot.className = 'dot' + (i === 0 ? ' active' : '');
+  dot.onclick = () => { goTo(i); resetTimer(); };
+  dotsContainer.appendChild(dot);
+}
+
+function goTo(n) {
+  current = (n + total) % total;
+  track.style.transform = `translateX(-${current * 100}%)`;
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+}
+function nextSlide() { goTo(current + 1); resetTimer(); }
+function prevSlide() { goTo(current - 1); resetTimer(); }
+
+let autoTimer = setInterval(() => goTo(current + 1), 8000);
+function resetTimer() {
+  clearInterval(autoTimer);
+  autoTimer = setInterval(() => goTo(current + 1), 8000);
+}
+
+// ─── SOCIAL SHARE ───
+function shareTo(platform) {
+  const url  = encodeURIComponent('https://sarvamsai.in');
+  const text = encodeURIComponent(`🙏 Sarvam Sai — A Centenary Offering honouring Bhagawan Sri Sathya Sai Baba's 100th birth anniversary. 100 consecrated figurines released daily for 100 days. Net zero profit — every rupee unlocks the Sarvam Sai Universe.`);
+  const urls = {
+    whatsapp:  `https://wa.me/?text=${text}%20${url}`,
+    twitter:   `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+    facebook:  `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+    instagram: `https://www.instagram.com/`,
+    linkedin:  `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+    telegram:  `https://t.me/share/url?url=${url}&text=${text}`,
+  };
+  if (platform === 'instagram') {
+    navigator.clipboard.writeText('https://sarvamsai.in').then(() => {
+      alert('Link copied! You can now paste it on Instagram.');
+    });
+    return;
+  }
+  window.open(urls[platform], '_blank', 'noopener');
+  return false;
+}
+
+// ─── HAMBURGER MENU ───
+function toggleMenu() {
+  document.getElementById('nav-links').classList.toggle('open');
+  document.getElementById('nav-hamburger').classList.toggle('open');
+}
+function closeMenu() {
+  document.getElementById('nav-links').classList.remove('open');
+  document.getElementById('nav-hamburger').classList.remove('open');
+}
+
+// ─── CONFIG ───
+const API      = 'https://script.google.com/macros/s/AKfycbxi6pJbUn2oGNVW47E_9AGyupXE4H9O5I5P3oLBmChh-JQJX7hmkTb7NFK7B4Yef7LY1A/exec';
+const SITE_URL = 'https://sarvamsai.in';
+const WA_NUMBER = '4915161915888';
+
+// ─── REFERRAL: read ?ref= from URL ───
+const urlParams = new URLSearchParams(window.location.search);
+const refCode   = urlParams.get('ref') || '';
+
+// ─── SESSION ───
+let currentUser = null;
+const savedPhone = localStorage.getItem('ss_phone');
+if (savedPhone) loadUser(savedPhone);
+
+async function apiCall(params) {
+  const qs  = new URLSearchParams(params).toString();
+  const res = await fetch(API + '?' + qs);
+  return res.json();
+}
+
+// ─── REGISTER FORM ───
+function showRegisterForm() {
+  document.getElementById('register-form-wrap').style.display = 'block';
+  document.getElementById('cta-register-btns').style.display  = 'none';
+  document.getElementById('reg-name').focus();
+}
+
+function hideRegisterForm() {
+  document.getElementById('register-form-wrap').style.display = 'none';
+  document.getElementById('cta-register-btns').style.display  = 'flex';
+}
+
+async function submitRegistration() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim().replace(/\D/g,'');
+  const btn   = document.getElementById('reg-submit-btn');
+
+  document.getElementById('reg-error').style.display = 'none';
+
+  if (!name)           { showRegError('Please enter your name'); return; }
+  if (phone.length < 7){ showRegError('Please enter a valid WhatsApp number'); return; }
+
+  btn.textContent = 'Registering...';
+  btn.style.opacity = '0.7';
+  btn.disabled = true;
+
+  try {
+    const data = await apiCall({ action:'register', name, whatsapp:phone, referred_by:refCode });
+
+    if (data.success || data.error === 'already_registered') {
+      localStorage.setItem('ss_phone', phone);
+      currentUser = data.user;
+      showRegisteredState(data.user);
+      if (data.success) {
+        const msg = encodeURIComponent(`🙏 New SarvamSai Registration!\n\nName: ${name}\nWhatsApp: +${phone}${refCode ? '\nReferred by: +' + refCode : ''}`);
+        window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
+      }
+    } else {
+      showRegError('Something went wrong. Please try again.');
+      btn.textContent = 'Secure My Spot';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    showRegError('Network error. Please try again.');
+    btn.textContent = 'Secure My Spot';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+  }
+}
+
+function showRegError(msg) {
+  const el = document.getElementById('reg-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function loadUser(phone) {
+  try {
+    const data = await apiCall({ action:'getUser', whatsapp:phone });
+    if (data.success) { currentUser = data.user; showRegisteredState(data.user); }
+  } catch(e) {}
+}
+
+function showRegisteredState(user) {
+  document.getElementById('cta-register-btns').style.display  = 'none';
+  document.getElementById('register-form-wrap').style.display  = 'none';
+  document.getElementById('cta-registered').style.display      = 'block';
+  document.getElementById('user-rank').textContent    = '#' + (user.rank || '—');
+  document.getElementById('user-invites').textContent = user.invite_count || 0;
+  document.getElementById('user-invite-link').textContent = `${SITE_URL}/?ref=${user.whatsapp}`;
+  loadLeaderboard();
+}
+
+async function loadLeaderboard() {
+  try {
+    const data = await apiCall({ action:'leaderboard' });
+    const el   = document.getElementById('leaderboard-list');
+    if (!data.success || !data.leaderboard.length) {
+      el.innerHTML = '<div style="padding:1rem 2rem;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--muted);font-size:0.95rem;">Be the first to invite friends!</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    el.innerHTML = data.leaderboard.map((u, i) => `
+      <div style="display:flex;align-items:center;padding:0.75rem 2rem;border-bottom:1px solid var(--border);gap:1rem;">
+        <span style="font-size:1rem;width:24px;">${medals[i] || (i+1)}</span>
+        <span style="font-family:'EB Garamond',serif;font-size:1rem;flex:1;color:var(--ink-soft);">${u.name || 'Anonymous'}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--muted);">${u.whatsapp}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:var(--burgundy);">${u.invite_count} ✦</span>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+function openInviteShare() {
+  if (currentUser) shareOnWhatsApp();
+  else showRegisterForm();
+}
+
+function shareOnWhatsApp() {
+  const phone = currentUser ? currentUser.whatsapp : (savedPhone || '');
+  const link  = phone ? `${SITE_URL}/?ref=${phone}` : SITE_URL;
+  const msg   = encodeURIComponent(`🙏 *Sarvam Sai — A Centenary Offering*\n\nLimited edition figurines honouring the centenary birth anniversary. 100 drops daily for 100 days, each minted with that day's date.\n\nJoin here: ${link}`);
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
+}
+
+function copyInviteLink() {
+  const link = document.getElementById('user-invite-link').textContent;
+  navigator.clipboard.writeText(link).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ─── SCROLL REVEAL ───
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.step, .stat-card, .section-title, .process-header, .carousel-wrap').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.9s ease, transform 0.9s ease';
+  observer.observe(el);
+});
