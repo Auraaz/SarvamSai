@@ -1,3 +1,5 @@
+document.addEventListener('DOMContentLoaded', function() {
+
 // ─── COUNTDOWN ───
 function updateCountdown() {
   const now = new Date();
@@ -245,3 +247,5 @@ document.querySelectorAll('.step, .stat-card, .section-title, .process-header, .
   el.style.transition = 'opacity 0.9s ease, transform 0.9s ease';
   observer.observe(el);
 });
+
+}); // end DOMContentLoaded
