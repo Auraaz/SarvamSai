@@ -602,7 +602,7 @@
 
 <!-- modals removed — buttons now use WhatsApp directly -->
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="main.js"></script>
+
 
 <!-- PRIVACY MODAL -->
 <div id="privacy-modal" style="display:none;position:fixed;inset:0;background:rgba(30,20,9,0.6);backdrop-filter:blur(6px);z-index:300;overflow-y:auto;padding:2rem;">
@@ -621,7 +621,8 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="main.js"></script>
+
+<script src="main.js"></script>
 <script>
 (function() {
   function tick() {
@@ -640,4 +641,20 @@
       var tom = new Date(now); tom.setHours(24,0,0,0);
       var d = tom - now;
       cd.textContent = p(Math.floor(d/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
-      cl.textContent = 'Until Ne
+      cl.textContent = 'Until Next Blessing';
+    } else {
+      var d = start - now;
+      var days = Math.floor(d/86400000);
+      cd.textContent = days+'d '+p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
+      cl.textContent = 'Until the Offering Opens';
+    }
+  }
+  function p(n){ return String(n).padStart(2,'0'); }
+  function showPrivacy(){ document.getElementById('privacy-modal').style.display='block'; }
+  window.showPrivacy = showPrivacy;
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>

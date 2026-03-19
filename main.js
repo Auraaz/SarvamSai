@@ -1,5 +1,3 @@
-document.addEventListener('DOMContentLoaded', function() {
-
 // ─── COUNTDOWN ───
 function updateCountdown() {
   const now = new Date();
@@ -56,8 +54,10 @@ function goTo(n) {
   track.style.transform = `translateX(-${current * 100}%)`;
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
 }
-function nextSlide() { goTo(current + 1); resetTimer(); }
-function prevSlide() { goTo(current - 1); resetTimer(); }
+
+// Expose to global scope so onclick attributes work
+window.nextSlide = function() { goTo(current + 1); resetTimer(); };
+window.prevSlide = function() { goTo(current - 1); resetTimer(); };
 
 let autoTimer = setInterval(() => goTo(current + 1), 8000);
 function resetTimer() {
@@ -65,8 +65,26 @@ function resetTimer() {
   autoTimer = setInterval(() => goTo(current + 1), 8000);
 }
 
+// ─── SWIPE SUPPORT ───
+let touchStartX = 0;
+let touchEndX = 0;
+const carouselWrap = document.querySelector('.carousel-wrap');
+if (carouselWrap) {
+  carouselWrap.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+  carouselWrap.addEventListener('touchend', function(e) {
+    touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) { goTo(current + 1); } else { goTo(current - 1); }
+      resetTimer();
+    }
+  }, { passive: true });
+}
+
 // ─── SOCIAL SHARE ───
-function shareTo(platform) {
+window.shareTo = function(platform) {
   const url  = encodeURIComponent('https://sarvamsai.in');
   const text = encodeURIComponent(`🙏 Sarvam Sai — A Centenary Offering honouring Bhagawan Sri Sathya Sai Baba's 100th birth anniversary. 100 consecrated figurines released daily for 100 days. Net zero profit — every rupee unlocks the Sarvam Sai Universe.`);
   const urls = {
@@ -88,11 +106,11 @@ function shareTo(platform) {
 }
 
 // ─── HAMBURGER MENU ───
-function toggleMenu() {
+window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
   document.getElementById('nav-hamburger').classList.toggle('open');
 }
-function closeMenu() {
+window.closeMenu = function() {
   document.getElementById('nav-links').classList.remove('open');
   document.getElementById('nav-hamburger').classList.remove('open');
 }
@@ -118,18 +136,18 @@ async function apiCall(params) {
 }
 
 // ─── REGISTER FORM ───
-function showRegisterForm() {
+window.showRegisterForm = function() {
   document.getElementById('register-form-wrap').style.display = 'block';
   document.getElementById('cta-register-btns').style.display  = 'none';
   document.getElementById('reg-name').focus();
 }
 
-function hideRegisterForm() {
+window.hideRegisterForm = function() {
   document.getElementById('register-form-wrap').style.display = 'none';
   document.getElementById('cta-register-btns').style.display  = 'flex';
 }
 
-async function submitRegistration() {
+window.submitRegistration = async function() {
   const name  = document.getElementById('reg-name').value.trim();
   const phone = document.getElementById('reg-phone').value.trim().replace(/\D/g,'');
   const btn   = document.getElementById('reg-submit-btn');
@@ -181,7 +199,7 @@ async function loadUser(phone) {
   } catch(e) {}
 }
 
-function showRegisteredState(user) {
+window.showRegisteredState = function(user) {
   document.getElementById('cta-register-btns').style.display  = 'none';
   document.getElementById('register-form-wrap').style.display  = 'none';
   document.getElementById('cta-registered').style.display      = 'block';
@@ -210,19 +228,19 @@ async function loadLeaderboard() {
   } catch(e) {}
 }
 
-function openInviteShare() {
+window.openInviteShare = function() {
   if (currentUser) shareOnWhatsApp();
   else showRegisterForm();
 }
 
-function shareOnWhatsApp() {
+window.shareOnWhatsApp = function() {
   const phone = currentUser ? currentUser.whatsapp : (savedPhone || '');
   const link  = phone ? `${SITE_URL}/?ref=${phone}` : SITE_URL;
   const msg   = encodeURIComponent(`🙏 *Sarvam Sai — A Centenary Offering*\n\nLimited edition figurines honouring the centenary birth anniversary. 100 drops daily for 100 days, each minted with that day's date.\n\nJoin here: ${link}`);
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
-function copyInviteLink() {
+window.copyInviteLink = function() {
   const link = document.getElementById('user-invite-link').textContent;
   navigator.clipboard.writeText(link).then(() => {
     const btn = document.getElementById('copy-btn');
@@ -247,5 +265,3 @@ document.querySelectorAll('.step, .stat-card, .section-title, .process-header, .
   el.style.transition = 'opacity 0.9s ease, transform 0.9s ease';
   observer.observe(el);
 });
-
-}); // end DOMContentLoaded
