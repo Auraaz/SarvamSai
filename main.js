@@ -129,7 +129,7 @@ const refCode   = urlParams.get('ref') || '';
 // ─── SESSION ───
 let currentUser = null;
 const savedEmail = localStorage.getItem('ss_email');
-if (savedPhone) loadUser(savedPhone);
+if (savedEmail) loadUser(savedEmail);
 
 async function apiCall(params) {
   const qs  = new URLSearchParams(params).toString();
@@ -151,42 +151,38 @@ window.hideRegisterForm = function() {
 
 window.submitRegistration = async function() {
   const name  = document.getElementById('reg-name').value.trim();
-  const phone = document.getElementById('reg-phone').value.trim().replace(/\D/g,'');
+  const email = document.getElementById('reg-email').value.trim();
   const btn   = document.getElementById('reg-submit-btn');
 
   document.getElementById('reg-error').style.display = 'none';
 
-  if (!name)           { showRegError('Please enter your name'); return; }
-  if (phone.length < 7){ showRegError('Please enter a valid WhatsApp number'); return; }
+  if (!name)  { showRegError('Please enter your name'); return; }
+  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showRegError('Please enter a valid email address'); return; }
 
-  btn.textContent = 'Registering...';
+  btn.textContent = 'Joining...';
   btn.style.opacity = '0.7';
   btn.disabled = true;
 
   try {
-    const data = await apiCall({ action:'register', name, whatsapp:phone, referred_by:refCode });
+    const data = await apiCall({ action:'register', name, email, referred_by:refCode });
 
     if (data.success || data.error === 'already_registered') {
-      localStorage.setItem('ss_phone', phone);
+      localStorage.setItem('ss_email', email);
       currentUser = data.user;
       showRegisteredState(data.user);
-      if (data.success) {
-        const msg = encodeURIComponent(`🙏 New SarvamSai Registration!\n\nName: ${name}\nWhatsApp: +${phone}${refCode ? '\nReferred by: +' + refCode : ''}`);
-        // Email confirmation sent automatically by Apps Script
-      }
     } else {
       showRegError('Something went wrong. Please try again.');
-      btn.textContent = 'Secure My Spot';
+      btn.textContent = 'Join the Queue';
       btn.style.opacity = '1';
       btn.disabled = false;
     }
   } catch(e) {
     showRegError('Network error. Please try again.');
-    btn.textContent = 'Secure My Spot';
+    btn.textContent = 'Join the Queue';
     btn.style.opacity = '1';
     btn.disabled = false;
   }
-}
+};
 
 function showRegError(msg) {
   const el = document.getElementById('reg-error');
@@ -194,9 +190,9 @@ function showRegError(msg) {
   el.style.display = 'block';
 }
 
-async function loadUser(phone) {
+async function loadUser(email) {
   try {
-    const data = await apiCall({ action:'getUser', email:savedEmail });
+    const data = await apiCall({ action:'getUser', email:email });
     if (data.success) { currentUser = data.user; showRegisteredState(data.user); }
   } catch(e) {}
 }
