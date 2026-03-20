@@ -1,4 +1,6 @@
 // ─── COUNTDOWN ───
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbykZ8fQv8e4BErZN-qms8kiH03x75wwv_aG8moef40zwZWaF6lpvS7q2aiJaJsb94pwVQ/exec';
+
 function updateCountdown() {
   const now = new Date();
   const dropStart = new Date('2026-04-24T00:00:00');
