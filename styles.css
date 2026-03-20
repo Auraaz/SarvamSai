@@ -158,26 +158,19 @@
   .hero-image {
     width: 300px;
     height: 380px;
-    object-fit: cover;
-    object-position: center top;
-    border-radius: 8px;
-    border: 1px solid rgba(184,146,42,0.25);
-    box-shadow:
-      0 0 80px rgba(184,146,42,0.2),
-      0 0 160px rgba(107,31,42,0.1),
-      0 30px 80px rgba(0,0,0,0.4);
+    object-fit: contain;
+    object-position: center;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
     animation: fadeUp 1s 0.1s ease both;
     display: block;
-    background: #000;
+    background: transparent;
+    mix-blend-mode: multiply;
   }
 
   .hero-image-glow {
-    position: absolute;
-    inset: -40px;
-    border-radius: 8px;
-    background: radial-gradient(circle, rgba(184,146,42,0.18) 0%, transparent 70%);
-    pointer-events: none;
-    animation: glowPulse 4s ease-in-out infinite;
+    display: none;
   }
 
   @keyframes glowPulse {
@@ -198,7 +191,7 @@
     .hero-content { flex-direction: column; gap: 2.5rem; text-align: center; }
     .hero-text { text-align: center; }
     .hero-text .hero-ornament { margin: 1.5rem auto; }
-    .hero-image { width: 220px; height: 280px; }
+    .hero-image { width: 240px; height: 300px; }
   }
 
   .hero-sub {
@@ -299,7 +292,7 @@
     width: 160px;
     height: 160px;
     object-fit: contain;
-    animation: glowPulse 4s ease-in-out infinite;
+    display: block;
   }
 
   .about-emblem-caption {
@@ -650,13 +643,10 @@
     width: 100%;
     max-width: 860px;
     background: var(--burgundy);
-    padding: 2rem;
+    padding: 1.8rem 2rem;
     text-align: center;
     margin-bottom: 1px;
     position: relative;
-    /* Isolated layer — never causes reflow on parent */
-    will-change: contents;
-    contain: strict;
     overflow: hidden;
   }
   .countdown-wrap::before {
@@ -667,34 +657,38 @@
     background: linear-gradient(to right, transparent, var(--gold), transparent);
   }
 
-  .countdown-timer {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 2.4rem;
-    font-weight: 700;
-    color: var(--gold-pale, #f3e8c0);
-    letter-spacing: 0.12em;
-    line-height: 1;
-    display: inline-block;
-    width: 8ch;
-    text-align: center;
-    overflow: hidden;
+  .countdown-days {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(243,232,192,0.75);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.3rem;
     white-space: nowrap;
   }
 
-  .countdown-days {
-    font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #fff;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+  .countdown-timer {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    font-weight: 700;
+    color: #f3e8c0;
+    letter-spacing: 0.1em;
     line-height: 1;
-    margin-bottom: 0.4rem;
     display: block;
-    width: 16ch;
     text-align: center;
     white-space: nowrap;
-    overflow: hidden;
+  }
+
+  .countdown-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-top: 0.5rem;
+    display: block;
   }
 
   .countdown-label {
@@ -1623,8 +1617,10 @@
     #cta-registered { max-width: 100%; }
 
     /* STATS */
-    .drop-stats { grid-template-columns: repeat(2, 1fr); }
+    .drop-stats { grid-template-columns: repeat(3, 1fr); }
     .stat-num { font-size: 1.6rem; }
+    .countdown-timer { font-size: clamp(1.2rem, 4.5vw, 1.6rem); letter-spacing: 0.05em; }
+    .countdown-days { font-size: 0.7rem; }
 
     /* MINT BAND */
     .mint-band { gap: 0.8rem; padding: 0.8rem 1rem; flex-wrap: wrap; justify-content: center; }
