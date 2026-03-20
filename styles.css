@@ -651,17 +651,62 @@
     .discovery-note { padding: 1rem 1.2rem; }
   }
 
+  /* ─── STANDALONE COUNTDOWN ─── */
+  .countdown-wrap {
+    width: 100%;
+    max-width: 860px;
+    background: var(--burgundy);
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 1px;
+    position: relative;
+    /* Isolated layer — never causes reflow on parent */
+    will-change: contents;
+    contain: strict;
+    overflow: hidden;
+  }
+  .countdown-wrap::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .countdown-timer {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--gold-pale, #f3e8c0);
+    letter-spacing: 0.12em;
+    line-height: 1;
+    /* Fixed dimensions — never reflows */
+    display: inline-block;
+    width: 14ch;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .countdown-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-top: 0.6rem;
+  }
+
   .drop-stats {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 1px;
     width: 100%;
     max-width: 860px;
     background: var(--border);
     border: 1px solid var(--border);
+    border-top: none;
     box-shadow: var(--shadow);
-    /* Prevent any reflow from countdown ticking */
-    contain: layout style;
   }
 
   .stat-card {
@@ -703,24 +748,9 @@
     white-space: nowrap;
   }
 
-  /* Countdown specifically — fixed width monospace to prevent reflow */
-  #countdown {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--burgundy);
-    display: block;
-    width: 160px;
-    text-align: center;
-    letter-spacing: 0.05em;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
   .stat-card--accent {
     background: var(--cream);
     position: relative;
-    min-width: 0;
     overflow: hidden;
   }
 
