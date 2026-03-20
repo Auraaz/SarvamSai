@@ -198,12 +198,23 @@ async function loadUser(email) {
 }
 
 window.showRegisteredState = function(user) {
+  const prevRank = currentUser ? currentUser.rank : null;
+  currentUser = user;
   document.getElementById('cta-register-btns').style.display  = 'none';
   document.getElementById('register-form-wrap').style.display  = 'none';
   document.getElementById('cta-registered').style.display      = 'block';
   document.getElementById('user-rank').textContent    = '#' + (user.rank || '—');
   document.getElementById('user-invites').textContent = user.invite_count || 0;
   document.getElementById('user-invite-link').textContent = `${SITE_URL}/?ref=${encodeURIComponent(user.email)}`;
+  const movEl = document.getElementById('rank-movement');
+  if (movEl) {
+    if (prevRank && user.rank < prevRank) {
+      const d = prevRank - user.rank;
+      movEl.innerHTML = `<span class="dash-rank-movement-up">▲ up ${d} place${d>1?'s':''}</span>`;
+    } else {
+      movEl.textContent = 'in the queue';
+    }
+  }
   loadLeaderboard();
 }
 
@@ -217,26 +228,41 @@ async function loadLeaderboard() {
     }
     const medals = ['🥇','🥈','🥉'];
     el.innerHTML = data.leaderboard.map((u, i) => `
-      <div style="display:flex;align-items:center;padding:0.75rem 2rem;border-bottom:1px solid var(--border);gap:1rem;">
-        <span style="font-size:1rem;width:24px;">${medals[i] || (i+1)}</span>
-        <span style="font-family:'EB Garamond',serif;font-size:1rem;flex:1;color:var(--ink-soft);">${u.name || 'Anonymous'}</span>
-        <span style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--muted);">${u.email}</span>
-        <span style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:var(--burgundy);">${u.invite_count} ✦</span>
+      <div style="display:flex;align-items:center;padding:0.85rem 1.5rem;border-bottom:1px solid var(--border);gap:1rem;">
+        <span style="font-size:1.1rem;flex-shrink:0;width:28px;">${medals[i] || '<span style=\'font-family:Cinzel,serif;font-size:0.65rem;color:var(--muted)\'>' + (i+1) + '</span>'}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;flex:1;color:var(--ink)">${u.name || 'Devotee'}</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--muted);">${u.email}</span>
       </div>`).join('');
   } catch(e) {}
 }
 
 window.openInviteShare = function() {
-  if (currentUser) shareOnWhatsApp();
-  else showRegisterForm();
+  if (currentUser) {
+    if (!currentUser.samithi_id) openSamithiModal();
+    else shareInvite('whatsapp');
+  } else showRegisterForm();
 }
 
 window.shareOnWhatsApp = function() {
   const emailRef = currentUser ? currentUser.email : (savedEmail || '');
-  const link  = phone ? `${SITE_URL}/?ref=${phone}` : SITE_URL;
+  const link  = currentUser ? `${SITE_URL}/?ref=${encodeURIComponent(currentUser.email)}` : SITE_URL;
   const msg   = encodeURIComponent(`🙏 *Sarvam Sai — A Centenary Offering*\n\nLimited edition figurines honouring the centenary birth anniversary. 100 drops daily for 100 days, each minted with that day's date.\n\nJoin here: ${link}`);
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
+
+
+window.shareInvite = function(platform) {
+  const emailRef = currentUser ? currentUser.email : (savedEmail || '');
+  const link = `${SITE_URL}/?ref=${encodeURIComponent(emailRef)}`;
+  const text = encodeURIComponent(`🙏 Join me in the SarvamSai offering — a collectible Mystery Box honouring the centenary of Bhagawan Sri Sathya Sai Baba. Join the queue: ${link}`);
+  const urls = {
+    whatsapp: `https://wa.me/?text=${text}`,
+    twitter:  `https://twitter.com/intent/tweet?text=${text}`,
+    telegram: `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('🙏 Join the SarvamSai offering — a collectible Mystery Box honouring Bhagawan Sri Sathya Sai Baba\'s centenary.')}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`
+  };
+  if (urls[platform]) window.open(urls[platform], '_blank', 'noopener');
+};
 
 window.copyInviteLink = function() {
   const link = document.getElementById('user-invite-link').textContent;
@@ -339,3 +365,143 @@ document.querySelectorAll('[onclick]').forEach(el => {
     initFloatingCTA();
   }
 })();
+
+// ─── SAMITHI ───
+let samithiList = [];
+let selectedSamithi = null;
+
+window.openSamithiModal = function() {
+  const modal = document.getElementById('samithi-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    loadSamithis();
+    setTimeout(() => document.getElementById('samithi-search')?.focus(), 300);
+  }
+};
+
+window.closeSamithiModal = function() {
+  const modal = document.getElementById('samithi-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.showAddSamithi = function() {
+  document.getElementById('samithi-step-search').style.display = 'none';
+  document.getElementById('samithi-step-add').style.display    = 'block';
+};
+
+window.showSearchSamithi = function() {
+  document.getElementById('samithi-step-add').style.display    = 'none';
+  document.getElementById('samithi-step-search').style.display = 'block';
+};
+
+async function loadSamithis() {
+  try {
+    const data = await apiCall({ action: 'getSamithis' });
+    if (data.success) samithiList = data.samithis || [];
+  } catch(e) {}
+}
+
+window.searchSamithi = function(query) {
+  const results = document.getElementById('samithi-results');
+  if (!query || query.length < 2) { results.style.display = 'none'; return; }
+  const filtered = samithiList.filter(s =>
+    s.name.toLowerCase().includes(query.toLowerCase()) ||
+    s.city.toLowerCase().includes(query.toLowerCase())
+  );
+  if (!filtered.length) { results.style.display = 'none'; return; }
+  results.style.display = 'block';
+  results.innerHTML = filtered.map(s => `
+    <div class="samithi-result-item" onclick="selectSamithi('${s.id}','${s.name.replace(/'/g,"\\'")}','${s.city.replace(/'/g,"\\'")}')">
+      ${s.name}
+      <span>${s.city} · ${s.member_count || 0} member${s.member_count !== 1 ? 's' : ''}</span>
+    </div>
+  `).join('');
+};
+
+window.selectSamithi = async function(id, name, city) {
+  try {
+    const email = currentUser ? currentUser.email : (savedEmail || '');
+    const data = await apiCall({ action: 'joinSamithi', samithi_id: id, email });
+    if (data.success) {
+      showSamithiSuccess(name);
+      updateSamithiLabel(name, city);
+      loadSamithiLeaderboard();
+    }
+  } catch(e) {}
+};
+
+window.submitNewSamithi = async function() {
+  const name  = document.getElementById('new-samithi-name').value.trim();
+  const city  = document.getElementById('new-samithi-city').value.trim();
+  const phone = document.getElementById('new-samithi-phone').value.trim();
+  const errEl = document.getElementById('samithi-error');
+  if (!name || !city) { errEl.textContent = 'Please enter the Samithi name and city.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  try {
+    const email = currentUser ? currentUser.email : (savedEmail || '');
+    const data = await apiCall({ action: 'addSamithi', name, city, phone, email });
+    if (data.success) {
+      showSamithiSuccess(name);
+      updateSamithiLabel(name, city);
+      loadSamithiLeaderboard();
+    } else {
+      errEl.textContent = data.error || 'Something went wrong.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Connection error. Please try again.';
+    errEl.style.display = 'block';
+  }
+};
+
+function showSamithiSuccess(name) {
+  document.getElementById('samithi-step-search').style.display  = 'none';
+  document.getElementById('samithi-step-add').style.display     = 'none';
+  document.getElementById('samithi-step-success').style.display = 'block';
+  document.getElementById('samithi-success-name').textContent   = name;
+}
+
+function updateSamithiLabel(name, city) {
+  const el = document.getElementById('samithi-my-name');
+  if (el) { el.textContent = name + ' · ' + city; el.style.cursor = 'default'; el.onclick = null; }
+}
+
+async function loadSamithiLeaderboard() {
+  const el = document.getElementById('samithi-leaderboard-list');
+  if (!el) return;
+  try {
+    const data = await apiCall({ action: 'samithiLeaderboard' });
+    if (!data.success || !data.samithis || !data.samithis.length) {
+      el.innerHTML = '<div style="padding:1rem 1.5rem;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--muted);font-size:0.95rem;">Be the first to nominate a Samithi or Satsang!</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    el.innerHTML = data.samithis.map((s, i) => `
+      <div style="display:flex;align-items:center;padding:0.85rem 1.5rem;border-bottom:1px solid var(--border);gap:1rem;">
+        <span style="font-size:1.1rem;flex-shrink:0;width:28px;">${medals[i] || (i+1)}</span>
+        <span style="flex:1;">
+          <div style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink);">${s.name}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--muted);">${s.city}</div>
+        </span>
+        <span style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:var(--burgundy);white-space:nowrap;">${s.member_count} member${s.member_count !== 1 ? 's' : ''}</span>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+// Show samithi modal 2s after registration, load leaderboard
+const _origShowRegistered = window.showRegisteredState;
+window.showRegisteredState = function(user) {
+  _origShowRegistered(user);
+  loadSamithiLeaderboard();
+  // Only show modal if not already in a samithi
+  if (!user.samithi_id) {
+    setTimeout(() => {
+      loadSamithis();
+      openSamithiModal();
+    }, 2000);
+  } else {
+    // Show their samithi name
+    const el = document.getElementById('samithi-my-name');
+    if (el && user.samithi_name) updateSamithiLabel(user.samithi_name, user.samithi_city || '');
+  }
+};
