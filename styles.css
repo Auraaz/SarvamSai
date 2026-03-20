@@ -1,4 +1,4 @@
-:root {
+  :root {
     --ivory:      #faf6ef;
     --cream:      #f3ece0;
     --parchment:  #e8dcc8;
@@ -1835,4 +1835,84 @@
     font-style: normal;
     font-family: 'Cinzel', serif;
     letter-spacing: 0.08em;
+  }
+
+  /* ─── FLOATING CTA ─── */
+  .floating-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--ivory);
+    border-top: 1px solid var(--border-str);
+    box-shadow: 0 -4px 30px rgba(90,21,32,0.1);
+    padding: 0.9rem 2rem;
+    transform: translateY(100%);
+    transition: transform 0.4s ease;
+  }
+
+  .floating-cta.visible {
+    transform: translateY(0);
+  }
+
+  .floating-cta-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .floating-cta-text {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .floating-cta-btns {
+    display: flex;
+    gap: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .floating-btn-primary {
+    background: var(--burgundy);
+    color: var(--gold-pale, #f3e8c0);
+    border: none;
+    padding: 0.7rem 1.4rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.3s;
+    white-space: nowrap;
+  }
+  .floating-btn-primary:hover { background: #7a1a28; }
+
+  .floating-btn-secondary {
+    background: transparent;
+    color: var(--burgundy);
+    border: 1px solid var(--burgundy);
+    padding: 0.7rem 1.4rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+  .floating-btn-secondary:hover { background: var(--burgundy); color: var(--gold-pale, #f3e8c0); }
+
+  @media (max-width: 768px) {
+    .floating-cta { padding: 0.8rem 1rem; }
+    .floating-cta-text { display: none; }
+    .floating-cta-btns { width: 100%; }
+    .floating-btn-primary, .floating-btn-secondary { flex: 1; text-align: center; }
   }

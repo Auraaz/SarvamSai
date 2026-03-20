@@ -281,3 +281,36 @@ document.querySelectorAll('[onclick]').forEach(el => {
     });
   }
 });
+
+// ─── FLOATING CTA ───
+(function() {
+  const bar    = document.getElementById('floating-cta');
+  const ctaSec = document.getElementById('cta');
+  if (!bar || !ctaSec) return;
+
+  // Show after scrolling past hero, hide when CTA section is visible
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        bar.classList.remove('visible');
+      } else {
+        bar.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.2 });
+
+  observer.observe(ctaSec);
+
+  // Also hide on first load until user scrolls past hero
+  var heroSec = document.getElementById('hero');
+  if (heroSec) {
+    var heroObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          bar.classList.remove('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    heroObs.observe(heroSec);
+  }
+})();
