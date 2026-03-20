@@ -1,4 +1,4 @@
-  :root {
+:root {
     --ivory:      #faf6ef;
     --cream:      #f3ece0;
     --parchment:  #e8dcc8;
@@ -121,9 +121,9 @@
 
   .hero-title {
     font-family: 'Cinzel', serif;
-    font-size: clamp(2.8rem, 8vw, 7rem);
+    font-size: clamp(2.4rem, 4.5vw, 5.5rem);
     font-weight: 700;
-    line-height: 1;
+    line-height: 1.05;
     letter-spacing: 0.06em;
     color: var(--ink);
     animation: fadeUp 1s 0.15s ease both;
@@ -135,7 +135,7 @@
     font-weight: 400;
     font-style: italic;
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1em;
+    font-size: 1.05em;
     letter-spacing: 0.03em;
     margin-top: 0.1em;
   }
@@ -144,20 +144,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5rem;
+    gap: 4rem;
     position: relative;
     z-index: 1;
-    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
   }
 
   .hero-image-wrap {
     position: relative;
-    flex-shrink: 0;
+    flex: 0 0 auto;
   }
 
   .hero-image {
-    width: 300px;
-    height: 380px;
+    width: clamp(220px, 28vw, 380px);
+    height: clamp(280px, 36vw, 480px);
     object-fit: contain;
     object-position: center;
     border-radius: 0;
@@ -166,32 +168,28 @@
     animation: fadeUp 1s 0.1s ease both;
     display: block;
     background: transparent;
-    mix-blend-mode: multiply;
   }
 
   .hero-image-glow {
     display: none;
   }
 
-  @keyframes glowPulse {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50%       { opacity: 1;   transform: scale(1.05); }
-  }
-
   .hero-text {
     text-align: left;
-    max-width: 500px;
+    flex: 1;
+    min-width: 0;
+    max-width: 520px;
     animation: fadeUp 1s 0.2s ease both;
   }
 
-  .hero-text .hero-ornament { margin: 2rem 0; }
+  .hero-text .hero-ornament { margin: 1.5rem 0; }
   .hero-text .hero-sub { max-width: 100%; }
 
   @media (max-width: 768px) {
-    .hero-content { flex-direction: column; gap: 2.5rem; text-align: center; }
-    .hero-text { text-align: center; }
-    .hero-text .hero-ornament { margin: 1.5rem auto; }
-    .hero-image { width: 240px; height: 300px; }
+    .hero-content { flex-direction: column; gap: 2rem; text-align: center; }
+    .hero-text { text-align: center; max-width: 100%; }
+    .hero-text .hero-ornament { margin: 1.2rem auto; }
+    .hero-image { width: 220px; height: 280px; }
   }
 
   .hero-sub {
