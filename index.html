@@ -33,7 +33,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20">
+<link rel="stylesheet" href="styles.css?v=21">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -1011,8 +1011,27 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="main.js?v=20"></script>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="main.js?v=21"></script>
+<script data-cfasync="false">
+// FAQ accordion
+window.toggleFaq = function(btn) {
+  var item = btn.parentElement;
+  var body = item.querySelector('.faq-body');
+  var icon = btn.querySelector('.faq-icon');
+  var isOpen = body.style.display === 'block';
+  if (isOpen) {
+    body.style.display = 'none';
+    icon.textContent = '+';
+    btn.style.background = '#faf6ef';
+  } else {
+    body.style.display = 'block';
+    icon.textContent = '\u2212';
+    btn.style.background = '#f3ece0';
+  }
+};
+</script>
+
+<script data-cfasync="false">
 (function() {
   function tick() {
     var cd   = document.getElementById('countdown');
