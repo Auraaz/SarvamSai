@@ -1916,40 +1916,47 @@ nav {
   .floating-btn-primary, .floating-btn-secondary { flex: 1; text-align: center; }
 }
 
-/* ─── RARITY CARDS ─── */
+/* ─── COLLECTIBLE RARITY CARDS ─── */
 .rarity-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.2rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
   width: 100%;
-  max-width: 860px;
+  max-width: 520px;
 }
 
 .rarity-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-str);
-  background: var(--ivory);
-  overflow: hidden;
-  transition: transform 0.25s, box-shadow 0.25s;
   position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: default;
+  border: 3px solid #fff;
+  box-shadow:
+    0 0 0 1px rgba(154,117,32,0.3),
+    0 8px 32px rgba(0,0,0,0.2),
+    0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  aspect-ratio: 3/4;
 }
 .rarity-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 50px rgba(90,21,32,0.18);
+  transform: translateY(-10px) scale(1.02);
 }
 
-/* Top border accent per robe colour */
-.rarity-saffron { border-top: 3px solid #d05418; }
-.rarity-golden  { border-top: 3px solid #c09818; }
-.rarity-white   { border-top: 3px solid #c8b898; }
-.rarity-crimson { border-top: 3px solid #7a1820; }
+.rarity-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 3;
+  pointer-events: none;
+}
+.rarity-card:hover::before { opacity: 1; }
 
 .rarity-card-img-wrap {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 3/4;
-  overflow: hidden;
+  position: absolute;
+  inset: 0;
 }
 
 .rarity-card-img {
@@ -1960,74 +1967,86 @@ nav {
   display: block;
   transition: transform 0.4s ease;
 }
-.rarity-card:hover .rarity-card-img {
-  transform: scale(1.04);
-}
+.rarity-card:hover .rarity-card-img { transform: scale(1.05); }
 
-/* Badge overlay — top right */
 .rarity-card-badge {
   position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
+  top: 0.7rem;
+  left: 0.7rem;
+  z-index: 4;
   font-family: 'Cinzel', serif;
-  font-size: 0.55rem;
+  font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  padding: 0.3rem 0.6rem;
-  border: 1px solid rgba(255,255,255,0.6);
+  padding: 0.3rem 0.65rem;
+  border-radius: 2px;
+  backdrop-filter: blur(8px);
 }
-.rarity-saffron .rarity-card-badge { background: rgba(192,80,24,0.85); color: #fff; }
-.rarity-golden  .rarity-card-badge { background: rgba(160,112,16,0.85); color: #fff; }
-.rarity-white   .rarity-card-badge { background: rgba(200,184,152,0.85); color: #3a2a10; }
-.rarity-crimson .rarity-card-badge { background: rgba(90,21,32,0.9);    color: #f3e8c0; }
+.rarity-saffron .rarity-card-badge { background: rgba(192,80,24,0.88); color: #fff; }
+.rarity-golden  .rarity-card-badge { background: rgba(152,104,8,0.88);  color: #fff8e0; }
+.rarity-white   .rarity-card-badge { background: rgba(255,255,255,0.82); color: #3a2a10; }
+.rarity-crimson .rarity-card-badge { background: rgba(90,21,32,0.92);   color: #f3e8c0; }
 
-/* Card body */
 .rarity-card-body {
-  padding: 1rem 0.9rem 1.2rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  padding: 1.4rem 1rem 1rem;
+  background: linear-gradient(to top, rgba(10,5,2,0.88) 0%, rgba(10,5,2,0.55) 60%, transparent 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
-  background: var(--ivory);
 }
 
 .rarity-name {
   font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
 }
 
 .rarity-robe {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
-  font-size: 0.9rem;
-  color: var(--muted);
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
 }
 
 .rarity-divider {
-  width: 30px;
+  width: 24px;
   height: 1px;
-  background: var(--gold);
-  opacity: 0.4;
-  margin: 0.35rem 0;
+  background: #f3e8c0;
+  opacity: 0.5;
+  margin: 0.25rem 0;
 }
 
 .rarity-tag {
   font-family: 'Cinzel', serif;
   font-size: 0.5rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: #f3e8c0;
+  opacity: 0.8;
 }
 
+.rarity-saffron:hover { box-shadow: 0 0 0 2px rgba(208,84,24,0.6), 0 24px 60px rgba(208,84,24,0.3); }
+.rarity-golden:hover  { box-shadow: 0 0 0 2px rgba(192,152,24,0.6), 0 24px 60px rgba(192,152,24,0.3); }
+.rarity-white:hover   { box-shadow: 0 0 0 2px rgba(200,184,152,0.6), 0 24px 60px rgba(200,184,152,0.25); }
+.rarity-crimson:hover { box-shadow: 0 0 0 2px rgba(122,24,32,0.7),  0 24px 60px rgba(122,24,32,0.4); }
+
 @media (max-width: 768px) {
-  .rarity-cards { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+  .rarity-cards { max-width: 100%; gap: 0.8rem; }
+  .rarity-name { font-size: 0.85rem; }
 }
 @media (max-width: 400px) {
-  .rarity-cards { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
-  .rarity-card-body { padding: 0.8rem 0.6rem 1rem; }
+  .rarity-cards { gap: 0.6rem; }
+  .rarity-card-body { padding: 1rem 0.7rem 0.8rem; }
 }
+
