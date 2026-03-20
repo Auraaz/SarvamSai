@@ -526,7 +526,7 @@ nav {
 /* ─── DISCOVERY BOX ─── */
 .discovery-wrap {
   width: 100%;
-  max-width: 760px;
+  max-width: 520px;
   margin: 2rem 0 3rem;
   display: flex;
   flex-direction: column;
@@ -1919,7 +1919,8 @@ nav {
 /* ─── COLLECTIBLE RARITY CARDS ─── */
 .rarity-cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
   gap: 1rem;
   width: 100%;
   max-width: 480px;
@@ -1930,35 +1931,27 @@ nav {
   border-radius: 10px;
   overflow: hidden;
   border: 4px solid #fff;
-  box-shadow:
-    0 0 0 1px rgba(154,117,32,0.25),
-    0 10px 40px rgba(0,0,0,0.25);
+  box-shadow: 0 0 0 1px rgba(154,117,32,0.25), 0 10px 40px rgba(0,0,0,0.25);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  /* Force a fixed height based on width */
-  padding-top: 133%; /* 3:4 aspect ratio */
+  display: block;
+  width: 100%;
 }
-.rarity-card:hover {
-  transform: translateY(-8px) scale(1.02);
-}
+.rarity-card:hover { transform: translateY(-6px); }
 .rarity-saffron:hover { box-shadow: 0 0 0 2px rgba(208,84,24,0.5), 0 20px 50px rgba(208,84,24,0.25); }
 .rarity-golden:hover  { box-shadow: 0 0 0 2px rgba(192,152,24,0.5), 0 20px 50px rgba(192,152,24,0.25); }
 .rarity-white:hover   { box-shadow: 0 0 0 2px rgba(180,160,130,0.5), 0 20px 50px rgba(180,160,130,0.2); }
 .rarity-crimson:hover { box-shadow: 0 0 0 2px rgba(122,24,32,0.6),  0 20px 50px rgba(122,24,32,0.35); }
 
-/* Image fills entire card */
+/* Image is block and defines card height */
 .rarity-card-img {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
   display: block;
+  width: 100%;
+  height: auto;
   transition: transform 0.4s ease;
 }
-.rarity-card:hover .rarity-card-img { transform: scale(1.05); }
+.rarity-card:hover .rarity-card-img { transform: scale(1.04); }
 
-/* Shimmer on hover */
+/* Shimmer */
 .rarity-card::before {
   content: '';
   position: absolute;
@@ -1971,7 +1964,7 @@ nav {
 }
 .rarity-card:hover::before { opacity: 1; }
 
-/* Rarity badge — top left */
+/* Badge top left */
 .rarity-card-badge {
   position: absolute;
   top: 0.55rem;
@@ -1987,56 +1980,49 @@ nav {
 }
 .rarity-saffron .rarity-card-badge { background: rgba(180,64,16,0.9); color: #fff; }
 .rarity-golden  .rarity-card-badge { background: rgba(140,96,8,0.9);  color: #fff8e0; }
-.rarity-white   .rarity-card-badge { background: rgba(240,230,210,0.9); color: #3a2a10; }
+.rarity-white   .rarity-card-badge { background: rgba(200,185,160,0.92); color: #3a2a10; }
 .rarity-crimson .rarity-card-badge { background: rgba(80,16,28,0.95);  color: #f3e8c0; }
 
-/* Text overlay — absolute bottom */
+/* Text overlay at bottom — absolutely positioned over image */
 .rarity-card-body {
   position: absolute;
   bottom: 0; left: 0; right: 0;
   z-index: 4;
-  padding: 1.8rem 0.8rem 0.8rem;
-  background: linear-gradient(to top,
-    rgba(8,4,2,0.9) 0%,
-    rgba(8,4,2,0.6) 50%,
-    transparent 100%
-  );
+  padding: 2rem 0.8rem 0.7rem;
+  background: linear-gradient(to top, rgba(8,4,2,0.92) 0%, rgba(8,4,2,0.6) 55%, transparent 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
+  gap: 0.12rem;
   text-align: center;
 }
 
 .rarity-name {
   font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #fff;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
   line-height: 1;
 }
-
 .rarity-robe {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: rgba(255,255,255,0.65);
-  line-height: 1;
+  line-height: 1.2;
 }
-
 .rarity-divider {
   width: 20px;
   height: 1px;
   background: rgba(243,232,192,0.5);
   margin: 0.2rem 0;
 }
-
 .rarity-tag {
   font-family: 'Cinzel', serif;
-  font-size: 0.48rem;
+  font-size: 0.46rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #f3e8c0;
@@ -2044,6 +2030,6 @@ nav {
 }
 
 @media (max-width: 600px) {
-  .rarity-cards { max-width: 100%; gap: 0.7rem; }
-  .rarity-name  { font-size: 0.8rem; }
+  .rarity-cards { max-width: 100%; gap: 0.6rem; }
+  .rarity-name  { font-size: 0.78rem; }
 }
