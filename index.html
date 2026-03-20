@@ -33,7 +33,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=21">
+<link rel="stylesheet" href="styles.css?v=22">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -1011,7 +1011,29 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="main.js?v=21"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="main.js?v=22"></script>
+<script data-cfasync="false">
+(function() {
+  function initCTA() {
+    var bar = document.getElementById('floating-cta');
+    if (!bar) return;
+    function update() {
+      var y = window.pageYOffset || document.documentElement.scrollTop;
+      if (y < 500) { bar.classList.remove('visible'); return; }
+      var cta = document.getElementById('cta');
+      if (cta) { var r = cta.getBoundingClientRect(); if (r.top < window.innerHeight && r.bottom > 0) { bar.classList.remove('visible'); return; } }
+      var footer = document.getElementById('footer');
+      if (footer) { var r2 = footer.getBoundingClientRect(); if (r2.top < window.innerHeight) { bar.classList.remove('visible'); return; } }
+      bar.classList.add('visible');
+    }
+    window.addEventListener('scroll', update, {passive: true});
+    setTimeout(update, 400);
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initCTA); }
+  else { initCTA(); }
+})();
+</script>
+
 <script data-cfasync="false">
 // FAQ accordion
 window.toggleFaq = function(btn) {
