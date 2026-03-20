@@ -286,31 +286,31 @@ document.querySelectorAll('[onclick]').forEach(el => {
 (function() {
   const bar    = document.getElementById('floating-cta');
   const ctaSec = document.getElementById('cta');
-  if (!bar || !ctaSec) return;
+  const heroSec = document.getElementById('hero');
+  if (!bar) return;
 
-  // Show after scrolling past hero, hide when CTA section is visible
-  const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
+  function updateBar() {
+    const scrollY = window.scrollY;
+    const heroBottom = heroSec ? heroSec.getBoundingClientRect().bottom + scrollY : 300;
+
+    // Hide if we haven't scrolled past hero yet
+    if (scrollY < heroBottom - 100) {
+      bar.classList.remove('visible');
+      return;
+    }
+
+    // Hide if CTA section is in view
+    if (ctaSec) {
+      const rect = ctaSec.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
         bar.classList.remove('visible');
-      } else {
-        bar.classList.add('visible');
+        return;
       }
-    });
-  }, { threshold: 0.2 });
+    }
 
-  observer.observe(ctaSec);
-
-  // Also hide on first load until user scrolls past hero
-  var heroSec = document.getElementById('hero');
-  if (heroSec) {
-    var heroObs = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          bar.classList.remove('visible');
-        }
-      });
-    }, { threshold: 0.1 });
-    heroObs.observe(heroSec);
+    bar.classList.add('visible');
   }
+
+  window.addEventListener('scroll', updateBar, { passive: true });
+  updateBar();
 })();
