@@ -32,8 +32,8 @@
   <div class="hero-content">
     <div class="hero-image-wrap">
       <img
-        src="figurine-hero.png"
-        alt="SarvamSai — The Figurine, Unrevealed"
+        src="sarvamsai-hero.png"
+        alt="Sarvam Sai — He is everywhere, Ananta"
         class="hero-image"
       />
       <div class="hero-image-glow"></div>
@@ -71,8 +71,8 @@
     <h2 class="section-title">Bhagawan Sri Sathya Sai Baba</h2>
 
   <div class="about-emblem-wrap">
-    <img src="https://raw.githubusercontent.com/Auraaz/sticqr-labels-client/refs/heads/main/client/satyasai_100.webp"
-         alt="Sathya Sai Baba Centenary — 100 Years"
+    <img src="centenary-emblem.png"
+         alt="Sathya Sai Baba — 100 Years Since 1926"
          class="about-emblem" />
     <p class="about-emblem-caption">1926 – 2026 · A Centenary of Grace</p>
   </div>
@@ -102,9 +102,9 @@
     <div style="background:var(--ivory);border:1px solid var(--border-str);padding:2.5rem;position:relative;">
       <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent);"></div>
       <h3 style="font-family:'Cinzel',serif;font-size:1.2rem;color:var(--burgundy);letter-spacing:0.08em;margin-bottom:0.4rem;">Join the Offering</h3>
-      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--ink-soft);font-size:1rem;margin-bottom:1.5rem;line-height:1.7;">Each Mystery Box finds its devotee. Join the queue — we will invite you when yours is ready to be claimed.</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--ink-soft);font-size:1rem;margin-bottom:1.5rem;line-height:1.7;">Each Mystery Box finds its devotee. Enter your name and email — a confirmation will arrive in your inbox.</p>
       <input id="reg-name" class="modal-input" type="text" placeholder="Your Name" />
-      <input id="reg-phone" class="modal-input" type="tel" placeholder="WhatsApp Number (with country code)" />
+      <input id="reg-email" class="modal-input" type="email" placeholder="Your Email Address" />
       <p id="reg-error" style="color:#c0392b;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.1em;margin-bottom:0.8rem;display:none;"></p>
       <button class="modal-submit" id="reg-submit-btn" onclick="submitRegistration()">Join the Queue</button>
       <button onclick="hideRegisterForm()" style="display:block;width:100%;margin-top:0.8rem;background:none;border:none;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.15em;color:var(--muted);cursor:pointer;text-transform:uppercase;">Return</button>
@@ -131,7 +131,7 @@
       <div style="padding:1.5rem 2rem;">
         <p style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem;">Your Invitation Link</p>
         <div style="display:flex;gap:0.6rem;align-items:center;">
-          <div style="flex:1;background:var(--cream);border:1px solid var(--border-str);padding:0.7rem 1rem;font-family:'EB Garamond',serif;font-size:0.9rem;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="user-invite-link">sarvamsai.in/?ref=...</div>
+          <div style="flex:1;background:var(--cream);border:1px solid var(--border-str);padding:0.7rem 1rem;font-family:'EB Garamond',serif;font-size:0.9rem;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="user-invite-link">sarvamsai.in/<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dfe0adbab9e2a6b0aaad9fbab2beb6b3f1bcb0b2">[email&#160;protected]</a></div>
           <button onclick="copyInviteLink()" style="background:var(--burgundy);color:var(--gold-pale);border:none;padding:0.7rem 1.2rem;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background 0.3s;" onmouseover="this.style.background='#7a2230'" onmouseout="this.style.background='#5a1520'" id="copy-btn">Copy</button>
         </div>
         <button onclick="shareOnWhatsApp()" style="width:100%;margin-top:0.8rem;background:#25D366;color:#fff;border:none;padding:0.85rem;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;transition:background 0.3s;" onmouseover="this.style.background='#1ebe5d'" onmouseout="this.style.background='#25D366'">
@@ -236,7 +236,8 @@
 
   <!-- STANDALONE COUNTDOWN -->
   <div class="countdown-wrap">
-    <div class="countdown-timer" id="countdown">--:--:--</div>
+    <div class="countdown-days" id="countdown-days">-- days</div>
+    <div class="countdown-time" id="countdown">--:--:--</div>
     <div class="countdown-label" id="countdown-label">Until the Offering Opens</div>
   </div>
 
@@ -632,39 +633,39 @@
 </div>
 
 
-<script src="main.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="main.js"></script>
 <script>
 (function() {
   function tick() {
-    var cd = document.getElementById('countdown');
-    var cl = document.getElementById('countdown-label');
-    var sd = document.getElementById('stat-days');
+    var cd   = document.getElementById('countdown');
+    var cday = document.getElementById('countdown-days');
+    var cl   = document.getElementById('countdown-label');
+    var sd   = document.getElementById('stat-days');
     if (!cd || !cl || !sd) return;
     var now   = new Date();
     var start = new Date('2026-04-24T00:00:00');
     var end   = new Date('2026-08-02T00:00:00');
     if (now >= end) {
-      cd.textContent = 'CLOSED'; cl.textContent = 'Season Complete'; sd.textContent = '0'; return;
+      if(cday) cday.textContent = '';
+      cd.textContent = 'CLOSED';
+      cl.textContent = 'Season Complete';
+      sd.textContent = '0';
+      return;
     }
     if (now >= start) {
-      sd.textContent = 100 - Math.floor((now - start) / 86400000);
+      var daysPassed = Math.floor((now - start) / 86400000);
+      sd.textContent = 100 - daysPassed;
       var tom = new Date(now); tom.setHours(24,0,0,0);
       var d = tom - now;
+      if(cday) cday.textContent = (100 - daysPassed) + ' days remaining';
       cd.textContent = p(Math.floor(d/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
       cl.textContent = 'Until Next Blessing';
     } else {
       var d = start - now;
       var days = Math.floor(d/86400000);
-      cd.textContent = p(days)+'d '+p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
+      if(cday) cday.textContent = days + ' days';
+      cd.textContent = p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
       cl.textContent = 'Until the Offering Opens';
     }
   }
-  function p(n){ return String(n).padStart(2,'0'); }
-  function showPrivacy(){ document.getElementById('privacy-modal').style.display='block'; }
-  window.showPrivacy = showPrivacy;
-  tick();
-  setInterval(tick, 1000);
-})();
-</script>
-</body>
-</html>
+  function p(n){ ret

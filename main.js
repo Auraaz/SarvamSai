@@ -27,7 +27,9 @@ function updateCountdown() {
     const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
     const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
-    document.getElementById('countdown').textContent = `${String(days).padStart(2,'0')}d ${h}:${m}:${s}`;
+    var daysEl = document.getElementById('countdown-days');
+    if(daysEl) daysEl.textContent = days + ' days';
+    document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
     document.getElementById('countdown-label').textContent = 'Until the Offering Opens';
   }
 }
@@ -118,7 +120,7 @@ window.closeMenu = function() {
 // ─── CONFIG ───
 const API      = 'https://script.google.com/macros/s/AKfycbxi6pJbUn2oGNVW47E_9AGyupXE4H9O5I5P3oLBmChh-JQJX7hmkTb7NFK7B4Yef7LY1A/exec';
 const SITE_URL = 'https://sarvamsai.in';
-const WA_NUMBER = '4915161915888';
+// Email confirmation sent automatically by Apps Script
 
 // ─── REFERRAL: read ?ref= from URL ───
 const urlParams = new URLSearchParams(window.location.search);
@@ -126,7 +128,7 @@ const refCode   = urlParams.get('ref') || '';
 
 // ─── SESSION ───
 let currentUser = null;
-const savedPhone = localStorage.getItem('ss_phone');
+const savedEmail = localStorage.getItem('ss_email');
 if (savedPhone) loadUser(savedPhone);
 
 async function apiCall(params) {
@@ -170,7 +172,7 @@ window.submitRegistration = async function() {
       showRegisteredState(data.user);
       if (data.success) {
         const msg = encodeURIComponent(`🙏 New SarvamSai Registration!\n\nName: ${name}\nWhatsApp: +${phone}${refCode ? '\nReferred by: +' + refCode : ''}`);
-        window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
+        // Email confirmation sent automatically by Apps Script
       }
     } else {
       showRegError('Something went wrong. Please try again.');
@@ -194,7 +196,7 @@ function showRegError(msg) {
 
 async function loadUser(phone) {
   try {
-    const data = await apiCall({ action:'getUser', whatsapp:phone });
+    const data = await apiCall({ action:'getUser', email:savedEmail });
     if (data.success) { currentUser = data.user; showRegisteredState(data.user); }
   } catch(e) {}
 }
@@ -205,7 +207,7 @@ window.showRegisteredState = function(user) {
   document.getElementById('cta-registered').style.display      = 'block';
   document.getElementById('user-rank').textContent    = '#' + (user.rank || '—');
   document.getElementById('user-invites').textContent = user.invite_count || 0;
-  document.getElementById('user-invite-link').textContent = `${SITE_URL}/?ref=${user.whatsapp}`;
+  document.getElementById('user-invite-link').textContent = `${SITE_URL}/?ref=${encodeURIComponent(user.email)}`;
   loadLeaderboard();
 }
 
@@ -222,7 +224,7 @@ async function loadLeaderboard() {
       <div style="display:flex;align-items:center;padding:0.75rem 2rem;border-bottom:1px solid var(--border);gap:1rem;">
         <span style="font-size:1rem;width:24px;">${medals[i] || (i+1)}</span>
         <span style="font-family:'EB Garamond',serif;font-size:1rem;flex:1;color:var(--ink-soft);">${u.name || 'Anonymous'}</span>
-        <span style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--muted);">${u.whatsapp}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--muted);">${u.email}</span>
         <span style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:var(--burgundy);">${u.invite_count} ✦</span>
       </div>`).join('');
   } catch(e) {}
@@ -234,7 +236,7 @@ window.openInviteShare = function() {
 }
 
 window.shareOnWhatsApp = function() {
-  const phone = currentUser ? currentUser.whatsapp : (savedPhone || '');
+  const emailRef = currentUser ? currentUser.email : (savedEmail || '');
   const link  = phone ? `${SITE_URL}/?ref=${phone}` : SITE_URL;
   const msg   = encodeURIComponent(`🙏 *Sarvam Sai — A Centenary Offering*\n\nLimited edition figurines honouring the centenary birth anniversary. 100 drops daily for 100 days, each minted with that day's date.\n\nJoin here: ${link}`);
   window.open(`https://wa.me/?text=${msg}`, '_blank');

@@ -160,21 +160,22 @@
     height: 380px;
     object-fit: cover;
     object-position: center top;
-    border-radius: 4px;
-    border: 1px solid rgba(184,146,42,0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(184,146,42,0.25);
     box-shadow:
-      0 0 60px rgba(184,146,42,0.15),
-      0 0 120px rgba(107,31,42,0.1),
-      0 30px 80px rgba(0,0,0,0.3);
+      0 0 80px rgba(184,146,42,0.2),
+      0 0 160px rgba(107,31,42,0.1),
+      0 30px 80px rgba(0,0,0,0.4);
     animation: fadeUp 1s 0.1s ease both;
     display: block;
+    background: #000;
   }
 
   .hero-image-glow {
     position: absolute;
-    inset: -30px;
-    border-radius: 4px;
-    background: radial-gradient(circle, rgba(184,146,42,0.15) 0%, transparent 70%);
+    inset: -40px;
+    border-radius: 8px;
+    background: radial-gradient(circle, rgba(184,146,42,0.18) 0%, transparent 70%);
     pointer-events: none;
     animation: glowPulse 4s ease-in-out infinite;
   }
@@ -295,16 +296,9 @@
   }
 
   .about-emblem {
-    width: 140px;
-    height: 140px;
+    width: 160px;
+    height: 160px;
     object-fit: contain;
-    border-radius: 50%;
-    border: 1px solid var(--border-str);
-    box-shadow:
-      0 0 0 6px rgba(154,117,32,0.05),
-      0 0 30px rgba(184,146,42,0.1);
-    background: var(--cream);
-    padding: 0.4rem;
     animation: glowPulse 4s ease-in-out infinite;
   }
 
@@ -675,17 +669,32 @@
 
   .countdown-timer {
     font-family: 'Courier New', Courier, monospace;
-    font-size: 2.8rem;
+    font-size: 2.4rem;
     font-weight: 700;
     color: var(--gold-pale, #f3e8c0);
     letter-spacing: 0.12em;
     line-height: 1;
-    /* Fixed dimensions — never reflows */
     display: inline-block;
-    width: 14ch;
+    width: 8ch;
     text-align: center;
     overflow: hidden;
     white-space: nowrap;
+  }
+
+  .countdown-days {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+    display: block;
+    width: 16ch;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   .countdown-label {
