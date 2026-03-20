@@ -653,7 +653,7 @@
     } else {
       var d = start - now;
       var days = Math.floor(d/86400000);
-      cd.textContent = days+'d '+p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
+      cd.textContent = p(days)+'d '+p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
       cl.textContent = 'Until the Offering Opens';
     }
   }

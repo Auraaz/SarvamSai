@@ -653,13 +653,15 @@
 
   .drop-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 1px;
     width: 100%;
     max-width: 860px;
     background: var(--border);
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
+    /* Prevent any reflow from countdown ticking */
+    contain: layout style;
   }
 
   .stat-card {
@@ -703,15 +705,23 @@
 
   /* Countdown specifically — fixed width monospace to prevent reflow */
   #countdown {
-    font-family: 'Space Mono', monospace, 'Cinzel', serif;
-    font-size: 1.6rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--burgundy);
     display: block;
-    min-width: 120px;
+    width: 160px;
     text-align: center;
-    font-variant-numeric: tabular-nums;
     letter-spacing: 0.05em;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .stat-card--accent {
+    background: var(--cream);
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .stat-label {

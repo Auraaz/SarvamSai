@@ -27,7 +27,7 @@ function updateCountdown() {
     const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
     const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
-    document.getElementById('countdown').textContent = days > 0 ? `${days}d ${h}:${m}` : `${h}:${m}:${s}`;
+    document.getElementById('countdown').textContent = `${String(days).padStart(2,'0')}d ${h}:${m}:${s}`;
     document.getElementById('countdown-label').textContent = 'Until the Offering Opens';
   }
 }
