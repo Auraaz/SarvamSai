@@ -280,31 +280,62 @@ document.querySelectorAll('[onclick]').forEach(el => {
 
 // ─── FLOATING CTA ───
 (function() {
-  var bar = document.getElementById('floating-cta');
-  if (!bar) return;
+  function initFloatingCTA() {
+    var bar = document.getElementById('floating-cta');
+    if (!bar) return;
 
-  function updateBar() {
-    var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    var lastScrollY = 0;
+    var ticking = false;
 
-    // Show after scrolling 400px
-    if (scrollY < 400) {
-      bar.classList.remove('visible');
-      return;
-    }
+    function update() {
+      var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      lastScrollY = scrollY;
+      ticking = false;
 
-    // Hide only if CTA section is currently on screen
-    var ctaSec = document.getElementById('cta');
-    if (ctaSec) {
-      var rect = ctaSec.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) {
+      // Don't show until scrolled 500px
+      if (scrollY < 500) {
         bar.classList.remove('visible');
         return;
       }
+
+      // Hide if CTA section is visible
+      var ctaSec = document.getElementById('cta');
+      if (ctaSec) {
+        var rect = ctaSec.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          bar.classList.remove('visible');
+          return;
+        }
+      }
+
+      // Hide if footer is visible
+      var footer = document.getElementById('footer');
+      if (footer) {
+        var rect = footer.getBoundingClientRect();
+        if (rect.top < window.innerHeight) {
+          bar.classList.remove('visible');
+          return;
+        }
+      }
+
+      bar.classList.add('visible');
     }
 
-    bar.classList.add('visible');
+    window.addEventListener('scroll', function() {
+      lastScrollY = window.pageYOffset;
+      if (!ticking) {
+        window.requestAnimationFrame(function() { update(); });
+        ticking = true;
+      }
+    }, { passive: true });
+
+    // Initial check after page settles
+    setTimeout(update, 300);
   }
 
-  window.addEventListener('scroll', updateBar, { passive: true });
-  setTimeout(updateBar, 500);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFloatingCTA);
+  } else {
+    initFloatingCTA();
+  }
 })();
