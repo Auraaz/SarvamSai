@@ -254,11 +254,11 @@ window.shareOnWhatsApp = function() {
 window.shareInvite = function(platform) {
   const emailRef = currentUser ? currentUser.email : (savedEmail || '');
   const link = `${SITE_URL}/?ref=${encodeURIComponent(emailRef)}`;
-  const text = encodeURIComponent(`🙏 Join me in the SarvamSai offering — a collectible Mystery Box honouring the centenary of Bhagawan Sri Sathya Sai Baba. Join the queue: ${link}`);
+  const text = encodeURIComponent(`🙏 Join me in the SarvamSai offering — a collectible Discovery Box honouring the centenary of Bhagawan Sri Sathya Sai Baba. Join the queue: ${link}`);
   const urls = {
     whatsapp: `https://wa.me/?text=${text}`,
     twitter:  `https://twitter.com/intent/tweet?text=${text}`,
-    telegram: `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('🙏 Join the SarvamSai offering — a collectible Mystery Box honouring Bhagawan Sri Sathya Sai Baba\'s centenary.')}`,
+    telegram: `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('🙏 Join the SarvamSai offering — a collectible Discovery Box honouring Bhagawan Sri Sathya Sai Baba\'s centenary.')}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`
   };
   if (urls[platform]) window.open(urls[platform], '_blank', 'noopener');
