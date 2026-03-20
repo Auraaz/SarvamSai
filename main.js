@@ -284,24 +284,22 @@ document.querySelectorAll('[onclick]').forEach(el => {
 
 // ─── FLOATING CTA ───
 (function() {
-  const bar    = document.getElementById('floating-cta');
-  const ctaSec = document.getElementById('cta');
-  const heroSec = document.getElementById('hero');
+  var bar = document.getElementById('floating-cta');
   if (!bar) return;
 
   function updateBar() {
-    const scrollY = window.scrollY;
-    const heroBottom = heroSec ? heroSec.getBoundingClientRect().bottom + scrollY : 300;
+    var scrollY = window.pageYOffset || document.documentElement.scrollTop;
 
-    // Hide if we haven't scrolled past hero yet
-    if (scrollY < heroBottom - 100) {
+    // Show after scrolling 400px
+    if (scrollY < 400) {
       bar.classList.remove('visible');
       return;
     }
 
-    // Hide if CTA section is in view
+    // Hide only if CTA section is currently on screen
+    var ctaSec = document.getElementById('cta');
     if (ctaSec) {
-      const rect = ctaSec.getBoundingClientRect();
+      var rect = ctaSec.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) {
         bar.classList.remove('visible');
         return;
@@ -312,5 +310,5 @@ document.querySelectorAll('[onclick]').forEach(el => {
   }
 
   window.addEventListener('scroll', updateBar, { passive: true });
-  updateBar();
+  setTimeout(updateBar, 500);
 })();

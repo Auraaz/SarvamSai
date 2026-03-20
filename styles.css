@@ -1835,9 +1835,8 @@
     font-style: normal;
     font-family: 'Cinzel', serif;
     letter-spacing: 0.08em;
-  }
 
-  /* ─── FLOATING CTA ─── */
+/* ─── FLOATING CTA ─── */
   .floating-cta {
     position: fixed;
     bottom: 0;
