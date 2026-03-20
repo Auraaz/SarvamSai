@@ -286,6 +286,36 @@
     text-align: center;
   }
 
+  .about-emblem-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2.5rem auto 0;
+    gap: 0.8rem;
+  }
+
+  .about-emblem {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 1px solid var(--border-str);
+    box-shadow:
+      0 0 0 8px rgba(154,117,32,0.06),
+      0 0 40px rgba(184,146,42,0.12);
+    background: var(--cream);
+    padding: 0.5rem;
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+
+  .about-emblem-caption {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
   .about-body {
     margin-top: 2.5rem;
     display: flex;
