@@ -1,6 +1,4 @@
 // ─── COUNTDOWN ───
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbykZ8fQv8e4BErZN-qms8kiH03x75wwv_aG8moef40zwZWaF6lpvS7q2aiJaJsb94pwVQ/exec';
-
 function updateCountdown() {
   const now = new Date();
   const dropStart = new Date('2026-04-24T00:00:00');
@@ -120,7 +118,7 @@ window.closeMenu = function() {
 }
 
 // ─── CONFIG ───
-const API      = 'https://script.google.com/macros/s/AKfycbxi6pJbUn2oGNVW47E_9AGyupXE4H9O5I5P3oLBmChh-JQJX7hmkTb7NFK7B4Yef7LY1A/exec';
+const API      = 'https://script.google.com/macros/s/AKfycbyajRIG2MtXzEDKvvVZJtHK-qHEHoDAp8zWcfQtEptVDLSy4CHIvvh372Gu3RWetIQd9Q/exec';
 const SITE_URL = 'https://sarvamsai.in';
 // Email confirmation sent automatically by Apps Script
 
