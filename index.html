@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=43">
+<link rel="stylesheet" href="styles.css?v=44">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -1115,7 +1115,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=43"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=44"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1196,7 +1196,6 @@ window.toggleFaq = function(btn) {
     } else {
       var d = start - now;
       var days = Math.floor(d/86400000);
-      if(cday) cday.textContent 
       if(cday) cday.textContent = days + (days === 1 ? ' day' : ' days');
       cd.textContent = p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
       cl.textContent = 'Until the Offering Opens';
@@ -1555,7 +1554,7 @@ window.toggleFaq = function(btn) {
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=43"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=44"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1607,46 +1606,7 @@ window.toggleFaq = function(btn) {
 };
 </script>
 
-<script data-cfasync="false">
-(function() {
-  function tick() {
-    var cd   = document.getElementById('countdown');
-    var cday = document.getElementById('countdown-days');
-    var cl   = document.getElementById('countdown-label');
-    var sd   = document.getElementById('stat-days');
-    if (!cd || !cl || !sd) return;
-    var now   = new Date();
-    var start = new Date('2026-04-24T00:00:00');
-    var end   = new Date('2026-08-02T00:00:00');
-    if (now >= end) {
-      if(cday) cday.textContent = '';
-      cd.textContent = 'CLOSED';
-      cl.textContent = 'Season Complete';
-      sd.textContent = '0';
-      return;
-    }
-    if (now >= start) {
-      var daysPassed = Math.floor((now - start) / 86400000);
-      sd.textContent = 100 - daysPassed;
-      var tom = new Date(now); tom.setHours(24,0,0,0);
-      var d = tom - now;
-      if(cday) cday.textContent = (100 - daysPassed) + ' days remaining';
-      cd.textContent = p(Math.floor(d/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
-      cl.textContent = 'Until Next Blessing';
-    } else {
-      var d = start - now;
-      var days = Math.floor(d/86400000);
-      if(cday) cday.textContent 
-      if(cday) cday.textContent = days + (days === 1 ? ' day' : ' days');
-      cd.textContent = p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
-      cl.textContent = 'Until the Offering Opens';
-    }
-  }
-  function p(n){ return n < 10 ? '0'+n : ''+n; }
-  tick();
-  setInterval(tick, 1000);
-})();
-</script>
+
 
 <!-- SAIRAM CHATBOT -->
 <style>
