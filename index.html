@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=56">
+<link rel="stylesheet" href="styles.css?v=57">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -549,7 +549,7 @@
     </div>
     <div class="spec-item">
       <div class="spec-label">Material</div>
-      <div class="spec-value">PLA · 3D-printed · Hand-finished</div>
+      <div class="spec-value">PLA · 3D-printed · Hand-finished · Personally blessed</div>
     </div>
     <div class="spec-item">
       <div class="spec-label">What's Inside</div>
@@ -762,18 +762,24 @@
 </section>
 
 <!-- SECTION: PERSONAL JOURNEY -->
-<section id="journey" style="background:var(--ivory);padding:5rem 1.5rem;">
-  <div style="max-width:680px;margin:0 auto;text-align:center;">
+<section id="journey" style="position:relative;padding:5rem 1.5rem;overflow:hidden;background:#fdf6ee;">
+  <!-- Background lotus feet image -->
+  <div style="position:absolute;inset:0;background-image:url('lotus-feet.png');background-size:cover;background-position:center top;background-repeat:no-repeat;opacity:0.12;pointer-events:none;z-index:0;"></div>
+  <!-- Soft ivory overlay so text stays readable -->
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(253,246,238,0.35) 0%, rgba(253,246,238,0.55) 50%, rgba(253,246,238,0.85) 100%);pointer-events:none;z-index:1;"></div>
+
+  <div style="max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:2;">
 
     <span class="eyebrow" style="justify-content:center;">A Personal Offering</span>
     <h2 class="section-title">Shaped by His Grace</h2>
 
-    <svg width="120" height="18" viewBox="0 0 120 18" fill="none" style="margin:0 auto 2.5rem;display:block;">
+    <svg width="120" height="18" viewBox="0 0 120 18" fill="none" style="margin:0 auto 2rem;display:block;">
       <line x1="0" y1="9" x2="46" y2="9" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
       <path d="M52 9 L60 3 L68 9 L60 15 Z" stroke="#9a7520" stroke-width="0.5" fill="none" opacity="0.7"/>
       <circle cx="60" cy="9" r="1.5" fill="#9a7520" opacity="0.5"/>
       <line x1="74" y1="9" x2="120" y2="9" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
     </svg>
+
 
     <p style="font-family:'EB Garamond',serif;font-size:1.15rem;line-height:2;color:var(--ink);margin-bottom:2rem;text-align:left;">
       Bhagawan Sri Sathya Sai Baba performed Kamayya's Aksharabhyasam, the sacred initiation into learning. That was the beginning. Not just of education, but of a life lived in His presence, shaped by His values, and oriented towards His grace.
@@ -1102,7 +1108,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=56"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=57"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
