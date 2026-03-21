@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=75">
+<link rel="stylesheet" href="styles.css?v=76">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -778,41 +778,55 @@
 
 <!-- SECTION: UNBOXING NARRATIVE -->
 <section id="unboxing" style="background:var(--ivory);padding:4rem 1.5rem;">
-  <div style="max-width:680px;margin:0 auto;text-align:center;">
+  <div style="max-width:640px;margin:0 auto;text-align:center;">
 
     <span class="eyebrow" style="justify-content:center;">The Moment of Reveal</span>
     <h2 class="section-title">Not a purchase. An experience.</h2>
 
-    <p style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--ink);line-height:1.9;margin:0 auto 3rem;max-width:560px;">
+    <p style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--ink);line-height:1.9;margin:0 auto 3rem;max-width:520px;">
       The Discovery Box arrives sealed. You do not know what is inside. That is intentional. The Swaroopa was always yours — you are only now receiving what was always meant to find you.
     </p>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2rem;text-align:left;">
+    <!-- Three steps — vertical stack, bold visual separation -->
+    <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--border-str);overflow:hidden;">
 
-      <div style="display:flex;flex-direction:column;gap:0.5rem;">
-        <img src="unboxing-sealed.jpg" alt="Sealed Discovery Box" style="width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:8px;margin-bottom:0.5rem;" loading="lazy" onerror="this.style.display='none'"/>
-        <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);">Step One</div>
-        <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:600;color:var(--ink);">It arrives</div>
-        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--muted);line-height:1.7;margin:0;">A sealed box. Your blessing date stamped on the outside. Your number in the edition. 100 others received theirs that same day.</p>
+      <!-- Step 1 -->
+      <div style="display:flex;align-items:stretch;border-bottom:1px solid var(--border-str);">
+        <div style="width:64px;flex-shrink:0;background:var(--burgundy);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 0;">
+          <div style="font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700;color:#f3e8c0;line-height:1;">I</div>
+        </div>
+        <div style="padding:1.5rem 1.5rem;text-align:left;flex:1;">
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">It arrives</div>
+          <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--ink);line-height:1.75;margin:0;">A sealed box. Your blessing date stamped on the outside. Your number in the edition. 100 others received theirs that same day.</p>
+        </div>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:0.5rem;">
-        <img src="unboxing-reveal.jpg" alt="Swaroopa revealed" style="width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:8px;margin-bottom:0.5rem;" loading="lazy" onerror="this.style.display='none'"/>
-        <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);">Step Two</div>
-        <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:600;color:var(--ink);">You open it</div>
-        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--muted);line-height:1.7;margin:0;">The Swaroopa is revealed. Saffron, golden, white, or crimson. Yours alone to know, until you choose to share.</p>
+      <!-- Step 2 -->
+      <div style="display:flex;align-items:stretch;border-bottom:1px solid var(--border-str);">
+        <div style="width:64px;flex-shrink:0;background:var(--burgundy);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 0;">
+          <div style="font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700;color:#f3e8c0;line-height:1;">II</div>
+        </div>
+        <div style="padding:1.5rem 1.5rem;text-align:left;flex:1;">
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">You open it</div>
+          <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--ink);line-height:1.75;margin:0;">The Swaroopa is revealed. Saffron, golden, white, or crimson. Yours alone to know, until you choose to share.</p>
+        </div>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:0.5rem;">
-        <img src="figurine-placed.jpg" alt="Figurine placed on altar" style="width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:8px;margin-bottom:0.5rem;" loading="lazy" onerror="this.style.display='none'"/>
-        <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);">Step Three</div>
-        <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:600;color:var(--ink);">It finds its place</div>
-        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--muted);line-height:1.7;margin:0;">On your altar. On your desk. In your home. A daily presence. A reminder of the value He placed in you to carry.</p>
+      <!-- Step 3 -->
+      <div style="display:flex;align-items:stretch;">
+        <div style="width:64px;flex-shrink:0;background:var(--burgundy);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 0;">
+          <div style="font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700;color:#f3e8c0;line-height:1;">III</div>
+        </div>
+        <div style="padding:1.5rem 1.5rem;text-align:left;flex:1;">
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">It finds its place</div>
+          <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--ink);line-height:1.75;margin:0;">On your altar. On your desk. In your home. A daily presence. A reminder of the value He placed in you to carry.</p>
+        </div>
       </div>
 
     </div>
 
-    <div style="margin-top:3rem;padding:1.5rem;border:1px solid var(--border);border-radius:12px;background:var(--cream);">
+    <!-- Closing quote -->
+    <div style="margin-top:2.5rem;padding:1.5rem 2rem;border-left:3px solid var(--gold);background:var(--cream);text-align:left;">
       <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.15rem;color:var(--burgundy);line-height:1.8;margin:0;">
         "You do not choose your Swaroopa.<br>You receive the one that was always meant for you."
       </p>
@@ -1254,7 +1268,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=75"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=76"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
