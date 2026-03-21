@@ -88,7 +88,7 @@ if (carouselWrap) {
 // ─── SOCIAL SHARE ───
 window.shareTo = function(platform) {
   const url  = encodeURIComponent('https://sarvamsai.in');
-  const text = encodeURIComponent(`🙏 Sarvam Sai — A Centenary Offering honouring Bhagawan Sri Sathya Sai Baba's 100th birth anniversary. 100 consecrated figurines released daily for 100 days. Net zero profit — every rupee unlocks the Sarvam Sai Universe.`);
+  const text = encodeURIComponent(`🙏 Sarvam Sai — A Centenary Offering honouring Bhagawan Sri Sathya Sai Baba's 100th birth anniversary. 100 blessed figurines released daily for 100 days. Net zero profit — every rupee unlocks the Sarvam Sai Universe.`);
   const urls = {
     whatsapp:  `https://wa.me/?text=${text}%20${url}`,
     twitter:   `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
