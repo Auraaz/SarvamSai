@@ -17,15 +17,12 @@ function goTo(n) {
   current = (n + total) % total;
   track.style.transform = `translateX(-${current * 100}%)`;
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
-  if (typeof syncCarouselState === 'function') syncCarouselState();
 }
 
 // Expose to global scope so onclick attributes work
 window.nextSlide = function() { goTo(current + 1); resetTimer(); };
 window.prevSlide = function() { goTo(current - 1); resetTimer(); };
 window._carouselGoTo = function(dir) { goTo(current + dir); resetTimer(); };
-// Keep _ssCarousel in sync so inline stub and main.js share state
-function syncCarouselState() { window._ssCarousel = { cur: current, tot: total }; }
 
 let autoTimer = setInterval(() => goTo(current + 1), 8000);
 function resetTimer() {
@@ -202,7 +199,6 @@ async function loadLeaderboard() {
   } catch(e) {}
 }
 
-window._fullOpenInviteShare = window.openInviteShare;
 window.openInviteShare = function() {
   if (currentUser) {
     if (!currentUser.samithi_id) openSamithiModal();

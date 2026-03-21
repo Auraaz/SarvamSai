@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=51">
+<link rel="stylesheet" href="styles.css?v=52">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -1096,7 +1096,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=51"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=52"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1121,26 +1121,9 @@ window.hideRegisterForm = function() {
   if (b) b.style.display = 'flex';
 };
 window.openInviteShare = function() {
-  if (window._fullOpenInviteShare) { window._fullOpenInviteShare(); return; }
   var link = 'https://sarvamsai.in';
   var msg = encodeURIComponent('🙏 Join SarvamSai — a centenary offering to Bhagawan Sri Sathya Sai Baba. ' + link);
   window.open('https://wa.me/?text=' + msg, '_blank');
-};
-window.prevSlide = function() {
-  var t = document.getElementById('carouselTrack');
-  if (!t) return;
-  window._ssCarousel = window._ssCarousel || {cur:0,tot:4};
-  window._ssCarousel.cur = (window._ssCarousel.cur - 1 + window._ssCarousel.tot) % window._ssCarousel.tot;
-  t.style.transform = 'translateX(-' + (window._ssCarousel.cur * 100) + '%)';
-  document.querySelectorAll('.dot').forEach(function(d,i){ d.classList.toggle('active', i===window._ssCarousel.cur); });
-};
-window.nextSlide = function() {
-  var t = document.getElementById('carouselTrack');
-  if (!t) return;
-  window._ssCarousel = window._ssCarousel || {cur:0,tot:4};
-  window._ssCarousel.cur = (window._ssCarousel.cur + 1) % window._ssCarousel.tot;
-  t.style.transform = 'translateX(-' + (window._ssCarousel.cur * 100) + '%)';
-  document.querySelectorAll('.dot').forEach(function(d,i){ d.classList.toggle('active', i===window._ssCarousel.cur); });
 };
 </script>
 <script data-cfasync="false">
