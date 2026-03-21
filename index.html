@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=59">
+<link rel="stylesheet" href="styles.css?v=60">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -447,6 +447,7 @@
     <button class="btn-primary" onclick="showRegisterForm()">Join the Darshan Queue</button>
     <button class="btn-secondary" onclick="openInviteShare()">Invite a Devotee</button>
   </div>
+  <p style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:1.2rem;">Registration is free · Blessing invitations begin 24 April 2026 · Offering amount shared in your invitation</p>
 
   <!-- Registration form -->
   <div id="register-form-wrap" style="display:none;margin-top:2.5rem;width:100%;max-width:420px;">
@@ -454,6 +455,7 @@
       <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent);"></div>
       <h3 style="font-family:'Cinzel',serif;font-size:1.2rem;color:var(--burgundy);letter-spacing:0.08em;margin-bottom:0.4rem;">Join the Darshan Queue</h3>
       <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--ink-soft);font-size:1rem;margin-bottom:1.5rem;line-height:1.7;">Each Discovery Box finds its devotee. Enter your name and email. A confirmation will arrive in your inbox.</p>
+      <p style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:1.5rem;line-height:1.8;">Registration is free · No payment today · Blessing invitations begin 24 April 2026 · Offering amount shared in your invitation</p>
       <input id="reg-name" class="modal-input" type="text" placeholder="Your Name" />
       <input id="reg-email" class="modal-input" type="email" placeholder="Your Email Address" />
       <p id="reg-error" style="color:#c0392b;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.1em;margin-bottom:0.8rem;display:none;"></p>
@@ -477,8 +479,8 @@
         <div class="dash-divider-v"></div>
         <div class="dash-rank-block">
           <div class="dash-rank-label">Devotees Invited</div>
-          <div class="dash-rank-num dash-rank-num--gold" id="user-invites">0</div>
-          <div class="dash-rank-sub">Each one moves you closer</div>
+          <div class="dash-rank-num dash-rank-num--gold" id="user-invites" style="font-size:1rem;padding-top:0.2rem;"></div>
+          <div class="dash-rank-sub" id="invite-count-sub">Be the first to invite</div>
         </div>
       </div>
     </div>
@@ -511,7 +513,7 @@
         </button>
       </div>
 
-      <p class="dash-invite-note">Each devotee who joins through your link moves you closer to your blessing</p>
+      <p class="dash-invite-note">Each devotee you invite receives the offering sooner — and so do you</p>
     </div>
 
     <!-- Community of Devotees -->
@@ -875,7 +877,7 @@
         <div class="step-line"></div>
         <div class="step-num">02</div>
         <div class="step-title">Invite a Devotee</div>
-        <p class="step-desc">Share your personal invitation link. Every devotee who joins through you moves you closer to your blessing.</p>
+        <p class="step-desc">Share your personal invitation link. Every devotee you invite receives the blessing sooner — and so do you. A small act of seva that carries grace forward.</p>
       </div>
       <div class="step">
         <div class="step-line"></div>
@@ -1236,7 +1238,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=59"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=60"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1273,16 +1275,18 @@ window.openInviteShare = function() {
     if (!bar) return;
     function update() {
       var y = window.pageYOffset || document.documentElement.scrollTop;
-      if (y < 500) { bar.classList.remove('visible'); return; }
+      if (y < 300) { bar.classList.remove('visible'); return; }
       var cta = document.getElementById('cta');
-      if (cta) { var r = cta.getBoundingClientRect(); if (r.top < window.innerHeight && r.bottom > 0) { bar.classList.remove('visible'); return; } }
-      var footer = document.getElementById('footer');
-      if (footer) { var r2 = footer.getBoundingClientRect(); if (r2.top < window.innerHeight) { bar.classList.remove('visible'); return; } }
+      if (cta) {
+        var r = cta.getBoundingClientRect();
+        if (r.top < window.innerHeight && r.bottom > 0) { bar.classList.remove('visible'); return; }
+      }
       bar.classList.add('visible');
     }
     window.addEventListener('scroll', update, {passive: true});
-    setTimeout(update, 400);
-    setInterval(update, 600);
+    window.addEventListener('touchmove', update, {passive: true});
+    setTimeout(update, 300);
+    setInterval(update, 500);
   }
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initCTA); }
   else { initCTA(); }

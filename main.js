@@ -216,7 +216,11 @@ window.showRegisteredState = function(user) {
   document.getElementById('register-form-wrap').style.display  = 'none';
   document.getElementById('cta-registered').style.display      = 'block';
   document.getElementById('user-rank').textContent    = '#' + (user.rank || '—');
-  document.getElementById('user-invites').textContent = user.invite_count || 0;
+  var invCount = user.invite_count || 0;
+  var invEl = document.getElementById('user-invites');
+  var invSubEl = document.getElementById('invite-count-sub');
+  if (invEl) invEl.textContent = invCount > 0 ? invCount : '';
+  if (invSubEl) invSubEl.textContent = invCount > 0 ? (invCount === 1 ? 'devotee invited' : 'devotees invited') : 'Be the first to invite';
   document.getElementById('user-invite-link').textContent = `${SITE_URL}/?ref=${encodeURIComponent(user.email)}`;
   const movEl = document.getElementById('rank-movement');
   if (movEl) {
@@ -258,7 +262,7 @@ window.openInviteShare = function() {
 window.shareOnWhatsApp = function() {
   const emailRef = currentUser ? currentUser.email : (savedEmail || '');
   const link  = currentUser ? `${SITE_URL}/?ref=${encodeURIComponent(currentUser.email)}` : SITE_URL;
-  const msg   = encodeURIComponent(`🙏 *Sarvam Sai — A Centenary Offering*\n\nLimited edition figurines honouring the centenary birth anniversary. 100 drops daily for 100 days, each minted with that day's date.\n\nJoin here: ${link}`);
+  const msg   = encodeURIComponent(`🙏 *Sarvam Sai — A Centenary Offering*\n\nA centenary offering to Bhagawan Sri Sathya Sai Baba. 100 Discovery Boxes each day for 100 days. Help a devotee receive this blessing.\n\nJoin here: ${link}`);
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
@@ -266,7 +270,7 @@ window.shareOnWhatsApp = function() {
 window.shareInvite = function(platform) {
   const emailRef = currentUser ? currentUser.email : (savedEmail || '');
   const link = `${SITE_URL}/?ref=${encodeURIComponent(emailRef)}`;
-  const text = encodeURIComponent(`🙏 Join me in the SarvamSai offering — a collectible Discovery Box honouring the centenary of Bhagawan Sri Sathya Sai Baba. Join the queue: ${link}`);
+  const text = encodeURIComponent(`🙏 I'm sharing this with you — a devotional offering to Bhagawan Sri Sathya Sai Baba in His centenary year. Receive your Discovery Box: ${link}`);
   const urls = {
     whatsapp: `https://wa.me/?text=${text}`,
     twitter:  `https://twitter.com/intent/tweet?text=${text}`,
