@@ -1,42 +1,4 @@
-// ─── COUNTDOWN ───
-function updateCountdown() {
-  const now = new Date();
-  const dropStart = new Date('2026-04-24T00:00:00');
-  const dropEnd   = new Date('2026-08-02T00:00:00');
-
-  if (now >= dropEnd) {
-    document.getElementById('countdown').textContent = 'CLOSED';
-    document.getElementById('countdown-label').textContent = 'Season Complete';
-    document.getElementById('stat-days').textContent = '0';
-    return;
-  }
-  if (now >= dropStart) {
-    const daysPassed = Math.floor((now - dropStart) / 86400000);
-    document.getElementById('stat-days').textContent = 100 - daysPassed;
-    const tomorrow = new Date(now);
-    tomorrow.setHours(24, 0, 0, 0);
-    const diff = tomorrow - now;
-    const h = String(Math.floor(diff / 3600000)).padStart(2,'0');
-    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
-    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
-    document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
-    document.getElementById('countdown-label').textContent = 'Until Next Blessing';
-  } else {
-    const diff = dropStart - now;
-    const days = Math.floor(diff / 86400000);
-    const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
-    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
-    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
-    var daysEl = document.getElementById('countdown-days');
-    if(daysEl) daysEl.textContent = days + ' days';
-    document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
-    document.getElementById('countdown-label').textContent = 'Until the Offering Opens';
-  }
-}
-if (document.getElementById('countdown')) {
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
-}
+// ─── COUNTDOWN handled by inline cfasync=false script in index.html ───
 
 // ─── CAROUSEL ───
 let current = 0;
