@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=58">
+<link rel="stylesheet" href="styles.css?v=59">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -106,6 +106,20 @@
   display: flex !important;
   gap: 0.8rem !important;
   flex-shrink: 0 !important;
+}
+.hero-descriptor {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  max-width: 480px;
+}
+@media (max-width: 768px) {
+  .hero-descriptor { font-size: 0.72rem; text-align: center; margin: 0 auto 1rem; letter-spacing: 0.02em; }
 }
 @media (max-width: 768px) {
   .floating-cta-text { display: none !important; }
@@ -389,7 +403,9 @@
         <line x1="122" y1="9" x2="200" y2="9" stroke="#b8922a" stroke-width="0.6" opacity="0.5"/>
       </svg>
 
-      <p class="hero-sub">Born November 23, 1926. A hundred years of grace, truth, and boundless love, and beyond. A devotional offering blessed in His centenary year, in honour of one hundred years of His grace.</p>
+      <p class="hero-descriptor">A limited edition collectible figurine of Bhagawan Sri Sathya Sai Baba · Hand-finished · Numbered · One of four Swaroopas · Sealed until you open it</p>
+
+      <p class="hero-sub">Born November 23, 1926. A hundred years of grace, truth, and boundless love. A devotional offering in His centenary year.</p>
     </div>
   </div>
 
@@ -667,6 +683,122 @@
       <span style="color:rgba(243,232,192,0.5);font-size:0.9rem;">→</span>
       <span style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;color:#f3e8c0;letter-spacing:0.15em;">01 AUG 2026</span>
       <span style="width:100%;text-align:center;font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(243,232,192,0.35);margin-top:0.2rem;">100 unique dates · 100 Discovery Boxes each</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION: WHAT'S IN THE BOX -->
+<section id="whats-in-box" style="background:var(--cream);padding:4rem 1.5rem;">
+  <div style="max-width:760px;margin:0 auto;">
+
+    <span class="eyebrow" style="justify-content:center;">Inside the Discovery Box</span>
+    <h2 class="section-title" style="text-align:center;">What You Receive</h2>
+
+    <!-- Product image strip — upload figurine-box.jpg, figurine-detail.jpg, figurine-hand.jpg -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:2.5rem;border-radius:12px;overflow:hidden;">
+      <img src="figurine-box.jpg" alt="SarvamSai Discovery Box" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
+      <img src="figurine-detail.jpg" alt="Swaroopa figurine detail" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
+      <img src="figurine-hand.jpg" alt="Figurine in hands" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-top:2.5rem;">
+
+      <div style="background:var(--ivory);border:1px solid var(--border);border-radius:12px;padding:1.8rem 1.5rem;text-align:center;">
+        <div style="font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);margin-bottom:0.75rem;">◈</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--burgundy);margin-bottom:0.5rem;">The Figurine</div>
+        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--ink);line-height:1.7;margin:0;">A hand-finished, 3D-printed PLA figurine of Bhagawan Sri Sathya Sai Baba. 10 cm. One of four Swaroopas. Sealed inside — unknown until you open it.</p>
+      </div>
+
+      <div style="background:var(--ivory);border:1px solid var(--border);border-radius:12px;padding:1.8rem 1.5rem;text-align:center;">
+        <div style="font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);margin-bottom:0.75rem;">⬜</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--burgundy);margin-bottom:0.5rem;">The Discovery Box</div>
+        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--ink);line-height:1.7;margin:0;">A sealed gift box — 5×5×15 cm — stamped with your blessing date. One of exactly 100 from that day. A numbered collectible in its own right.</p>
+      </div>
+
+      <div style="background:var(--ivory);border:1px solid var(--border);border-radius:12px;padding:1.8rem 1.5rem;text-align:center;">
+        <div style="font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);margin-bottom:0.75rem;">✦</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--burgundy);margin-bottom:0.5rem;">Certificate of Authenticity</div>
+        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--ink);line-height:1.7;margin:0;">A printed certificate confirming your Swaroopa, your blessing date, and your place in the offering. A keepsake as much as a record.</p>
+      </div>
+
+    </div>
+
+    <!-- Timeline -->
+    <div style="margin-top:3rem;border-top:1px solid var(--border);padding-top:2.5rem;">
+      <p style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:2rem;">From Registration to Your Hands</p>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:0;position:relative;">
+
+        <div style="flex:1;min-width:140px;text-align:center;padding:0 1rem;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--burgundy);color:#faf6ef;font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">1</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:0.3rem;">Register</div>
+          <div style="font-family:'EB Garamond',serif;font-size:0.9rem;color:var(--muted);line-height:1.5;">Free. Immediate confirmation.</div>
+        </div>
+
+        <div style="flex:1;min-width:140px;text-align:center;padding:0 1rem;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--burgundy);color:#faf6ef;font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">2</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:0.3rem;">Invitation</div>
+          <div style="font-family:'EB Garamond',serif;font-size:0.9rem;color:var(--muted);line-height:1.5;">Personal email when your blessing day arrives.</div>
+        </div>
+
+        <div style="flex:1;min-width:140px;text-align:center;padding:0 1rem;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--burgundy);color:#faf6ef;font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">3</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:0.3rem;">Ships in 5 Days</div>
+          <div style="font-family:'EB Garamond',serif;font-size:0.9rem;color:var(--muted);line-height:1.5;">Sealed. Numbered. Time-stamped.</div>
+        </div>
+
+        <div style="flex:1;min-width:140px;text-align:center;padding:0 1rem;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--burgundy);color:#faf6ef;font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">4</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:0.3rem;">The Reveal</div>
+          <div style="font-family:'EB Garamond',serif;font-size:0.9rem;color:var(--muted);line-height:1.5;">Open the box. Meet your Swaroopa.</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION: UNBOXING NARRATIVE -->
+<section id="unboxing" style="background:var(--ivory);padding:4rem 1.5rem;">
+  <div style="max-width:680px;margin:0 auto;text-align:center;">
+
+    <span class="eyebrow" style="justify-content:center;">The Moment of Reveal</span>
+    <h2 class="section-title">Not a purchase. An experience.</h2>
+
+    <p style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--ink);line-height:1.9;margin:0 auto 3rem;max-width:560px;">
+      The Discovery Box arrives sealed. You do not know what is inside. That is intentional. The Swaroopa was always yours — you are only now receiving what was always meant to find you.
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2rem;text-align:left;">
+
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <img src="unboxing-sealed.jpg" alt="Sealed Discovery Box" style="width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:8px;margin-bottom:0.5rem;" loading="lazy" onerror="this.style.display='none'"/>
+        <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);">Step One</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:600;color:var(--ink);">It arrives</div>
+        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--muted);line-height:1.7;margin:0;">A sealed box. Your blessing date stamped on the outside. Your number in the edition. 100 others received theirs that same day.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <img src="unboxing-reveal.jpg" alt="Swaroopa revealed" style="width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:8px;margin-bottom:0.5rem;" loading="lazy" onerror="this.style.display='none'"/>
+        <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);">Step Two</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:600;color:var(--ink);">You open it</div>
+        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--muted);line-height:1.7;margin:0;">The Swaroopa is revealed. Saffron, golden, white, or crimson. Yours alone to know, until you choose to share.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <img src="figurine-placed.jpg" alt="Figurine placed on altar" style="width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:8px;margin-bottom:0.5rem;" loading="lazy" onerror="this.style.display='none'"/>
+        <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);">Step Three</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:600;color:var(--ink);">It finds its place</div>
+        <p style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--muted);line-height:1.7;margin:0;">On your altar. On your desk. In your home. A daily presence. A reminder of the value He placed in you to carry.</p>
+      </div>
+
+    </div>
+
+    <div style="margin-top:3rem;padding:1.5rem;border:1px solid var(--border);border-radius:12px;background:var(--cream);">
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.15rem;color:var(--burgundy);line-height:1.8;margin:0;">
+        "You do not choose your Swaroopa.<br>You receive the one that was always meant for you."
+      </p>
     </div>
 
   </div>
@@ -1104,7 +1236,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=58"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=59"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1219,6 +1351,47 @@ window.toggleFaq = function(btn) {
 <!-- SAIRAM CHATBOT -->
 <style>
 .carousel-track { cursor: grab; user-select: none; }
+@media (max-width: 768px) {
+  #whats-in-box, #unboxing { padding: 3rem 1.2rem; }
+  #whats-in-box > div > div[style*="grid"], #unboxing > div > div[style*="grid"] { grid-template-columns: 1fr !important; }
+  .share-section { padding: 2rem 1rem !important; }
+  .share-buttons { gap: 0.6rem !important; }
+  .share-btn { font-size: 0.6rem !important; padding: 0.65rem 0.8rem !important; gap: 0.5rem !important; }
+  .share-btn svg { width: 14px !important; height: 14px !important; }
+  .btn-primary, .btn-secondary { width: 100% !important; max-width: 320px !important; padding: 1rem 1.5rem !important; font-size: 0.72rem !important; }
+  .cta-register-btns { flex-direction: column !important; align-items: center !important; gap: 0.75rem !important; }
+  #register-form-wrap { padding: 1.5rem 1rem !important; }
+  .step { padding: 1.2rem !important; }
+  .team-grid { grid-template-columns: 1fr !important; }
+  .rarity-cards { grid-template-columns: 1fr 1fr !important; }
+  .slide { padding: 2rem 1.5rem !important; }
+  #journey { padding: 3rem 1.2rem !important; }
+  #journey img { width: min(260px, 85%) !important; }
+  .section-title { font-size: clamp(1.6rem, 5vw, 2.4rem) !important; }
+  /* Mobile hero */
+  .hero-content { flex-direction: column !important; text-align: center !important; }
+  .hero-image-wrap { margin: 0 auto !important; max-width: 220px !important; }
+  .hero-text { padding: 0 !important; }
+  .hero-descriptor { font-size: 0.68rem !important; }
+  /* Mobile countdown */
+  .countdown-row div[style*="display:flex"] { flex-direction: column !important; gap: 0.25rem !important; }
+  /* Mobile CTA */
+  #cta { padding: 3rem 1.2rem !important; }
+  .cta-inner { padding: 2rem 1.2rem !important; }
+  /* Mobile process steps */
+  .process-steps { gap: 1rem !important; }
+  /* Mobile what's in box — stack image grid */
+  #whats-in-box div[style*="repeat(3,1fr)"] { grid-template-columns: 1fr !important; }
+  /* Mobile unboxing — single column */
+  #unboxing div[style*="repeat(auto-fit"] { grid-template-columns: 1fr !important; }
+  /* Mobile FAQ */
+  #faq { padding: 3rem 1.2rem !important; }
+  .faq-acc-item button { padding: 1.2rem !important; }
+  /* Mobile floating CTA */
+  .floating-cta-text { display: none !important; }
+  /* Mobile share buttons — 2 per row */
+  .share-buttons { grid-template-columns: repeat(2, 1fr) !important; display: grid !important; }
+}
 .carousel-track:active { cursor: grabbing; }
 .carousel-controls { justify-content: center !important; }
 #ss-chat-bubble{position:fixed;bottom:28px;right:28px;z-index:9999;width:52px;height:52px;border-radius:50%;background:var(--burgundy,#5a1520);border:2px solid #9a7520;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(90,21,32,0.35);transition:transform 0.2s;}
