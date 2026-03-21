@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=34">
+<link rel="stylesheet" href="styles.css?v=35">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -1214,7 +1214,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=34"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=35"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1296,3 +1296,172 @@ window.toggleFaq = function(btn) {
       var d = start - now;
       var days = Math.floor(d/86400000);
       if(cday) cday.textContent 
+      if(cday) cday.textContent = days + (days === 1 ? ' day' : ' days');
+      cd.textContent = p(Math.floor((d%86400000)/3600000))+':'+p(Math.floor((d%3600000)/60000))+':'+p(Math.floor((d%60000)/1000));
+      cl.textContent = 'Until the Offering Opens';
+    }
+  }
+  function p(n){ return n < 10 ? '0'+n : ''+n; }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+
+<!-- SAIRAM CHATBOT -->
+<style>
+#ss-chat-bubble{position:fixed;bottom:28px;right:28px;z-index:9999;width:52px;height:52px;border-radius:50%;background:var(--burgundy,#5a1520);border:2px solid #9a7520;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(90,21,32,0.35);transition:transform 0.2s;}
+#ss-chat-bubble:hover{transform:scale(1.08);}
+#ss-chat-bubble svg{width:24px;height:24px;fill:#faf6ef;}
+#ss-chat-window{position:fixed;bottom:92px;right:28px;z-index:9999;width:340px;max-height:520px;background:#faf6ef;border:1px solid #d4c8b0;border-radius:16px;box-shadow:0 8px 40px rgba(90,21,32,0.18);display:none;flex-direction:column;font-family:'EB Garamond',serif;overflow:hidden;}
+#ss-chat-window.open{display:flex;}
+#ss-chat-header{background:var(--burgundy,#5a1520);padding:14px 18px;display:flex;align-items:center;gap:10px;justify-content:space-between;}
+#ss-chat-header-left{display:flex;align-items:center;gap:10px;}
+#ss-chat-header-avatar{width:32px;height:32px;border-radius:50%;background:#9a7520;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:13px;color:#faf6ef;font-weight:500;flex-shrink:0;}
+#ss-chat-header-title{color:#faf6ef;font-family:'Cinzel',serif;font-size:13px;letter-spacing:0.06em;}
+#ss-chat-header-sub{color:rgba(250,246,239,0.65);font-size:11px;font-family:'EB Garamond',serif;margin-top:1px;}
+#ss-chat-close{background:none;border:none;color:rgba(250,246,239,0.7);cursor:pointer;font-size:18px;padding:0;line-height:1;}
+#ss-chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;max-height:340px;}
+#ss-chat-messages::-webkit-scrollbar{width:4px;}
+#ss-chat-messages::-webkit-scrollbar-track{background:transparent;}
+#ss-chat-messages::-webkit-scrollbar-thumb{background:#d4c8b0;border-radius:2px;}
+.ss-msg{max-width:88%;line-height:1.6;font-size:14.5px;padding:10px 14px;border-radius:12px;}
+.ss-msg.bot{background:#f3ece0;color:#0d0702;border-bottom-left-radius:4px;align-self:flex-start;}
+.ss-msg.user{background:var(--burgundy,#5a1520);color:#faf6ef;border-bottom-right-radius:4px;align-self:flex-end;}
+.ss-msg.typing{background:#f3ece0;color:#9a7520;font-style:italic;align-self:flex-start;}
+#ss-chat-input-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid #e8dcc8;background:#faf6ef;}
+#ss-chat-input{flex:1;border:1px solid #d4c8b0;border-radius:8px;padding:9px 12px;font-family:'EB Garamond',serif;font-size:14px;background:#fff;color:#0d0702;outline:none;resize:none;}
+#ss-chat-input:focus{border-color:#9a7520;}
+#ss-chat-send{background:var(--burgundy,#5a1520);border:none;border-radius:8px;width:38px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 0.2s;}
+#ss-chat-send:hover{opacity:0.85;}
+#ss-chat-send svg{width:16px;height:16px;fill:#faf6ef;}
+</style>
+
+<div id="ss-chat-bubble" onclick="ssChatToggle()" title="Sairam — Ask me anything">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.05 21.95l4.782-1.388A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.95 7.95 0 01-4.078-1.118l-.292-.174-3.027.878.878-3.027-.174-.292A7.95 7.95 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8z"/></svg>
+</div>
+
+<div id="ss-chat-window">
+  <div id="ss-chat-header">
+    <div id="ss-chat-header-left">
+      <div id="ss-chat-header-avatar">🙏</div>
+      <div>
+        <div id="ss-chat-header-title">Sairam</div>
+        <div id="ss-chat-header-sub">Ask about the offering</div>
+      </div>
+    </div>
+    <button id="ss-chat-close" onclick="ssChatToggle()">✕</button>
+  </div>
+  <div id="ss-chat-messages"></div>
+  <div id="ss-chat-input-row">
+    <textarea id="ss-chat-input" rows="1" placeholder="Ask anything about SarvamSai…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ssChatSend();}"></textarea>
+    <button id="ss-chat-send" onclick="ssChatSend()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script data-cfasync="false">
+(function(){
+  var KNOWLEDGE = "You are Sairam, the devotional guide for SarvamSai — a centenary offering to Bhagawan Sri Sathya Sai Baba.\n\nYou speak with warmth, calm and reverence. You are not a generic chatbot. You are deeply knowledgeable about SarvamSai and answer questions about the offering, the Swaroopas, the Darshan Queue, the process, the Sarvam Sai Universe, and Baba's teachings.\n\nAlways refer to Baba in the present tense — He is Ananta, without beginning or end.\nNever use em dashes. Use commas or full stops instead.\nKeep responses concise, warm and clear. 2-4 sentences is ideal unless more detail is needed.\nIf asked about pricing, say it is set at net-zero profit and will be communicated in the blessing invitation.\nIf asked something you don't know, direct them to sairam@sarvamsai.in\n\nHere is everything you need to know about SarvamSai:\n\n---\n\nSarvamSai is a limited edition collectible offering created by AuRaaZ Technologies. It comprises a sealed Discovery Box containing a hand-finished, 3D-printed PLA figurine of one of four Swaroopas of Bhagawan Sri Sathya Sai Baba. The offering is made at net-zero profit.\n\nTHE OFFERING: 100 Discovery Boxes released daily for 100 days. Blessing window: 24 April 2026 to 1 August 2026. Total edition: 10,000 boxes. Each box is time-stamped and numbered. The Swaroopa inside is not revealed until the devotee opens the box.\n\nTHE FOUR SWAROOPAS: Each box contains one of four figurine variants in a sacred ratio of 4:3:2:1. Satya Swaroopa (Saffron Robe) = Truth, 4 in every 10, Most Abundant. Dharma Swaroopa (Golden Robe) = Righteousness, 3 in every 10, Abundant. Shanti Swaroopa (White Robe) = Peace, 2 in every 10, Rare. Prema Swaroopa (Crimson Robe) = Love, 1 in every 10, Rarest.\n\nTHE PROCESS: Step 1: Register free at sarvamsai.in. Step 2: Optionally invite devotees using your personal referral link to move forward in the queue. Step 3: Optionally nominate your Samithi or Satsang. Step 4: Receive your blessing invitation by email when your day arrives. Step 5: Complete your offering (payment at net-zero cost). Step 6: Your sealed Discovery Box ships within 5 days. Step 7: Open the box to reveal your Swaroopa and unlock your transmedia experience via the QR code inside.\n\nTHE SARVAM SAI UNIVERSE: Figurine holders get exclusive access via a QR code or certificate inside the box. Access includes: audio reflections tied to your Swaroopa's value, visual stories, and web-based meditations. Each Swaroopa has its own strand of content. Satya holders receive Truth reflections. Prema holders receive Love reflections. The universe grows across Phase I, II and III.\n\nTHREE PHASES: Phase I: 10cm figurine, 100/day, 100 days, Apr 24 to Aug 1 2026. Phase II: 15cm figurine, unlocked by Phase I. Phase III: 30cm masterpiece, 10 pieces only, November 23 2026 (Baba's Centenary Birthday).\n\nKEY FACTS: Registration is free. Payment only when blessing invitation arrives. You do not choose your Swaroopa. It finds you. All are welcome regardless of faith. Contact: sairam@sarvamsai.in. Website: sarvamsai.in.";
+
+  var msgs = [];
+  var open = false;
+  var thinking = false;
+
+  function ssChatToggle(){
+    open = !open;
+    var w = document.getElementById('ss-chat-window');
+    if(open){
+      w.classList.add('open');
+      if(msgs.length === 0) ssAddBot("Sairam. \uD83D\uDE4F Welcome to SarvamSai, a centenary offering to Bhagawan Sri Sathya Sai Baba. How may I guide you?");
+      setTimeout(function(){ document.getElementById('ss-chat-input').focus(); }, 100);
+    } else {
+      w.classList.remove('open');
+    }
+  }
+  window.ssChatToggle = ssChatToggle;
+
+  function ssAddBot(text){
+    var el = document.createElement('div');
+    el.className = 'ss-msg bot';
+    el.textContent = text;
+    document.getElementById('ss-chat-messages').appendChild(el);
+    ssScroll();
+  }
+
+  function ssAddUser(text){
+    var el = document.createElement('div');
+    el.className = 'ss-msg user';
+    el.textContent = text;
+    document.getElementById('ss-chat-messages').appendChild(el);
+    ssScroll();
+  }
+
+  function ssTyping(){
+    var el = document.createElement('div');
+    el.className = 'ss-msg typing';
+    el.id = 'ss-typing';
+    el.textContent = 'Sairam is thinking…';
+    document.getElementById('ss-chat-messages').appendChild(el);
+    ssScroll();
+  }
+
+  function ssRemoveTyping(){
+    var el = document.getElementById('ss-typing');
+    if(el) el.remove();
+  }
+
+  function ssScroll(){
+    var m = document.getElementById('ss-chat-messages');
+    m.scrollTop = m.scrollHeight;
+  }
+
+  function ssChatSend(){
+    if(thinking) return;
+    var inp = document.getElementById('ss-chat-input');
+    var text = inp.value.trim();
+    if(!text) return;
+    inp.value = '';
+    inp.style.height = 'auto';
+    ssAddUser(text);
+    msgs.push({role:'user', content: text});
+    thinking = true;
+    ssTyping();
+
+    var apiMsgs = msgs.slice(-10);
+
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': window.SS_CHAT_KEY || '',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: KNOWLEDGE,
+        messages: apiMsgs
+      })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      ssRemoveTyping();
+      thinking = false;
+      var reply = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : 'Sairam. Please reach out to sairam@sarvamsai.in for assistance.';
+      msgs.push({role:'assistant', content: reply});
+      ssAddBot(reply);
+    })
+    .catch(function(){
+      ssRemoveTyping();
+      thinking = false;
+      ssAddBot('Sairam. Please reach out to sairam@sarvamsai.in for assistance.');
+    });
+  }
+  window.ssChatSend = ssChatSend;
+})();
+</script>
+
+</body>
+</html>
