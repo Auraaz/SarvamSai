@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=53">
+<link rel="stylesheet" href="styles.css?v=54">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -718,9 +718,7 @@
     </div>
 
     <div class="carousel-controls">
-      <button class="carousel-btn" onclick="prevSlide()">&#8592;</button>
       <div class="carousel-dots" id="carouselDots"></div>
-      <button class="carousel-btn" onclick="nextSlide()">&#8594;</button>
     </div>
   </div>
 </section>
@@ -1096,7 +1094,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=53"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=54"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1210,6 +1208,9 @@ window.toggleFaq = function(btn) {
 
 <!-- SAIRAM CHATBOT -->
 <style>
+.carousel-track { cursor: grab; user-select: none; }
+.carousel-track:active { cursor: grabbing; }
+.carousel-controls { justify-content: center !important; }
 #ss-chat-bubble{position:fixed;bottom:28px;right:28px;z-index:9999;width:52px;height:52px;border-radius:50%;background:var(--burgundy,#5a1520);border:2px solid #9a7520;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(90,21,32,0.35);transition:transform 0.2s;}
 #ss-chat-bubble:hover{transform:scale(1.08);}
 #ss-chat-bubble svg{width:24px;height:24px;fill:#faf6ef;}

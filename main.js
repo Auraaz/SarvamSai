@@ -6,57 +6,89 @@
   var total = 4;
   var track = null;
   var autoTimer = null;
+  var isAnimating = false;
+  var AUTO_DELAY = 6000;
 
   function init() {
     track = document.getElementById('carouselTrack');
     if (!track) return;
 
-    // Build dots
+    // Build dot indicators
     var dotsContainer = document.getElementById('carouselDots');
     if (dotsContainer && dotsContainer.children.length === 0) {
       for (var i = 0; i < total; i++) {
         (function(idx) {
           var dot = document.createElement('div');
           dot.className = 'dot' + (idx === 0 ? ' active' : '');
-          dot.onclick = function() { goTo(idx); resetTimer(); };
+          dot.onclick = function() { goTo(idx); startAuto(); };
           dotsContainer.appendChild(dot);
         })(i);
       }
     }
 
-    // Swipe support
-    var wrap = document.querySelector('.carousel-wrap');
-    if (wrap) {
-      var touchStartX = 0;
-      wrap.addEventListener('touchstart', function(e) {
-        touchStartX = e.changedTouches[0].screenX;
-      }, { passive: true });
-      wrap.addEventListener('touchend', function(e) {
-        var diff = touchStartX - e.changedTouches[0].screenX;
-        if (Math.abs(diff) > 40) { goTo(current + (diff > 0 ? 1 : -1)); resetTimer(); }
-      }, { passive: true });
-    }
+    // Mouse drag support
+    var startX = 0;
+    var isDragging = false;
+    track.addEventListener('mousedown', function(e) {
+      startX = e.clientX;
+      isDragging = true;
+      track.style.cursor = 'grabbing';
+      stopAuto();
+    });
+    window.addEventListener('mouseup', function(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      track.style.cursor = '';
+      var diff = startX - e.clientX;
+      if (Math.abs(diff) > 40) goTo(current + (diff > 0 ? 1 : -1));
+      startAuto();
+    });
+    window.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+    });
 
-    autoTimer = setInterval(function() { goTo(current + 1); }, 8000);
+    // Touch swipe support
+    var touchStartX = 0;
+    track.addEventListener('touchstart', function(e) {
+      touchStartX = e.changedTouches[0].clientX;
+      stopAuto();
+    }, { passive: true });
+    track.addEventListener('touchend', function(e) {
+      var diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) goTo(current + (diff > 0 ? 1 : -1));
+      startAuto();
+    }, { passive: true });
+
+    startAuto();
   }
 
   function goTo(n) {
+    if (isAnimating) return;
     if (!track) track = document.getElementById('carouselTrack');
     if (!track) return;
+    isAnimating = true;
     current = ((n % total) + total) % total;
+    track.style.transition = 'transform 0.5s ease';
     track.style.transform = 'translateX(-' + (current * 100) + '%)';
     document.querySelectorAll('.dot').forEach(function(d, i) {
       d.classList.toggle('active', i === current);
     });
+    setTimeout(function() { isAnimating = false; }, 520);
   }
 
-  function resetTimer() {
-    if (autoTimer) clearInterval(autoTimer);
-    autoTimer = setInterval(function() { goTo(current + 1); }, 8000);
+  function startAuto() {
+    stopAuto();
+    autoTimer = setInterval(function() { goTo(current + 1); }, AUTO_DELAY);
   }
 
-  window.nextSlide = function() { goTo(current + 1); resetTimer(); };
-  window.prevSlide = function() { goTo(current - 1); resetTimer(); };
+  function stopAuto() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  }
+
+  // Keep these for any remaining references
+  window.nextSlide = function() { goTo(current + 1); startAuto(); };
+  window.prevSlide = function() { goTo(current - 1); startAuto(); };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
