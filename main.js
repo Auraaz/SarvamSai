@@ -258,8 +258,7 @@ async function loadLeaderboard() {
 
 window.openInviteShare = function() {
   if (currentUser) {
-    if (!currentUser.samithi_id) openSamithiModal();
-    else shareInvite('whatsapp');
+    shareInvite('whatsapp');
   } else showRegisterForm();
 }
 
@@ -508,21 +507,17 @@ async function loadSamithiLeaderboard() {
   } catch(e) {}
 }
 
-// Show samithi modal 2s after registration, load leaderboard
+// Load leaderboards after registration — no auto modal
 const _origShowRegistered = window.showRegisteredState;
 window.showRegisteredState = function(user) {
   _origShowRegistered(user);
   loadSamithiLeaderboard();
-  // Only show modal if not already in a samithi
-  if (!user.samithi_id) {
-    setTimeout(() => {
-      loadSamithis();
-      openSamithiModal();
-    }, 2000);
-  } else {
-    // Show their samithi name
+  // Pre-load samithi list silently for when user taps nominate
+  loadSamithis();
+  // If already in a samithi, show the name
+  if (user.samithi_id && user.samithi_name) {
     const el = document.getElementById('samithi-my-name');
-    if (el && user.samithi_name) updateSamithiLabel(user.samithi_name, user.samithi_city || '');
+    if (el) updateSamithiLabel(user.samithi_name, user.samithi_city || '');
   }
 };
 

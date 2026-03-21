@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=63">
+<link rel="stylesheet" href="styles.css?v=64">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -446,7 +446,7 @@
   <!-- STATE 1: Not registered -->
   <div class="cta-buttons" id="cta-register-btns">
     <button class="btn-primary" onclick="showRegisterForm()">Join the Darshan Queue</button>
-    <button class="btn-secondary" onclick="openInviteShare()">Invite a Devotee</button>
+    <button class="btn-secondary" onclick="openInviteShare()">Share with a Devotee</button>
   </div>
   <p style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:1.2rem;">Registration is free · Blessing invitations begin 24 April 2026 · Offering amount shared in your invitation</p>
 
@@ -467,6 +467,9 @@
 
   <!-- STATE 2: Registered -->
   <div id="cta-registered" style="display:none;margin-top:2.5rem;width:100%;max-width:580px;">
+    <p style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:1.5rem;">
+      🙏 You are among the early devotees in Swami's centenary year
+    </p>
 
     <!-- Rank card -->
     <div class="dash-card">
@@ -1115,7 +1118,7 @@
     <p class="floating-cta-text">100 Discovery Boxes · Opens 24 April 2026</p>
     <div class="floating-cta-btns">
       <button onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'}); setTimeout(showRegisterForm, 600);" class="floating-btn-primary">Join the Queue</button>
-      <button onclick="openInviteShare();" class="floating-btn-secondary">Invite a Devotee</button>
+      <button onclick="openInviteShare();" class="floating-btn-secondary">Share with a Devotee</button>
     </div>
   </div>
 </div>
@@ -1239,7 +1242,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=63"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=64"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
