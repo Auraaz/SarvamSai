@@ -177,13 +177,16 @@ window.submitRegistration = async function() {
 
   try {
     const data = await apiCall({ action:'register', name, email, referred_by:refCode });
+    console.log('Registration response:', JSON.stringify(data));
 
     if (data.success || data.error === 'already_registered') {
       localStorage.setItem('ss_email', email);
       currentUser = data.user;
       showRegisteredState(data.user);
     } else {
-      showRegError('Something went wrong. Please try again.');
+      const errMsg = data.error ? 'Error: ' + data.error : 'Something went wrong. Please try again.';
+      showRegError(errMsg);
+      console.error('Registration failed:', data);
       btn.textContent = 'Join the Queue';
       btn.style.opacity = '1';
       btn.disabled = false;
@@ -238,8 +241,9 @@ async function loadLeaderboard() {
   try {
     const data = await apiCall({ action:'leaderboard' });
     const el   = document.getElementById('leaderboard-list');
+    if (!el) return;
     if (!data.success || !data.leaderboard.length) {
-      el.innerHTML = '<div style="padding:1rem 2rem;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--muted);font-size:0.95rem;">Be the first to invite friends!</div>';
+      el.innerHTML = '<div style="padding:1rem 2rem;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--muted);font-size:0.95rem;">Be the first to invite a devotee!</div>';
       return;
     }
     const medals = ['🥇','🥈','🥉'];
