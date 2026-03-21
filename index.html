@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=50">
+<link rel="stylesheet" href="styles.css?v=51">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -637,7 +637,7 @@
 
     <!-- Countdown row -->
     <div style="background:#5a1520;padding:1.4rem 2rem;text-align:center;position:relative;overflow:hidden;">
-      <div style="font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:rgba(243,232,192,0.6);margin-bottom:0.4rem;">Until the Offering Opens</div>
+      <div id="countdown-label" style="font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:rgba(243,232,192,0.6);margin-bottom:0.4rem;">Until the Offering Opens</div>
       <div style="display:flex;align-items:baseline;justify-content:center;gap:0.5rem;">
         <span id="countdown-days" style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;color:#f3e8c0;letter-spacing:0.15em;"></span>
         <span id="countdown" style="font-family:'Courier New',monospace;font-size:clamp(1.6rem,5vw,2.4rem);font-weight:700;color:#f3e8c0;letter-spacing:0.05em;line-height:1;"></span>
@@ -647,7 +647,7 @@
     <!-- 3-column stats -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#d4c8b0;border:1px solid #d4c8b0;border-top:none;">
       <div style="background:#faf6ef;padding:2rem 1rem;text-align:center;">
-        <div style="font-family:'Cinzel',serif;font-size:2.2rem;font-weight:700;color:#5a1520;line-height:1;margin-bottom:0.5rem;">100</div>
+        <div id="stat-days" style="font-family:'Cinzel',serif;font-size:2.2rem;font-weight:700;color:#5a1520;line-height:1;margin-bottom:0.5rem;">100</div>
         <div style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:#6b5a3e;">Days of Blessings</div>
       </div>
       <div style="background:#f3ece0;padding:2rem 1rem;text-align:center;">
@@ -919,18 +919,7 @@
 
       </div>
 
-      <div class="faq-acc-item">
-        <button onclick="toggleFaq(this)" style="width:100%;background:#faf6ef;border:none;padding:1.4rem 1.8rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;text-align:left;">
-          <span style="font-family:'Cinzel',serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;color:#5a1520;text-transform:uppercase;line-height:1.5;">When is the Swaroopa revealed?</span>
-          <span class="faq-icon" style="font-family:'Cinzel',serif;font-size:1rem;color:#9a7520;flex-shrink:0;transition:transform 0.3s;display:inline-block;">+</span>
-        </button>
-        <div class="faq-body" style="display:none;padding:0 1.8rem 1.5rem;background:#faf6ef;">
-          <div style="width:30px;height:1px;background:#9a7520;margin-bottom:1rem;opacity:0.5;"></div>
-          <p style="font-family:'EB Garamond',serif;font-size:1.05rem;color:#3a2a10;line-height:1.9;margin:0;">The Swaroopa within is revealed only after the devotee receives and opens the box. It is not shown in advance to anyone.</p>
-        </div>
-      </div>
-
-    </div>
+          </div>
 
     <!-- Bottom quote -->
 
@@ -1107,7 +1096,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=50"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=51"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1170,6 +1159,7 @@ window.nextSlide = function() {
     }
     window.addEventListener('scroll', update, {passive: true});
     setTimeout(update, 400);
+    setInterval(update, 600);
   }
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initCTA); }
   else { initCTA(); }
