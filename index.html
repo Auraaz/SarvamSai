@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=47">
+<link rel="stylesheet" href="styles.css?v=48">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -1115,7 +1115,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=47"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=48"></script>
 <script data-cfasync="false">
 window.toggleMenu = function() {
   document.getElementById('nav-links').classList.toggle('open');
@@ -1124,6 +1124,26 @@ window.toggleMenu = function() {
 window.closeMenu = function() {
   document.getElementById('nav-links').classList.remove('open');
   document.getElementById('nav-hamburger').classList.remove('open');
+};
+window.showRegisterForm = function() {
+  var f = document.getElementById('register-form-wrap');
+  var b = document.getElementById('cta-register-btns');
+  var n = document.getElementById('reg-name');
+  if (f) f.style.display = 'block';
+  if (b) b.style.display = 'none';
+  if (n) n.focus();
+};
+window.hideRegisterForm = function() {
+  var f = document.getElementById('register-form-wrap');
+  var b = document.getElementById('cta-register-btns');
+  if (f) f.style.display = 'none';
+  if (b) b.style.display = 'flex';
+};
+window.prevSlide = function() {
+  if (window._carouselGoTo) window._carouselGoTo(-1);
+};
+window.nextSlide = function() {
+  if (window._carouselGoTo) window._carouselGoTo(1);
 };
 </script>
 <script data-cfasync="false">

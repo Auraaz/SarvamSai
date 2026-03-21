@@ -60,6 +60,7 @@ function goTo(n) {
 // Expose to global scope so onclick attributes work
 window.nextSlide = function() { goTo(current + 1); resetTimer(); };
 window.prevSlide = function() { goTo(current - 1); resetTimer(); };
+window._carouselGoTo = function(dir) { goTo(current + dir); resetTimer(); };
 
 let autoTimer = setInterval(() => goTo(current + 1), 8000);
 function resetTimer() {
