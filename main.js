@@ -1,52 +1,69 @@
 // ─── COUNTDOWN handled by inline cfasync=false script in index.html ───
 
 // ─── CAROUSEL ───
-let current = 0;
-const total = 4;
-const track = document.getElementById('carouselTrack');
-const dotsContainer = document.getElementById('carouselDots');
+(function() {
+  var current = 0;
+  var total = 4;
+  var track = null;
+  var autoTimer = null;
 
-for (let i = 0; i < total; i++) {
-  const dot = document.createElement('div');
-  dot.className = 'dot' + (i === 0 ? ' active' : '');
-  dot.onclick = () => { goTo(i); resetTimer(); };
-  dotsContainer.appendChild(dot);
-}
+  function init() {
+    track = document.getElementById('carouselTrack');
+    if (!track) return;
 
-function goTo(n) {
-  current = (n + total) % total;
-  track.style.transform = `translateX(-${current * 100}%)`;
-  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
-}
-
-// Expose to global scope so onclick attributes work
-window.nextSlide = function() { goTo(current + 1); resetTimer(); };
-window.prevSlide = function() { goTo(current - 1); resetTimer(); };
-window._carouselGoTo = function(dir) { goTo(current + dir); resetTimer(); };
-
-let autoTimer = setInterval(() => goTo(current + 1), 8000);
-function resetTimer() {
-  clearInterval(autoTimer);
-  autoTimer = setInterval(() => goTo(current + 1), 8000);
-}
-
-// ─── SWIPE SUPPORT ───
-let touchStartX = 0;
-let touchEndX = 0;
-const carouselWrap = document.querySelector('.carousel-wrap');
-if (carouselWrap) {
-  carouselWrap.addEventListener('touchstart', function(e) {
-    touchStartX = e.changedTouches[0].screenX;
-  }, { passive: true });
-  carouselWrap.addEventListener('touchend', function(e) {
-    touchEndX = e.changedTouches[0].screenX;
-    const diff = touchStartX - touchEndX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) { goTo(current + 1); } else { goTo(current - 1); }
-      resetTimer();
+    // Build dots
+    var dotsContainer = document.getElementById('carouselDots');
+    if (dotsContainer && dotsContainer.children.length === 0) {
+      for (var i = 0; i < total; i++) {
+        (function(idx) {
+          var dot = document.createElement('div');
+          dot.className = 'dot' + (idx === 0 ? ' active' : '');
+          dot.onclick = function() { goTo(idx); resetTimer(); };
+          dotsContainer.appendChild(dot);
+        })(i);
+      }
     }
-  }, { passive: true });
-}
+
+    // Swipe support
+    var wrap = document.querySelector('.carousel-wrap');
+    if (wrap) {
+      var touchStartX = 0;
+      wrap.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      wrap.addEventListener('touchend', function(e) {
+        var diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 40) { goTo(current + (diff > 0 ? 1 : -1)); resetTimer(); }
+      }, { passive: true });
+    }
+
+    autoTimer = setInterval(function() { goTo(current + 1); }, 8000);
+  }
+
+  function goTo(n) {
+    if (!track) track = document.getElementById('carouselTrack');
+    if (!track) return;
+    current = ((n % total) + total) % total;
+    track.style.transform = 'translateX(-' + (current * 100) + '%)';
+    document.querySelectorAll('.dot').forEach(function(d, i) {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  function resetTimer() {
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(function() { goTo(current + 1); }, 8000);
+  }
+
+  window.nextSlide = function() { goTo(current + 1); resetTimer(); };
+  window.prevSlide = function() { goTo(current - 1); resetTimer(); };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 
 // ─── SOCIAL SHARE ───
 window.shareTo = function(platform) {
