@@ -177,7 +177,6 @@ window.submitRegistration = async function() {
 
   try {
     const data = await apiCall({ action:'register', name, email, referred_by:refCode });
-    console.log('Registration response:', JSON.stringify(data));
 
     if (data.success || data.error === 'already_registered') {
       localStorage.setItem('ss_email', email);
@@ -186,7 +185,6 @@ window.submitRegistration = async function() {
     } else {
       const errMsg = data.error ? 'Error: ' + data.error : 'Something went wrong. Please try again.';
       showRegError(errMsg);
-      console.error('Registration failed:', data);
       btn.textContent = 'Join the Queue';
       btn.style.opacity = '1';
       btn.disabled = false;

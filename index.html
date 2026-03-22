@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=77">
+<link rel="stylesheet" href="styles.css?v=78">
 
 <style id="critical-inline">
 /* FLOATING CTA — inline so never missed by cache */
@@ -1268,80 +1268,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=77"></script>
-<script data-cfasync="false">
-window.toggleMenu = function() {
-  document.getElementById('nav-links').classList.toggle('open');
-  document.getElementById('nav-hamburger').classList.toggle('open');
-};
-window.closeMenu = function() {
-  document.getElementById('nav-links').classList.remove('open');
-  document.getElementById('nav-hamburger').classList.remove('open');
-};
-window.showRegisterForm = function() {
-  var f = document.getElementById('register-form-wrap');
-  var b = document.getElementById('cta-register-btns');
-  var n = document.getElementById('reg-name');
-  if (f) f.style.display = 'block';
-  if (b) b.style.display = 'none';
-  if (n) n.focus();
-};
-window.hideRegisterForm = function() {
-  var f = document.getElementById('register-form-wrap');
-  var b = document.getElementById('cta-register-btns');
-  if (f) f.style.display = 'none';
-  if (b) b.style.display = 'flex';
-};
-window.openInviteShare = function() {
-  var link = 'https://sarvamsai.in';
-  var msg = encodeURIComponent('🙏 Join SarvamSai — a centenary offering to Bhagawan Sri Sathya Sai Baba. ' + link);
-  window.open('https://wa.me/?text=' + msg, '_blank');
-};
-</script>
-<script data-cfasync="false">
-(function() {
-  function initCTA() {
-    var bar = document.getElementById('floating-cta');
-    if (!bar) return;
-    function update() {
-      var y = window.pageYOffset || document.documentElement.scrollTop;
-      if (y < 300) { bar.classList.remove('visible'); return; }
-      var cta = document.getElementById('cta');
-      if (cta) {
-        var r = cta.getBoundingClientRect();
-        if (r.top < window.innerHeight && r.bottom > 0) { bar.classList.remove('visible'); return; }
-      }
-      bar.classList.add('visible');
-    }
-    window.addEventListener('scroll', update, {passive: true});
-    window.addEventListener('touchmove', update, {passive: true});
-    setTimeout(update, 300);
-    setInterval(update, 500);
-  }
-  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initCTA); }
-  else { initCTA(); }
-})();
-</script>
-
-<script data-cfasync="false">
-// FAQ accordion
-window.toggleFaq = function(btn) {
-  var item = btn.parentElement;
-  var body = item.querySelector('.faq-body');
-  var icon = btn.querySelector('.faq-icon');
-  var isOpen = body.style.display === 'block';
-  if (isOpen) {
-    body.style.display = 'none';
-    icon.textContent = '+';
-    btn.style.background = '#faf6ef';
-  } else {
-    body.style.display = 'block';
-    icon.textContent = '\u2212';
-    btn.style.background = '#f3ece0';
-  }
-};
-</script>
-
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="main.js?v=78"></script>
 <script data-cfasync="false">
 (function() {
   function tick() {
