@@ -524,3 +524,142 @@ window.toggleFaq = function(btn) {
     btn.style.background = '#f3ece0';
   }
 };
+
+// ─── COUNTDOWN (inline in HTML previously; Rocket Loader–safe via external + data-cfasync on tag) ───
+(function() {
+  function tick() {
+    var cd   = document.getElementById('countdown');
+    var cday = document.getElementById('countdown-days');
+    var cl   = document.getElementById('countdown-label');
+    var sd   = document.getElementById('stat-days');
+    if (!cd || !cl || !sd) return;
+    var now   = new Date();
+    var start = new Date('2026-04-24T00:00:00');
+    var end   = new Date('2026-08-02T00:00:00');
+    if (now >= end) {
+      if (cday) cday.textContent = '';
+      cd.textContent = 'CLOSED';
+      cl.textContent = 'Season Complete';
+      sd.textContent = '0';
+      return;
+    }
+    if (now >= start) {
+      var daysPassed = Math.floor((now - start) / 86400000);
+      sd.textContent = String(100 - daysPassed);
+      var tom = new Date(now); tom.setHours(24, 0, 0, 0);
+      var d = tom - now;
+      if (cday) cday.textContent = (100 - daysPassed) + ' days remaining';
+      cd.textContent = p(Math.floor(d / 3600000)) + ':' + p(Math.floor((d % 3600000) / 60000)) + ':' + p(Math.floor((d % 60000) / 1000));
+      cl.textContent = 'Until Next Blessing';
+    } else {
+      var d = start - now;
+      var days = Math.floor(d / 86400000);
+      if (cday) cday.textContent = days + (days === 1 ? ' day' : ' days');
+      cd.textContent = p(Math.floor((d % 86400000) / 3600000)) + ':' + p(Math.floor((d % 3600000) / 60000)) + ':' + p(Math.floor((d % 60000) / 1000));
+      cl.textContent = 'Until the Offering Opens';
+    }
+  }
+  function p(n) { return n < 10 ? '0' + n : '' + n; }
+  tick();
+  setInterval(tick, 1000);
+})();
+
+// ─── SAIRAM CHAT (Worker handles system prompt) ───
+(function() {
+  var msgs = [];
+  var open = false;
+  var thinking = false;
+
+  function ssChatToggle() {
+    open = !open;
+    var w = document.getElementById('ss-chat-window');
+    if (!w) return;
+    if (open) {
+      w.classList.add('open');
+      if (msgs.length === 0) ssAddBot('Sairam. \uD83D\uDE4F Welcome to SarvamSai, a centenary offering to Bhagawan Sri Sathya Sai Baba. How may I guide you?');
+      setTimeout(function() {
+        var inp = document.getElementById('ss-chat-input');
+        if (inp) inp.focus();
+      }, 100);
+    } else {
+      w.classList.remove('open');
+    }
+  }
+  window.ssChatToggle = ssChatToggle;
+
+  function ssAddBot(text) {
+    var el = document.createElement('div');
+    el.className = 'ss-msg bot';
+    el.textContent = text;
+    var box = document.getElementById('ss-chat-messages');
+    if (box) box.appendChild(el);
+    ssScroll();
+  }
+
+  function ssAddUser(text) {
+    var el = document.createElement('div');
+    el.className = 'ss-msg user';
+    el.textContent = text;
+    var box = document.getElementById('ss-chat-messages');
+    if (box) box.appendChild(el);
+    ssScroll();
+  }
+
+  function ssTyping() {
+    var el = document.createElement('div');
+    el.className = 'ss-msg typing';
+    el.id = 'ss-typing';
+    el.textContent = 'Sairam is thinking…';
+    var box = document.getElementById('ss-chat-messages');
+    if (box) box.appendChild(el);
+    ssScroll();
+  }
+
+  function ssRemoveTyping() {
+    var el = document.getElementById('ss-typing');
+    if (el) el.remove();
+  }
+
+  function ssScroll() {
+    var m = document.getElementById('ss-chat-messages');
+    if (m) m.scrollTop = m.scrollHeight;
+  }
+
+  function ssChatSend() {
+    if (thinking) return;
+    var inp = document.getElementById('ss-chat-input');
+    if (!inp) return;
+    var text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+    inp.style.height = 'auto';
+    ssAddUser(text);
+    msgs.push({ role: 'user', content: text });
+    thinking = true;
+    ssTyping();
+
+    var apiMsgs = msgs.slice(-10);
+
+    fetch('https://sairam.sarvamsai.in/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: apiMsgs })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        ssRemoveTyping();
+        thinking = false;
+        var reply = (data.content && data.content[0] && data.content[0].text)
+          ? data.content[0].text
+          : 'Sairam. Please reach out to sairam@sarvamsai.in for assistance.';
+        msgs.push({ role: 'assistant', content: reply });
+        ssAddBot(reply);
+      })
+      .catch(function() {
+        ssRemoveTyping();
+        thinking = false;
+        ssAddBot('Sairam. Please reach out to sairam@sarvamsai.in for assistance.');
+      });
+  }
+  window.ssChatSend = ssChatSend;
+})();
