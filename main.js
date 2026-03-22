@@ -307,20 +307,6 @@ document.querySelectorAll('.step, .stat-card, .section-title, .process-header, .
   observer.observe(el);
 });
 
-// ─── BUTTON WIRING (fallback for onclick) ───
-document.querySelectorAll('[onclick]').forEach(el => {
-  const fn = el.getAttribute('onclick').replace(/[()';]/g, '').trim().split('(')[0];
-  if (window[fn]) {
-    el.addEventListener('click', function(e) {
-      const match = el.getAttribute('onclick').match(/^(\w+)\(([^)]*)\)/);
-      if (match) {
-        const args = match[2] ? [match[2].replace(/['"]/g, '')] : [];
-        window[match[1]](...args);
-      }
-    });
-  }
-});
-
 // ─── FLOATING CTA ───
 (function() {
   function initFloatingCTA() {

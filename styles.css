@@ -1698,9 +1698,6 @@ nav {
     font-size: 0.75rem;
   }
 }
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 @keyframes scrollPulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
@@ -1712,9 +1709,10 @@ nav {
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 768px) {
-  /* NAV */
+  /* NAV (repeat .open here so menu still works if earlier CSS block is truncated by CDN) */
   nav { padding: 1rem 1.5rem; }
   .nav-links { display: none; }
+  .nav-links.open { display: flex; flex-direction: column; }
 
   /* SECTIONS */
   #hero, #cta, #product, #carousel-section, #process, #footer {
