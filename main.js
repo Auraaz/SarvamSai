@@ -130,7 +130,7 @@ window.closeMenu = function() {
 }
 
 // ─── CONFIG ───
-const API      = 'https://script.google.com/macros/s/AKfycbwqzpuUYPUWbu75aPA0ka9-VVd9MKjUf4ohZJIlmpEWgr3zn4k7322TVCfrfxu6JBoxyQ/exec';
+const API      = 'https://script.google.com/macros/s/AKfycbwUlXUmqb2Ki3I_nuI9Wgw2zCOm4F3hsteCq3pfaCm_eDLLeoy_N-Eqa5vgIslmYXN6iw/exec';
 const SITE_URL = 'https://sarvamsai.in';
 // Email confirmation sent automatically by Apps Script
 
