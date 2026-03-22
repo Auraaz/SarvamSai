@@ -23,7 +23,7 @@
   <meta property="og:url" content="https://sarvamsai.in/">
   <meta property="og:title" content="SarvamSai — A Centenary Offering">
   <meta property="og:description" content="A collectible Discovery Box honouring 100 years of Bhagawan Sri Sathya Sai Baba's grace. 100 Discovery Boxes released daily for 100 days. The Swaroopa within is revealed on April 24, 2026.">
-  <meta property="og:image" content="https://sarvamsai.in/sarvamsai-og.png">
+  <meta property="og:image" content="https://sarvamsai.in/sarvamsai-og.webp">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="1200">
   <meta property="og:site_name" content="SarvamSai">
@@ -34,15 +34,17 @@
   <meta name="twitter:url" content="https://sarvamsai.in/">
   <meta name="twitter:title" content="SarvamSai — A Centenary Offering">
   <meta name="twitter:description" content="A collectible Discovery Box honouring 100 years of Bhagawan Sri Sathya Sai Baba. Sealed until April 24, 2026. One of four Swaroopas within.">
-  <meta name="twitter:image" content="https://sarvamsai.in/sarvamsai-og.png">
+  <meta name="twitter:image" content="https://sarvamsai.in/sarvamsai-og.webp">
 
-  <!-- Favicon -->
+  <!-- Favicon (WebP + PNG fallback) -->
+  <link rel="icon" type="image/webp" href="centenary-emblem.webp">
   <link rel="icon" type="image/png" href="centenary-emblem.png">
   <link rel="apple-touch-icon" href="centenary-emblem.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles-base.css?v=82">
-<link rel="stylesheet" href="styles-more.css?v=82">
+<link rel="preload" as="image" href="figurine-hero.webp" type="image/webp">
+<link rel="stylesheet" href="styles-base.css?v=85">
+<link rel="stylesheet" href="styles-more.css?v=85">
 
 <style id="critical-inline">
 /* Minimal: floating bar position + z-index if external CSS is partial (Cloudflare) */
@@ -85,7 +87,7 @@
         "@id": "https://sarvamsai.in/#organization",
         "name": "SarvamSai",
         "url": "https://sarvamsai.in/",
-        "logo": "https://sarvamsai.in/centenary-emblem.png",
+        "logo": "https://sarvamsai.in/centenary-emblem.webp",
         "description": "SarvamSai is a devotional collectible offering by AuRaaZ Technologies, created to honour the centenary birth anniversary of Bhagawan Sri Sathya Sai Baba.",
         "foundingDate": "2026",
         "foundingLocation": "India",
@@ -109,7 +111,7 @@
           "name": "SarvamSai"
         },
         "url": "https://sarvamsai.in/",
-        "image": "https://sarvamsai.in/sarvamsai-og.png",
+        "image": "https://sarvamsai.in/sarvamsai-og.webp",
         "offers": {
           "@type": "Offer",
           "availability": "https://schema.org/PreOrder",
@@ -181,7 +183,7 @@
         "organizer": {
           "@id": "https://sarvamsai.in/#organization"
         },
-        "image": "https://sarvamsai.in/sarvamsai-og.png",
+        "image": "https://sarvamsai.in/sarvamsai-og.webp",
         "about": {
           "@type": "Person",
           "name": "Bhagawan Sri Sathya Sai Baba",
@@ -252,11 +254,19 @@
 
   <div class="hero-content">
     <div class="hero-image-wrap">
-      <img
-        src="figurine-hero.png"
-        alt="Sarvam Sai — He is everywhere, Ananta"
-        class="hero-image"
-      />
+      <picture>
+        <source type="image/webp" srcset="figurine-hero.webp">
+        <img
+          src="figurine-hero.png"
+          alt="Sarvam Sai — He is everywhere, Ananta"
+          class="hero-image"
+          width="380"
+          height="480"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
+      </picture>
       <div class="hero-image-glow"></div>
     </div>
 
@@ -295,9 +305,12 @@
     <h2 class="section-title">Bhagawan Sri Sathya Sai Baba</h2>
 
   <div class="about-emblem-wrap">
-    <img src="centenary-emblem.png"
-         alt="Sathya Sai Baba — 100 Years Since 1926"
-         class="about-emblem" />
+    <picture>
+      <source type="image/webp" srcset="centenary-emblem.webp">
+      <img src="centenary-emblem.png"
+           alt="Sathya Sai Baba — 100 Years Since 1926"
+           class="about-emblem" />
+    </picture>
     <p class="about-emblem-caption">1926 – 2026 · A Centenary of Grace</p>
   </div>
 
@@ -484,7 +497,10 @@
       <div class="rarity-cards" style="display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;max-width:520px!important;margin:0 auto!important;gap:1rem!important;">
 
         <div class="rarity-card rarity-saffron">
-          <img src="swaroopa-saffron.png" alt="Satya Swaroopa" class="rarity-card-img" />
+          <picture>
+            <source type="image/webp" srcset="swaroopa-saffron.webp">
+            <img src="swaroopa-saffron.png" alt="Satya Swaroopa" class="rarity-card-img" />
+          </picture>
           <div class="rarity-card-badge">4 in 10</div>
           <div class="rarity-card-body">
             <div class="rarity-name">Satya</div>
@@ -495,7 +511,10 @@
         </div>
 
         <div class="rarity-card rarity-golden">
-          <img src="swaroopa-golden.png" alt="Dharma Swaroopa" class="rarity-card-img" />
+          <picture>
+            <source type="image/webp" srcset="swaroopa-golden.webp">
+            <img src="swaroopa-golden.png" alt="Dharma Swaroopa" class="rarity-card-img" />
+          </picture>
           <div class="rarity-card-badge">3 in 10</div>
           <div class="rarity-card-body">
             <div class="rarity-name">Dharma</div>
@@ -506,7 +525,10 @@
         </div>
 
         <div class="rarity-card rarity-white">
-          <img src="swaroopa-white.png" alt="Shanti Swaroopa" class="rarity-card-img" />
+          <picture>
+            <source type="image/webp" srcset="swaroopa-white.webp">
+            <img src="swaroopa-white.png" alt="Shanti Swaroopa" class="rarity-card-img" />
+          </picture>
           <div class="rarity-card-badge">2 in 10</div>
           <div class="rarity-card-body">
             <div class="rarity-name">Shanti</div>
@@ -517,7 +539,10 @@
         </div>
 
         <div class="rarity-card rarity-crimson">
-          <img src="swaroopa-crimson.png" alt="Prema Swaroopa" class="rarity-card-img" />
+          <picture>
+            <source type="image/webp" srcset="swaroopa-crimson.webp">
+            <img src="swaroopa-crimson.png" alt="Prema Swaroopa" class="rarity-card-img" />
+          </picture>
           <div class="rarity-card-badge">1 in 10</div>
           <div class="rarity-card-body">
             <div class="rarity-name">Prema</div>
@@ -584,11 +609,20 @@
     <span class="eyebrow" style="justify-content:center;">Inside the Discovery Box</span>
     <h2 class="section-title" style="text-align:center;">What You Receive</h2>
 
-    <!-- Product image strip — upload figurine-box.jpg, figurine-detail.jpg, figurine-hand.jpg -->
+    <!-- Product strip: WebP preferred; add figurine-*.webp alongside JPG when deploying -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:2.5rem;border-radius:12px;overflow:hidden;">
-      <img src="figurine-box.jpg" alt="SarvamSai Discovery Box" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
-      <img src="figurine-detail.jpg" alt="Swaroopa figurine detail" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
-      <img src="figurine-hand.jpg" alt="Figurine in hands" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
+      <picture>
+        <source type="image/webp" srcset="figurine-box.webp">
+        <img src="figurine-box.jpg" alt="SarvamSai Discovery Box" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
+      </picture>
+      <picture>
+        <source type="image/webp" srcset="figurine-detail.webp">
+        <img src="figurine-detail.jpg" alt="Swaroopa figurine detail" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
+      </picture>
+      <picture>
+        <source type="image/webp" srcset="figurine-hand.webp">
+        <img src="figurine-hand.jpg" alt="Figurine in hands" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'"/>
+      </picture>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-top:2.5rem;">
@@ -811,7 +845,10 @@
       <line x1="74" y1="9" x2="120" y2="9" stroke="#9a7520" stroke-width="0.5" opacity="0.5"/>
     </svg>
 
-    <img src="lotus-feet.png" alt="Lotus feet of Bhagawan Sri Sathya Sai Baba — Sarvam Sai" style="width:min(300px,72%);display:block;margin:0 auto 2.5rem;" loading="lazy" />
+    <picture>
+      <source type="image/webp" srcset="lotus-feet.webp">
+      <img src="lotus-feet.png" alt="Lotus feet of Bhagawan Sri Sathya Sai Baba — Sarvam Sai" style="width:min(300px,72%);display:block;margin:0 auto;" loading="lazy" />
+    </picture>
 
     <p style="font-family:'EB Garamond',serif;font-size:1.15rem;line-height:2;color:var(--ink);margin-bottom:2rem;text-align:left;">
       Bhagawan Sri Sathya Sai Baba performed Kamayya's Aksharabhyasam, the sacred initiation into learning. That was the beginning. Not just of education, but of a life lived in His presence, shaped by His values, and oriented towards His grace.
