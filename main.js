@@ -525,6 +525,78 @@ window.toggleFaq = function(btn) {
   }
 };
 
+// ─── EASTER EGG: BOX -> POSTER REVEAL ───
+(function() {
+  var easterAnimating = false;
+  var easterRevealed = false;
+  var easterLoaded = false;
+
+  function initEasterEgg() {
+    var box = document.getElementById('easter-box');
+    var overlay = document.getElementById('easter-overlay');
+    var closeBtn = document.getElementById('easter-close');
+    var poster = document.getElementById('easter-poster');
+    if (!box || !overlay || !closeBtn || !poster) return;
+
+    function lazyPreloadPoster() {
+      if (easterLoaded) return;
+      var img = new Image();
+      img.src = 'sarvamsai_aaradhanaday.webp';
+      img.onload = function() { easterLoaded = true; };
+    }
+
+    function openReveal() {
+      if (easterAnimating || easterRevealed) return;
+      easterAnimating = true;
+      lazyPreloadPoster();
+
+      setTimeout(function() {
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        easterRevealed = true;
+        easterAnimating = false;
+      }, 520);
+    }
+    window.ssEasterOpen = openReveal;
+
+    function closeReveal() {
+      if (easterAnimating || !easterRevealed) return;
+      easterAnimating = true;
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      setTimeout(function() {
+        easterRevealed = false;
+        easterAnimating = false;
+      }, 400);
+    }
+    window.ssEasterClose = closeReveal;
+
+    box.addEventListener('mouseenter', lazyPreloadPoster, { passive: true });
+    box.addEventListener('touchstart', lazyPreloadPoster, { passive: true });
+    box.addEventListener('click', openReveal);
+    box.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openReveal();
+      }
+    });
+
+    closeBtn.addEventListener('click', closeReveal);
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay || e.target.classList.contains('easter-backdrop')) closeReveal();
+    });
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && easterRevealed) closeReveal();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEasterEgg);
+  } else {
+    initEasterEgg();
+  }
+})();
+
 // ─── COUNTDOWN (inline in HTML previously; Rocket Loader–safe via external + data-cfasync on tag) ───
 (function() {
   function tick() {

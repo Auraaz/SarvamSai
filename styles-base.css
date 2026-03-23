@@ -583,6 +583,150 @@ nav {
   animation: spinBox 16s linear infinite;
 }
 
+#easter-box {
+  cursor: pointer;
+  outline: none;
+  pointer-events: auto;
+}
+#easter-box .face {
+  pointer-events: none;
+}
+
+#easter-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: var(--ivory);
+}
+#easter-overlay.open { display: flex; }
+.easter-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(90, 21, 32, 0.42);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+#easter-overlay.open .easter-backdrop { opacity: 1; }
+.easter-poster-wrap {
+  position: relative;
+  z-index: 1;
+  width: min(94vw, 620px);
+  max-height: 94vh;
+  overflow: auto;
+  background: linear-gradient(180deg, #faf6ef 0%, #f3ece0 100%);
+  border: 1px solid rgba(184,146,42,0.36);
+  box-shadow: 0 24px 60px rgba(45, 18, 8, 0.34);
+  padding: 1rem 1rem 1.2rem;
+  transform: scale(0.94);
+  opacity: 0;
+  transition: transform 0.45s ease, opacity 0.45s ease;
+}
+#easter-overlay.open .easter-poster-wrap {
+  transform: scale(1);
+  opacity: 1;
+}
+#easter-poster {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid rgba(184,146,42,0.45);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.28);
+}
+#easter-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(184,146,42,0.75);
+  background: rgba(250,246,239,0.96);
+  color: var(--burgundy);
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+}
+#easter-close:hover { background: #fff; }
+
+.easter-title {
+  font-family: 'Cinzel', serif;
+  text-align: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.23em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0.1rem 0 0.8rem;
+}
+
+.easter-subtitle {
+  margin: 0.7rem 0 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  text-align: center;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.easter-cta-row {
+  margin: 0.95rem auto 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+}
+#easter-rsvp,
+#easter-share-devotee {
+  width: max-content;
+  display: inline-block;
+  text-decoration: none;
+  border: 1px solid var(--gold);
+  color: var(--burgundy);
+  background: #f7f0df;
+  padding: 0.62rem 1rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+#easter-share-devotee { cursor: pointer; }
+#easter-rsvp:hover,
+#easter-share-devotee:hover { background: #f3e8cf; }
+
+.easter-share {
+  border-top: 1px solid rgba(184,146,42,0.3);
+  padding-top: 0.9rem;
+}
+.easter-share-label {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+.easter-share-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+}
+.easter-share-btn {
+  border: 1px solid rgba(154,117,32,0.5);
+  background: #f8f1e2;
+  color: var(--burgundy);
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.55rem;
+  cursor: pointer;
+}
+.easter-share-btn:hover { background: #f3e8cf; }
+
 .face {
   position: absolute;
   backface-visibility: hidden;

@@ -457,8 +457,8 @@
   <span class="eyebrow" style="justify-content:center;">The Collectible Discovery Box</span>
   <h2 class="section-title" style="text-align:center;">Crafted. Blessed. Unrevealed.</h2>
 
-  <div class="scene">
-    <div class="box">
+  <div class="scene" id="easter-scene" onclick="if(window.ssEasterOpen){window.ssEasterOpen();}">
+    <div class="box" id="easter-box" role="button" tabindex="0" aria-label="Reveal Aaradhana Day poster" onclick="if(window.ssEasterOpen){window.ssEasterOpen();}">
       <div class="face face-front"></div>
       <div class="face face-back"></div>
       <div class="face face-right"></div>
@@ -1261,6 +1261,34 @@
   </div>
 </div>
 
+<!-- EASTER EGG: AARADHANA DAY REVEAL -->
+<div id="easter-overlay" aria-hidden="true">
+  <div class="easter-backdrop"></div>
+  <div class="easter-poster-wrap" role="dialog" aria-modal="true" aria-label="Aaradhana Day Poster">
+    <button type="button" id="easter-close" aria-label="Close poster">✕</button>
+    <div class="easter-title">Aaradhana Day Offering</div>
+    <a href="https://sarvamsai.in" target="_blank" rel="noopener noreferrer" aria-label="Open SarvamSai website from poster">
+      <img id="easter-poster" src="sarvamsai_aaradhanaday.webp" alt="SarvamSai Aaradhana Day Poster" loading="lazy" decoding="async" />
+    </a>
+    <p class="easter-subtitle">Offered in reverence. Shared with love.</p>
+    <div class="easter-cta-row">
+      <a id="easter-rsvp" href="#cta">Join the Darshan Queue</a>
+      <button type="button" id="easter-share-devotee" onclick="openInviteShare()">Share with a Devotee</button>
+    </div>
+    <div class="easter-share">
+      <div class="easter-share-label">Share This Offering</div>
+      <div class="easter-share-row">
+        <button type="button" class="easter-share-btn" onclick="shareTo('whatsapp')">WhatsApp</button>
+        <button type="button" class="easter-share-btn" onclick="shareTo('twitter')">X / Twitter</button>
+        <button type="button" class="easter-share-btn" onclick="shareTo('facebook')">Facebook</button>
+        <button type="button" class="easter-share-btn" onclick="shareTo('instagram')">Instagram</button>
+        <button type="button" class="easter-share-btn" onclick="shareTo('linkedin')">LinkedIn</button>
+        <button type="button" class="easter-share-btn" onclick="shareTo('telegram')">Telegram</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   </div>
 </div>
@@ -1292,15 +1320,38 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="main.js?v=86"></script>
-
-    </div>
-
-    <!-- Bottom quote -->
-
-  </div>
-</section>
-
-<!-- SHARE SECTION -->
+<script data-cfasync="false" src="main.js?v=87"></script>
+<script data-cfasync="false">
+  (function() {
+    if (!window.ssEasterOpen) {
+      window.ssEasterOpen = function() {
+        var overlay = document.getElementById('easter-overlay');
+        if (!overlay) return;
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+      };
+    }
+    if (!window.ssEasterClose) {
+      window.ssEasterClose = function() {
+        var overlay = document.getElementById('easter-overlay');
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+      };
+    }
+    var close = document.getElementById('easter-close');
+    var overlay = document.getElementById('easter-overlay');
+    var box = document.getElementById('easter-box');
+    var scene = document.getElementById('easter-scene');
+    if (box) box.addEventListener('click', window.ssEasterOpen);
+    if (scene) scene.addEventListener('click', window.ssEasterOpen);
+    if (close) close.onclick = window.ssEasterClose;
+    if (overlay) {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay || e.target.classList.contains('easter-backdrop')) window.ssEasterClose();
+      });
+    }
+  })();
+</script>
 </body>
 </html>
