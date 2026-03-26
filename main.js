@@ -397,6 +397,15 @@ window.showSearchSamithi = function() {
   document.getElementById('samithi-step-search').style.display = 'block';
 };
 
+document.addEventListener('keydown', function(e) {
+  var target = e.target;
+  if (!target || !target.classList || !target.classList.contains('samithi-result-item')) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    target.click();
+  }
+});
+
 async function loadSamithis() {
   try {
     const data = await apiCall({ action: 'getSamithis' });
@@ -414,7 +423,7 @@ window.searchSamithi = function(query) {
   if (!filtered.length) { results.style.display = 'none'; return; }
   results.style.display = 'block';
   results.innerHTML = filtered.map(s => `
-    <div class="samithi-result-item" onclick="selectSamithi('${s.id}','${s.name.replace(/'/g,"\\'")}','${s.city.replace(/'/g,"\\'")}')">
+    <div class="samithi-result-item" role="button" tabindex="0" aria-label="Select ${s.name.replace(/"/g, '&quot;')}, ${s.city.replace(/"/g, '&quot;')}" onclick="selectSamithi('${s.id}','${s.name.replace(/'/g,"\\'")}','${s.city.replace(/'/g,"\\'")}')">
       ${s.name}
       <span>${s.city} · ${s.member_count || 0} member${s.member_count !== 1 ? 's' : ''}</span>
     </div>
@@ -466,7 +475,14 @@ function showSamithiSuccess(name) {
 
 function updateSamithiLabel(name, city) {
   const el = document.getElementById('samithi-my-name');
-  if (el) { el.textContent = name + ' · ' + city; el.style.cursor = 'default'; el.onclick = null; }
+  if (el) {
+    el.textContent = name + ' · ' + city;
+    el.style.cursor = 'default';
+    el.onclick = null;
+    el.removeAttribute('role');
+    el.removeAttribute('tabindex');
+    el.setAttribute('aria-label', 'Selected Samithi ' + name + ' in ' + city);
+  }
 }
 
 async function loadSamithiLeaderboard() {

@@ -70,6 +70,21 @@
   display: block !important;
 }
 #floating-cta.visible { transform: translateY(0) !important; }
+.skip-link {
+  position: absolute;
+  top: -48px;
+  left: 1rem;
+  z-index: 10000;
+  padding: 0.6rem 0.9rem;
+  background: #5a1520;
+  color: #f3e8c0;
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.skip-link:focus { top: 1rem; }
 </style>
 
 
@@ -242,6 +257,8 @@
 
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<header role="banner">
 
 <!-- NAV -->
 <nav>
@@ -258,6 +275,8 @@
     <span></span><span></span><span></span>
   </button>
 </nav>
+</header>
+<main id="main-content">
 
 <!-- SECTION 1: HERO -->
 <section id="hero">
@@ -442,7 +461,7 @@
     <div style="background:var(--ivory);border:1px solid var(--border-str);">
       <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
         <span style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);">Samithi &amp; Satsang</span>
-        <span id="samithi-my-name" style="font-family:'Cinzel',serif;font-size:0.45rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);cursor:pointer;" onclick="openSamithiModal()">+ Nominate Your Samithi</span>
+        <span id="samithi-my-name" role="button" tabindex="0" aria-label="Nominate your Samithi" style="font-family:'Cinzel',serif;font-size:0.45rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);cursor:pointer;" onclick="openSamithiModal()">+ Nominate Your Samithi</span>
       </div>
       <div id="samithi-leaderboard-list" style="padding:0.5rem 0;">
         <div style="padding:1rem 2rem;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--muted);font-size:0.95rem;">Loading...</div>
@@ -457,7 +476,7 @@
   <span class="eyebrow" style="justify-content:center;">The Collectible Discovery Box</span>
   <h2 class="section-title" style="text-align:center;">Crafted. Blessed. Unrevealed.</h2>
 
-  <div class="scene" id="easter-scene" onclick="if(window.ssEasterOpen){window.ssEasterOpen();}">
+  <div class="scene" id="easter-scene" role="button" tabindex="0" aria-label="Open Aaradhana Day poster preview" onclick="if(window.ssEasterOpen){window.ssEasterOpen();}">
     <div class="box" id="easter-box" role="button" tabindex="0" aria-label="Reveal Aaradhana Day poster" onclick="if(window.ssEasterOpen){window.ssEasterOpen();}">
       <div class="face face-front"></div>
       <div class="face face-back"></div>
@@ -1146,6 +1165,7 @@
   </div>
 </div>
 
+</main>
 <footer id="footer">
   <div class="footer-inner">
 
@@ -1296,7 +1316,7 @@
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 
 <!-- SAIRAM CHATBOT -->
-<div id="ss-chat-bubble" onclick="ssChatToggle()" title="Sairam — Ask me anything">
+<div id="ss-chat-bubble" role="button" tabindex="0" aria-label="Open Sairam chat assistant" onclick="ssChatToggle()" title="Sairam — Ask me anything">
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.05 21.95l4.782-1.388A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.95 7.95 0 01-4.078-1.118l-.292-.174-3.027.878.878-3.027-.174-.292A7.95 7.95 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8z"/></svg>
 </div>
 
@@ -1323,6 +1343,27 @@
 <script data-cfasync="false" src="main.js?v=87"></script>
 <script data-cfasync="false">
   (function() {
+    function withKeyboardButtonSupport(el) {
+      if (!el) return;
+      el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          el.click();
+        }
+      });
+    }
+
+    withKeyboardButtonSupport(document.getElementById('easter-scene'));
+    withKeyboardButtonSupport(document.getElementById('ss-chat-bubble'));
+    withKeyboardButtonSupport(document.getElementById('samithi-my-name'));
+
+    document.querySelectorAll('button, a, [role="button"]').forEach(function(el) {
+      if (!el.getAttribute('aria-label')) {
+        var label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (label) el.setAttribute('aria-label', label);
+      }
+    });
+
     if (!window.ssEasterOpen) {
       window.ssEasterOpen = function() {
         var overlay = document.getElementById('easter-overlay');
