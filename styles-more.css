@@ -20,6 +20,33 @@
   margin-bottom: 4rem;
 }
 
+.footer-lab-note {
+  max-width: 920px;
+  margin: 0 auto 1.8rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--border);
+  background: rgba(250, 246, 239, 0.62);
+  text-align: center;
+}
+
+.footer-lab-note p {
+  margin: 0;
+  font-family: 'EB Garamond', serif;
+  font-size: 1.18rem;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+.footer-lab-note p + p {
+  margin-top: 0.4rem;
+}
+
+.footer-lab-note a {
+  color: var(--burgundy);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(90, 21, 32, 0.35);
+}
+
 .footer-brand .nav-logo {
   font-size: 1.3rem;
   display: block;
@@ -377,6 +404,8 @@
   .footer-top { grid-template-columns: 1fr 1fr; gap: 2rem; }
   .footer-brand { grid-column: 1 / -1; }
   #footer { padding-top: 3rem; padding-bottom: 2rem; }
+  .footer-lab-note { margin: 0 auto 1.4rem; padding: 1rem 0.9rem; }
+  .footer-lab-note p { font-size: 1rem; line-height: 1.7; }
 
   /* BOX — scale down slightly on mobile */
   .scene { transform: scale(0.85); transform-origin: center top; }
