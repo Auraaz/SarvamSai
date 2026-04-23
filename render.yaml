@@ -1,0 +1,17 @@
+# Deploy the Node API to Render: https://render.com → New Blueprint → connect this repo.
+# After deploy: add custom domain api.sarvamsai.in (DNS CNAME to your Render host).
+# In Render Dashboard → Environment: set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, EMAIL_*, etc.
+
+services:
+  - type: web
+    name: sarvamsai-api
+    runtime: node
+    region: singapore
+    plan: free
+    rootDir: api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"

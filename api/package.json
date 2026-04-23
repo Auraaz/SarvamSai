@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js"
   },
@@ -13,7 +16,6 @@
   "dependencies": {
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
-    "crypto": "^1.0.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "nodemailer": "^8.0.5",

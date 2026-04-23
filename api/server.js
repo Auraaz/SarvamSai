@@ -12,6 +12,7 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = Number(process.env.PORT || 8787);
 const DATA_DIR = path.join(__dirname, "data");
 const ORDERS_PATH = path.join(DATA_DIR, "orders.json");
@@ -45,9 +46,36 @@ app.use((req, res, next) => {
   return bodyParser.json()(req, res, next);
 });
 
+const CORS_DEFAULT_ORIGINS = [
+  "https://sarvamsai.in",
+  "https://www.sarvamsai.in",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+  "http://localhost:8787",
+  "http://127.0.0.1:8787"
+];
+
+function parseCorsExtraOrigins() {
+  const raw = process.env.CORS_ORIGINS || "";
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+const corsExtraOrigins = new Set(parseCorsExtraOrigins());
+
 app.use(
   cors({
-    origin: true,
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (CORS_DEFAULT_ORIGINS.includes(origin)) return callback(null, true);
+      if (corsExtraOrigins.has(origin)) return callback(null, true);
+      if (/^https:\/\/[a-z0-9-]+\.sarvamsai\.pages\.dev$/i.test(origin)) return callback(null, true);
+      return callback(null, false);
+    },
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
   })
@@ -289,12 +317,15 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.get("/payment-config", (_req, res) => {
-  res.json({ key: RAZORPAY_KEY });
-});
-app.get("/api/payment-config", (_req, res) => {
-  res.json({ key: RAZORPAY_KEY });
-});
+function sendPaymentConfig(_req, res) {
+  if (!RAZORPAY_KEY) {
+    return res.status(503).json({ error: "RAZORPAY_KEY_ID is not configured on the API server." });
+  }
+  return res.json({ key: RAZORPAY_KEY });
+}
+
+app.get("/payment-config", sendPaymentConfig);
+app.get("/api/payment-config", sendPaymentConfig);
 
 async function createOrderHandler(req, res) {
   const { email, totalItems, totalAmount } = req.body || {};
@@ -653,6 +684,6 @@ app.get("/orders", (_req, res) => {
 });
 
 ensureStorage();
-app.listen(PORT, () => {
-  console.log(`SarvamSai API running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`SarvamSai API listening on port ${PORT}`);
 });

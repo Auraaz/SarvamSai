@@ -7,6 +7,14 @@ const API_BASE = (() => {
   if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
     return "http://localhost:8787/api";
   }
+  const host = window.location.hostname;
+  // GitHub Pages (and other static hosts) have no /api — use a dedicated API host.
+  if (host === "sarvamsai.in" || host === "www.sarvamsai.in") {
+    return "https://api.sarvamsai.in/api";
+  }
+  if (/^[a-z0-9-]+\.sarvamsai\.pages\.dev$/i.test(host)) {
+    return "https://api.sarvamsai.in/api";
+  }
   return "/api";
 })();
 const START_DATE = new Date("2026-04-24");
@@ -704,7 +712,21 @@ function ensureRazorpayCheckoutLoaded() {
 async function fetchRazorpayKey() {
   if (razorpayKeyCache) return razorpayKeyCache;
   const response = await fetch(`${API_BASE}/payment-config`);
-  if (!response.ok) throw new Error("Unable to load Razorpay config.");
+  if (!response.ok) {
+    let detail = "";
+    try {
+      const err = await response.json();
+      if (err && err.error) detail = " " + String(err.error);
+    } catch (_e) {
+      /* non-JSON body */
+    }
+    if (response.status === 404) {
+      throw new Error(
+        `Unable to load Razorpay config. (404: no API at ${API_BASE} — deploy the Node service and DNS, or set API_BASE in config/launch-global.js.)`
+      );
+    }
+    throw new Error("Unable to load Razorpay config." + (detail || ` (${response.status})`));
+  }
   const payload = await response.json();
   if (!payload || !payload.key) throw new Error("Razorpay key is missing.");
   razorpayKeyCache = payload.key;
