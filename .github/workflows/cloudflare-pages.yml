@@ -1,0 +1,32 @@
+# Deploys the repo root to Cloudflare Pages (static + /functions).
+# Add GitHub repository secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
+# Create a token: Account → Cloudflare Pages → Edit. https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/
+#
+# Create a Cloudflare Pages project whose name matches this repo (e.g. SarvamSai), or
+# change --project-name below. Optional repo variable CLOUDFLARE_PAGES_PROJECT_NAME overrides.
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    name: Deploy to Cloudflare Pages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy . --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME || github.event.repository.name }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
