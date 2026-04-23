@@ -1,5 +1,6 @@
 (function () {
   window.SARVAMSAI_LAUNCH_CONFIG = {
-    LAUNCH_DATE: "2026-04-24T00:00:00+05:30"
+    // Optional — GitHub Pages (no same-origin /api): set API_BASE to your public API + /api
+    // API_BASE: "https://YOUR_PUBLIC_API_HOST/api",
   };
 })();

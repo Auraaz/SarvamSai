@@ -507,10 +507,28 @@ async function loadSamithiLeaderboard() {
   } catch(e) {}
 }
 
+// Store gate (`/store`, launch-system.js) reads `localStorage.user` as { email, code }.
+// Persist when the queue API returns an access code (Apps Script: include `code` on `user`).
+function persistStoreGateCredentialsFromQueueUser(user) {
+  try {
+    if (!user || !user.email) return;
+    const code = String(user.code || user.access_code || user.accessCode || "").trim();
+    if (!code) return;
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: String(user.email).trim().toLowerCase(),
+        code: code.toUpperCase()
+      })
+    );
+  } catch (_e) {}
+}
+
 // Load leaderboards after registration — no auto modal
 const _origShowRegistered = window.showRegisteredState;
 window.showRegisteredState = function(user) {
   _origShowRegistered(user);
+  persistStoreGateCredentialsFromQueueUser(user);
   loadSamithiLeaderboard();
   // Pre-load samithi list silently for when user taps nominate
   loadSamithis();

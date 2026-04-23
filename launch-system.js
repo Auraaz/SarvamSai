@@ -1,13 +1,15 @@
 const STORE_URL = "https://sarvamsai.in/store/";
-const WHATSAPP_SUPPORT_URL = "https://wa.me/91XXXXXXXXXX";
-const API_BASE =
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:8787/api"
-    : "/api";
-const START_DATE = new Date("2026-04-24");
-const FALLBACK_LAUNCH_DATE = "2026-04-24T00:00:00+05:30";
 const launchConfig = window.SARVAMSAI_LAUNCH_CONFIG || {};
-const LAUNCH_DATE = new Date(launchConfig.LAUNCH_DATE || FALLBACK_LAUNCH_DATE);
+const API_BASE = (() => {
+  const override =
+    typeof launchConfig.API_BASE === "string" ? launchConfig.API_BASE.trim().replace(/\/$/, "") : "";
+  if (override) return override;
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return "http://localhost:8787/api";
+  }
+  return "/api";
+})();
+const START_DATE = new Date("2026-04-24");
 let razorpayScriptPromise = null;
 let razorpayKeyCache = "";
 let reserveCtaObserver = null;
@@ -19,23 +21,6 @@ const ORDER_CONFIRMATION_STORAGE_KEY = "sai_last_confirmed_order";
 let order = {
   items: []
 };
-
-function isLive() {
-  return new Date() >= LAUNCH_DATE;
-}
-
-function isPreview() {
-  const host = window.location.hostname;
-  return (
-    host === "localhost" ||
-    host === "127.0.0.1" ||
-    host === "0.0.0.0" ||
-    host === "::1" ||
-    host === "[::1]" ||
-    host === "::" ||
-    host === "::ffff:127.0.0.1"
-  );
-}
 
 function generateCode() {
   return "SAI-" + Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -329,10 +314,6 @@ function renderStore() {
       <strong>SarvamSai</strong>
       <p>A spiritual collectible journey in devotion and purpose.</p>
     </footer>
-
-    <a class="ss-whatsapp-float" href="${WHATSAPP_SUPPORT_URL}" target="_blank" rel="noopener noreferrer" aria-label="Need Help on WhatsApp">
-      <span>💬</span>Need Help?
-    </a>
 
     <div class="ss-mobile-cta" id="ssMobileCta">
       ${reserveButtonFooter}
@@ -1142,20 +1123,8 @@ function showConfirmation(user) {
 function mountStoreExperience() {
   const params = new URLSearchParams(window.location.search);
   const prefilledEmail = params.get("email");
-  const allowAccess = isLive() || isPreview();
-  if (!allowAccess) {
-    document.body.innerHTML = `
-      <main class="ss-launch-wrap">
-        <section class="ss-card">
-          <h1>Store is not live yet.</h1>
-          <p>Please return after launch.</p>
-        </section>
-      </main>
-    `;
-    return;
-  }
 
-  const darshanLanding = isLive() || isPreview() ? getDarshanStoreLandingHtml() : "";
+  const darshanLanding = getDarshanStoreLandingHtml();
 
   document.body.innerHTML = `
     <main class="ss-launch-wrap">
@@ -1882,22 +1851,6 @@ function mountStoreExperience() {
     .ss-store-footer p {
       margin: 0.2rem 0 0;
     }
-    .ss-whatsapp-float {
-      position: fixed;
-      right: 1rem;
-      bottom: 1rem;
-      z-index: 40;
-      border-radius: 999px;
-      padding: 0.7rem 0.9rem;
-      background: linear-gradient(135deg, #2b9c58, #25d366);
-      color: #fff;
-      text-decoration: none;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.38rem;
-      box-shadow: 0 10px 24px rgba(37, 211, 102, 0.3);
-    }
     .ss-mobile-cta {
       display: none;
     }
@@ -1956,9 +1909,6 @@ function mountStoreExperience() {
       .ss-mobile-cta .ss-btn {
         width: 100%;
       }
-      .ss-whatsapp-float {
-        bottom: 4.8rem;
-      }
       .ss-hero-visual {
         min-height: auto;
       }
@@ -1968,9 +1918,6 @@ function mountStoreExperience() {
       }
       .ss-product-hero-frame {
         min-height: 1140px;
-      }
-      .ss-whatsapp-float {
-        max-width: calc(100vw - 1.6rem);
       }
       .ss-order-total {
         flex-direction: column;
