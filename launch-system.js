@@ -111,12 +111,18 @@ function formatMintDate(dayNumber) {
 }
 
 function setStoreVisibility(showStore) {
-  const gate = document.getElementById("gate");
+  const preStore = document.getElementById("darshan-access-flow");
   const storeContent = document.getElementById("storeContent");
-  if (!gate || !storeContent) return;
-
-  gate.style.display = showStore ? "none" : "block";
-  storeContent.style.display = showStore ? "block" : "none";
+  if (preStore) {
+    preStore.style.display = showStore ? "none" : "block";
+  } else {
+    const gate = document.getElementById("gate");
+    if (!gate) return;
+    gate.style.display = showStore ? "none" : "block";
+  }
+  if (storeContent) {
+    storeContent.style.display = showStore ? "block" : "none";
+  }
 }
 
 function renderStore() {
@@ -658,6 +664,11 @@ function isUnsupportedCheckoutContext() {
   return inAppOrWebViewPattern.test(ua);
 }
 
+function sarvamSaiEnterDarshanAccess(event) {
+  if (event && typeof event.preventDefault === "function") event.preventDefault();
+  document.getElementById("darshan-access")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function checkAccess() {
   const emailEl = document.getElementById("email");
   const codeEl = document.getElementById("code");
@@ -868,15 +879,12 @@ async function buyNow() {
 }
 
 function mountHomeExperience() {
-  const allowDarshan = isLive();
-  if (!allowDarshan) return;
+  // Darshan / private-mint invite lives on /store only, not the marketing homepage.
+}
 
-  const hero = document.getElementById("hero");
-  if (!hero || document.getElementById("darshan-layer")) return;
-
-  const section = document.createElement("section");
-  section.id = "darshan-layer";
-  section.innerHTML = `
+function getDarshanStoreLandingHtml() {
+  return `
+  <section id="darshan-layer" class="darshan-on-store" aria-label="Darshan invitation">
     <div class="darshan-layer-inner">
       <p class="darshan-invite-tag">YOU'RE INVITED</p>
 
@@ -892,7 +900,7 @@ function mountHomeExperience() {
         <img src="/sarvamsai-hero-transparent.webp" alt="Standing blessing pose of Bhagawan Sri Sathya Sai Baba" />
       </figure>
 
-      <article class="darshan-entry-card" role="button" tabindex="0" aria-label="Enter Darshan and access the private mint" onclick="window.location.href='/store'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/store';}">
+      <article class="darshan-entry-card" role="button" tabindex="0" aria-label="Continue to darshan access" onclick="sarvamSaiEnterDarshanAccess(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();sarvamSaiEnterDarshanAccess(event);}">
         <div class="darshan-entry-icon">🛕</div>
         <div class="darshan-entry-copy">
           <strong>Enter Darshan</strong>
@@ -918,197 +926,204 @@ function mountHomeExperience() {
 
       <p class="darshan-footer-line">LOVE ALL • SERVE ALL • HELP EVER • HURT NEVER</p>
     </div>
+  </section>
   `;
-  hero.insertAdjacentElement("afterend", section);
+}
 
-  if (!document.getElementById("darshan-layer-style")) {
-    const style = document.createElement("style");
-    style.id = "darshan-layer-style";
-    style.textContent = `
-      #darshan-layer {
-        width: 100%;
-        padding: 24px 16px;
-        background: linear-gradient(180deg, #0b0b0f 0%, #12121a 100%);
-        color: #f5f5f5;
-      }
+function ensureDarshanLayerStyles() {
+  if (document.getElementById("darshan-layer-style")) return;
+  const style = document.createElement("style");
+  style.id = "darshan-layer-style";
+  style.textContent = `
+    #darshan-layer {
+      width: 100%;
+      padding: 24px 16px;
+      background: linear-gradient(180deg, #0b0b0f 0%, #12121a 100%);
+      color: #f5f5f5;
+    }
+    .darshan-on-store#darshan-layer {
+      margin: 0 0 1.1rem 0;
+      border-radius: 14px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .darshan-layer-inner {
+      max-width: 560px;
+      margin: 0 auto;
+      text-align: left;
+      background: transparent;
+    }
+    .darshan-invite-tag {
+      margin: 0 0 12px;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #D4AF37;
+      font-family: "Cinzel", serif;
+    }
+    .darshan-layer-inner h2 {
+      margin: 0;
+      color: #f5f5f5;
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(28px, 7.5vw, 32px);
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+    .darshan-layer-inner h2 span {
+      color: #D4AF37;
+      font-style: italic;
+    }
+    .darshan-subtext {
+      margin: 12px 0 0;
+      color: rgba(245, 245, 245, 0.8);
+      font-size: 15px;
+      line-height: 1.6;
+      font-family: "EB Garamond", serif;
+    }
+    .darshan-visual-wrap {
+      position: relative;
+      width: 100%;
+      margin: 16px 0 0;
+      border-radius: 16px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 35%, rgba(212,175,55,0.22), rgba(212,175,55,0.05) 52%, rgba(11,11,15,0.45) 100%);
+      border: 1px solid rgba(212,175,55,0.24);
+      box-shadow: inset 0 0 56px rgba(0, 0, 0, 0.45);
+      min-height: 300px;
+      display: grid;
+      place-items: center;
+    }
+    .darshan-visual-glow {
+      position: absolute;
+      width: 72%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,175,55,0.35), rgba(212,175,55,0.03) 70%);
+      filter: blur(8px);
+    }
+    .darshan-visual-wrap img {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 340px);
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+    .darshan-entry-card {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(212,175,55,0.3);
+      background: rgba(255,255,255,0.03);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .darshan-entry-card:hover,
+    .darshan-entry-card:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+      border-color: rgba(212,175,55,0.55);
+      outline: none;
+    }
+    .darshan-entry-icon {
+      color: #D4AF37;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .darshan-entry-copy strong {
+      display: block;
+      font-family: "Cinzel", serif;
+      font-size: 15px;
+      color: #f5f5f5;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .darshan-entry-copy span {
+      display: block;
+      color: rgba(245,245,245,0.78);
+      font-size: 14px;
+      margin-top: 2px;
+    }
+    .darshan-entry-arrow {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #0b0b0f;
+      background: #D4AF37;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .darshan-support-cards {
+      margin-top: 20px;
+      display: grid;
+      gap: 12px;
+    }
+    .darshan-support-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(184,146,42,0.35);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .darshan-support-card h3 {
+      margin: 0;
+      color: #D4AF37;
+      font-family: "Cinzel", serif;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .darshan-support-card p {
+      margin: 6px 0 0;
+      color: rgba(245,245,245,0.8);
+      font-family: "EB Garamond", serif;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+    .darshan-footer-line {
+      margin: 20px 0 0;
+      text-align: center;
+      color: rgba(212,175,55,0.9);
+      font-family: "Cinzel", serif;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    @media (min-width: 900px) {
       .darshan-layer-inner {
-        max-width: 560px;
-        margin: 0 auto;
-        text-align: left;
-        background: transparent;
+        max-width: 980px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 24px;
+        row-gap: 0;
+        align-items: start;
       }
-      .darshan-invite-tag {
-        margin: 0 0 12px;
-        font-size: 12px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #D4AF37;
-        font-family: "Cinzel", serif;
-      }
-      .darshan-layer-inner h2 {
-        margin: 0;
-        color: #f5f5f5;
-        font-family: "Cormorant Garamond", serif;
-        font-size: clamp(28px, 7.5vw, 32px);
-        line-height: 1.2;
-        letter-spacing: 0.01em;
-      }
-      .darshan-layer-inner h2 span {
-        color: #D4AF37;
-        font-style: italic;
-      }
-      .darshan-subtext {
-        margin: 12px 0 0;
-        color: rgba(245, 245, 245, 0.8);
-        font-size: 15px;
-        line-height: 1.6;
-        font-family: "EB Garamond", serif;
+      .darshan-invite-tag,
+      .darshan-layer-inner h2,
+      .darshan-subtext,
+      .darshan-entry-card,
+      .darshan-support-cards,
+      .darshan-footer-line {
+        grid-column: 1;
       }
       .darshan-visual-wrap {
-        position: relative;
-        width: 100%;
-        margin: 16px 0 0;
-        border-radius: 16px;
-        overflow: hidden;
-        background: radial-gradient(circle at 50% 35%, rgba(212,175,55,0.22), rgba(212,175,55,0.05) 52%, rgba(11,11,15,0.45) 100%);
-        border: 1px solid rgba(212,175,55,0.24);
-        box-shadow: inset 0 0 56px rgba(0, 0, 0, 0.45);
-        min-height: 300px;
-        display: grid;
-        place-items: center;
-      }
-      .darshan-visual-glow {
-        position: absolute;
-        width: 72%;
-        aspect-ratio: 1 / 1;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(212,175,55,0.35), rgba(212,175,55,0.03) 70%);
-        filter: blur(8px);
-      }
-      .darshan-visual-wrap img {
-        position: relative;
-        z-index: 1;
-        width: min(100%, 340px);
-        height: auto;
-        object-fit: contain;
-        display: block;
-      }
-      .darshan-entry-card {
-        margin-top: 20px;
-        padding: 16px;
-        border-radius: 16px;
-        border: 1px solid rgba(212,175,55,0.3);
-        background: rgba(255,255,255,0.03);
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-      }
-      .darshan-entry-card:hover,
-      .darshan-entry-card:focus-visible {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(0,0,0,0.28);
-        border-color: rgba(212,175,55,0.55);
-        outline: none;
-      }
-      .darshan-entry-icon {
-        color: #D4AF37;
-        font-size: 20px;
-        line-height: 1;
-      }
-      .darshan-entry-copy strong {
-        display: block;
-        font-family: "Cinzel", serif;
-        font-size: 15px;
-        color: #f5f5f5;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-      }
-      .darshan-entry-copy span {
-        display: block;
-        color: rgba(245,245,245,0.78);
-        font-size: 14px;
-        margin-top: 2px;
-      }
-      .darshan-entry-arrow {
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        color: #0b0b0f;
-        background: #D4AF37;
-        font-weight: 700;
-        font-size: 18px;
-      }
-      .darshan-support-cards {
-        margin-top: 20px;
-        display: grid;
-        gap: 12px;
-      }
-      .darshan-support-card {
-        background: rgba(255,255,255,0.02);
-        border: 1px solid rgba(184,146,42,0.35);
-        border-radius: 12px;
-        padding: 14px;
-      }
-      .darshan-support-card h3 {
-        margin: 0;
-        color: #D4AF37;
-        font-family: "Cinzel", serif;
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .darshan-support-card p {
-        margin: 6px 0 0;
-        color: rgba(245,245,245,0.8);
-        font-family: "EB Garamond", serif;
-        font-size: 15px;
-        line-height: 1.55;
+        grid-column: 2;
+        grid-row: 1 / span 6;
+        margin-top: 0;
+        min-height: 420px;
       }
       .darshan-footer-line {
-        margin: 20px 0 0;
-        text-align: center;
-        color: rgba(212,175,55,0.9);
-        font-family: "Cinzel", serif;
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        text-align: left;
+        margin-top: 16px;
       }
-      @media (min-width: 900px) {
-        .darshan-layer-inner {
-          max-width: 980px;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          column-gap: 24px;
-          row-gap: 0;
-          align-items: start;
-        }
-        .darshan-invite-tag,
-        .darshan-layer-inner h2,
-        .darshan-subtext,
-        .darshan-entry-card,
-        .darshan-support-cards,
-        .darshan-footer-line {
-          grid-column: 1;
-        }
-        .darshan-visual-wrap {
-          grid-column: 2;
-          grid-row: 1 / span 6;
-          margin-top: 0;
-          min-height: 420px;
-        }
-        .darshan-footer-line {
-          text-align: left;
-          margin-top: 16px;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  }
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 function showConfirmation(user) {
@@ -1140,22 +1155,31 @@ function mountStoreExperience() {
     return;
   }
 
+  const darshanLanding = isLive() || isPreview() ? getDarshanStoreLandingHtml() : "";
+
   document.body.innerHTML = `
     <main class="ss-launch-wrap">
-      <section class="ss-card ss-gate-card">
-        <h1>Darshan Access</h1>
-        <p>Enter your registered details to continue.</p>
-      </section>
+      <div id="darshan-access-flow">
+        ${darshanLanding}
+        <section class="ss-card ss-gate-card" id="darshan-access">
+          <h1>Darshan Access</h1>
+          <p>Enter your registered details to continue.</p>
+        </section>
 
-      <section class="ss-card ss-gate-form" id="gate">
-        <input id="email" type="email" placeholder="Enter your email" />
-        <input id="code" type="text" placeholder="Enter access code" />
-        <button type="button" class="ss-btn ss-btn-gold" onclick="checkAccess()">Enter Store</button>
-      </section>
+        <section class="ss-card ss-gate-form" id="gate">
+          <input id="email" type="email" placeholder="Enter your email" />
+          <input id="code" type="text" placeholder="Enter access code" />
+          <button type="button" class="ss-btn ss-btn-gold" onclick="checkAccess()">Enter Store</button>
+        </section>
+      </div>
 
       <div id="storeContent" style="display:none;"></div>
     </main>
   `;
+
+  if (darshanLanding) {
+    ensureDarshanLayerStyles();
+  }
 
   const style = document.createElement("style");
   style.textContent = `
@@ -1980,6 +2004,7 @@ window.clearOrderConfirmation = clearStoredOrderConfirmation;
 window.addItem = addItem;
 window.removeItem = removeItem;
 window.updateItemField = updateItemField;
+window.sarvamSaiEnterDarshanAccess = sarvamSaiEnterDarshanAccess;
 
 if (window.location.pathname.startsWith("/store")) {
   mountStoreExperience();
