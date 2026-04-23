@@ -1,6 +1,9 @@
 const STORE_URL = "https://sarvamsai.in/store/";
-/** Hosted Node API (Render behind api.sarvamsai.in). Override via SARVAMSAI_LAUNCH_CONFIG.API_BASE if needed. */
-const PRODUCTION_API_BASE = "https://api.sarvamsai.in/api";
+/**
+ * Primary API (Render) — always resolvable. When api.sarvamsai.in DNS is stable, set
+ * API_BASE in config/launch-global.js to "https://api.sarvamsai.in/api" to use the custom host.
+ */
+const PRODUCTION_API_BASE = "https://sarvamsai-api.onrender.com/api";
 const launchConfig = window.SARVAMSAI_LAUNCH_CONFIG || {};
 const API_BASE = (() => {
   const override =
