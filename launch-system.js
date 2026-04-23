@@ -1,4 +1,6 @@
 const STORE_URL = "https://sarvamsai.in/store/";
+/** Hosted Node API (Render behind api.sarvamsai.in). Override via SARVAMSAI_LAUNCH_CONFIG.API_BASE if needed. */
+const PRODUCTION_API_BASE = "https://api.sarvamsai.in/api";
 const launchConfig = window.SARVAMSAI_LAUNCH_CONFIG || {};
 const API_BASE = (() => {
   const override =
@@ -8,12 +10,12 @@ const API_BASE = (() => {
     return "http://localhost:8787/api";
   }
   const host = window.location.hostname;
-  // GitHub Pages (and other static hosts) have no /api — use a dedicated API host.
+  // Static site hosts have no /api — call the deployed API.
   if (host === "sarvamsai.in" || host === "www.sarvamsai.in") {
-    return "https://api.sarvamsai.in/api";
+    return PRODUCTION_API_BASE;
   }
   if (/^[a-z0-9-]+\.sarvamsai\.pages\.dev$/i.test(host)) {
-    return "https://api.sarvamsai.in/api";
+    return PRODUCTION_API_BASE;
   }
   return "/api";
 })();

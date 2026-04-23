@@ -49,6 +49,7 @@ app.use((req, res, next) => {
 const CORS_DEFAULT_ORIGINS = [
   "https://sarvamsai.in",
   "https://www.sarvamsai.in",
+  "https://api.sarvamsai.in",
   "http://localhost:5500",
   "http://127.0.0.1:5500",
   "http://localhost:8080",
