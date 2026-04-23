@@ -476,16 +476,19 @@
   <span class="eyebrow" style="justify-content:center;">The Collectible Discovery Box</span>
   <h2 class="section-title" style="text-align:center;">Crafted. Blessed. Unrevealed.</h2>
 
-  <div class="scene" id="easter-scene" role="button" tabindex="0" aria-label="Open Aaradhana Day poster preview" onclick="if(window.ssEasterOpen){window.ssEasterOpen();}">
-    <div class="box" id="easter-box" role="button" tabindex="0" aria-label="Reveal Aaradhana Day poster" onclick="if(window.ssEasterOpen){window.ssEasterOpen();}">
-      <div class="face face-front"></div>
-      <div class="face face-back"></div>
-      <div class="face face-right"></div>
-      <div class="face face-left"></div>
-      <div class="face face-top"></div>
-      <div class="face face-bottom"></div>
-    </div>
-  </div>
+  <div
+    data-ss-box-canvas
+    data-scene-id="easter-scene"
+    data-box-id="easter-box"
+    data-scene-role="button"
+    data-box-role="button"
+    data-scene-tab-index="0"
+    data-box-tab-index="0"
+    data-scene-aria="Open Aaradhana Day poster preview"
+    data-box-aria="Reveal Aaradhana Day poster"
+    data-scene-on-click="if(window.ssEasterOpen){window.ssEasterOpen();}"
+    data-box-on-click="if(window.ssEasterOpen){window.ssEasterOpen();}"
+  ></div>
 
   <p class="box-caption">Each Discovery Box is a numbered collectible, time-stamped with its blessing date. Only 100 exist per day. Once midnight passes, that date is blessed forever. The Swaroopa within is shown only to devotees after they receive and open the box.</p>
 
@@ -1397,7 +1400,10 @@
   </div>
 </div>
 
+<script data-cfasync="false" src="components/box-canvas.js?v=2"></script>
 <script data-cfasync="false" src="main.js?v=87"></script>
+<script data-cfasync="false" src="config/launch-global.js?v=3"></script>
+<script data-cfasync="false" src="launch-system.js?v=20"></script>
 <script data-cfasync="false">
   (function() {
     function withKeyboardButtonSupport(el) {

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SarvamSai Private Store</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/styles-base.css?v=85">
+  <link rel="stylesheet" href="/styles-more.css?v=85">
+  <style>
+    :root { color-scheme: light; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f2e8;
+      color: #23180e;
+    }
+    .boot {
+      max-width: 680px;
+      margin: 2rem auto;
+      padding: 1rem;
+      border: 1px solid #d8c7a4;
+      background: #fffdf7;
+    }
+  </style>
+</head>
+<body>
+  <main class="boot" id="storeBootStatus">
+    Loading private store...
+  </main>
+  <noscript>
+    <main class="boot">Please enable JavaScript to access the private store.</main>
+  </noscript>
+  <script>
+    const statusEl = document.getElementById("storeBootStatus");
+    function showBootError(message) {
+      if (!statusEl) return;
+      statusEl.innerHTML = `
+        <h1>Store loading issue</h1>
+        <p>${message}</p>
+        <p>Try opening from <code>http://localhost:8080/store/</code>.</p>
+      `;
+    }
+  </script>
+  <script src="/config/launch-global.js?v=3" onerror="showBootError('Unable to load launch config script.')"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="/components/box-canvas.js?v=2" onerror="showBootError('Unable to load box canvas component.')"></script>
+  <script src="/launch-system.js?v=20" onerror="showBootError('Unable to load launch system script.')"></script>
+  <script>
+    setTimeout(function () {
+      if (!window.__SARVAMSAI_LAUNCH_BOOTED) {
+        showBootError("Launch system did not initialize.");
+      }
+    }, 500);
+  </script>
+</body>
+</html>
