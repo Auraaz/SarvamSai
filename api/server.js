@@ -389,7 +389,15 @@ async function createOrderHandler(req, res) {
     if (statusCode === 401) {
       return res.status(401).json({ error: "Razorpay authentication failed. Check credentials." });
     }
-    return res.status(500).json({ error: "Unable to create order." });
+    const razorpayDesc =
+      (error?.error && typeof error.error === "object" && (error.error.description || error.error.reason)) ||
+      (typeof error?.error === "string" ? error.error : null) ||
+      error?.description ||
+      error?.message;
+    const detail = razorpayDesc ? String(razorpayDesc).trim().slice(0, 400) : "";
+    return res.status(500).json({
+      error: detail ? `Unable to create order. ${detail}` : "Unable to create order."
+    });
   }
 }
 

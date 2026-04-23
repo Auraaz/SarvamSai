@@ -258,7 +258,10 @@ function renderStore() {
         </div>
 
         ${reserveButtonPrimary}
-        <p class="ss-note">Secure checkout powered by Razorpay</p>
+        <p class="ss-note">Secure checkout powered by Razorpay.</p>
+        <p class="ss-note" style="font-size:0.82rem;margin-top:0.35rem;line-height:1.45;">
+          If Razorpay says this browser is not supported: turn off Chrome’s <strong>Device Toolbar</strong> (toggle device mode, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd>) or DevTools responsive emulation, then try again — or open this page in a normal tab on your phone.
+        </p>
       </article>
     </section>
 
@@ -773,7 +776,7 @@ async function buyNow() {
   if (isUnsupportedCheckoutContext()) {
     const hintEl = document.getElementById("ssCheckoutHint");
     const msg =
-      "Checkout needs a full browser window. Please open this page in Chrome, Edge, Safari, or Firefox and try again.";
+      "Checkout cannot run in this embedded or in-app browser. Open the store in Chrome, Edge, Safari, or Firefox (full tab, not an in-app webview). If you use Chrome DevTools, turn off Device Toolbar (Ctrl+Shift+M).";
     if (hintEl) {
       hintEl.textContent = msg;
     } else {
