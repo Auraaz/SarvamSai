@@ -1,13 +1,13 @@
 # Deploys the repo root to Cloudflare Pages (static + /functions).
 #
-# GitHub: Settings → Secrets and variables → Actions
-#   Secrets:  CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
-#   (Optional) Variables: CLOUDFLARE_PAGES_PROJECT_NAME — must match the Pages project
-#   name in Cloudflare (e.g. sarvamsai). If unset, the GitHub *repository* name is used,
-#   which may not match; set the variable when your CF project name differs.
+# GitHub → Settings → Secrets and variables → Actions
+#   Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
+#   Variables (optional): CLOUDFLARE_PAGES_PROJECT_NAME — must match the Pages project in Cloudflare.
 #
-# Token: https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/
-#   Permissions: Account → Cloudflare Pages → Edit (and read account for account id).
+# If deploy fails: confirm token has Account → Cloudflare Pages → Edit; project name matches
+# (defaults to lowercase of repo name, e.g. SarvamSai → sarvamsai).
+# gitHubToken is intentionally omitted — it only adds GitHub Deployments UI and often causes
+# permission errors; Cloudflare deploy does not need it.
 
 on:
   push:
@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      deployments: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,8 +35,9 @@ jobs:
             echo "project_name=$PAGES_NAME_OVERRIDE" >> "$GITHUB_OUTPUT"
             echo "Using Cloudflare Pages project: $PAGES_NAME_OVERRIDE"
           else
-            echo "project_name=${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
-            echo "Using repository name as Pages project. Set var CLOUDFLARE_PAGES_PROJECT_NAME if Cloudflare uses a different name."
+            LOWER="$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')"
+            echo "project_name=$LOWER" >> "$GITHUB_OUTPUT"
+            echo "Using lowercase repo name as Pages project: $LOWER (set var CLOUDFLARE_PAGES_PROJECT_NAME if different)."
           fi
 
       - name: Deploy
@@ -46,6 +46,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: "4"
+          # Pin minor to avoid surprise breakages on latest 4.x
+          wranglerVersion: "4.81.0"
           command: pages deploy . --project-name=${{ steps.pages.outputs.project_name }}
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
