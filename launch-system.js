@@ -10,6 +10,49 @@ function getApiBase() {
   return PRODUCTION_API_BASE;
 }
 const API_BASE = getApiBase();
+let resolvedApiBase = API_BASE;
+
+function normalizeApiBase(value) {
+  const base = String(value || "").trim();
+  if (!base || base === "/") return "";
+  return base.replace(/\/+$/, "");
+}
+
+function buildApiUrl(base, path) {
+  const normalizedPath = String(path || "").startsWith("/") ? String(path) : `/${String(path || "")}`;
+  const normalizedBase = normalizeApiBase(base);
+  return normalizedBase ? `${normalizedBase}${normalizedPath}` : normalizedPath;
+}
+
+function getApiBaseCandidates() {
+  const configuredBase = normalizeApiBase(API_BASE);
+  const currentBase = normalizeApiBase(resolvedApiBase);
+  const candidates = [currentBase, configuredBase, "/api", ""];
+  return [...new Set(candidates.map((item) => normalizeApiBase(item)))];
+}
+
+async function fetchApiGet(path) {
+  let lastResponse = null;
+  let lastError = null;
+  for (const candidate of getApiBaseCandidates()) {
+    const url = buildApiUrl(candidate, path);
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        resolvedApiBase = normalizeApiBase(candidate);
+        return response;
+      }
+      lastResponse = response;
+      if (response.status !== 404 && response.status !== 405) {
+        break;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  if (lastResponse) return lastResponse;
+  throw lastError || new Error(`Unable to reach API endpoint: ${path}`);
+}
 const START_DATE = new Date("2026-04-24");
 let razorpayScriptPromise = null;
 let razorpayKeyCache = "";
@@ -112,18 +155,20 @@ function clearStoredOrderConfirmation() {
 }
 
 function getUserEmail() {
+  const accessEmail = String(localStorage.getItem("sai_access_email") || "").trim().toLowerCase();
+  if (accessEmail) return accessEmail;
   const user = getStoredUser();
   if (user && user.email) {
     return String(user.email).trim().toLowerCase();
   }
-  return String(localStorage.getItem("sai_access_email") || "").trim().toLowerCase();
+  return "";
 }
 
 async function loadUserDataByEmail(email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
   if (!normalizedEmail) return;
   try {
-    const response = await fetch(`${API_BASE}/access-profile?email=${encodeURIComponent(normalizedEmail)}`);
+    const response = await fetchApiGet(`/access-profile?email=${encodeURIComponent(normalizedEmail)}`);
     if (!response.ok) return;
     const payload = await response.json().catch(() => ({}));
     const profile = payload?.profile;
@@ -615,7 +660,7 @@ async function loadMyOrders() {
   if (!target || !email) return;
 
   try {
-    const response = await fetch(`${API_BASE}/orders-by-email?email=${encodeURIComponent(email)}`);
+    const response = await fetchApiGet(`/orders-by-email?email=${encodeURIComponent(email)}`);
     if (!response.ok) {
       throw new Error("Unable to fetch order history right now.");
     }
@@ -801,7 +846,7 @@ function setCheckoutHintMessage(message) {
 
 async function fetchRazorpayKey() {
   if (razorpayKeyCache) return razorpayKeyCache;
-  const response = await fetch(`${API_BASE}/payment-config`);
+  const response = await fetchApiGet("/payment-config");
   if (!response.ok) {
     let detail = "";
     try {
@@ -812,7 +857,7 @@ async function fetchRazorpayKey() {
     }
     if (response.status === 404) {
       throw new Error(
-        `Unable to load Razorpay config. (404: no API at ${API_BASE} — deploy the Node service and DNS, or set API_BASE in config/launch-global.js.)`
+        `Unable to load Razorpay config. (404: no API route found for payment-config on this deployment.)`
       );
     }
     throw new Error("Unable to load Razorpay config." + (detail || ` (${response.status})`));
@@ -852,7 +897,7 @@ function handlePaymentSuccess(paymentResponse, items, totalItems, totalAmount) {
 
 async function loadDailyAvailability() {
   try {
-    const response = await fetch(`${API_BASE}/availability-today`);
+    const response = await fetchApiGet("/availability-today");
     if (!response.ok) return;
     const payload = await response.json().catch(() => ({}));
     const remaining = Number(payload?.remaining);
@@ -884,7 +929,7 @@ async function startRazorpay(orderDetails, context) {
     order_id: orderDetails.order_id,
     handler: async function (response) {
       try {
-        const verifyRes = await fetch(`${API_BASE}/verify-payment`, {
+        const verifyRes = await fetch(buildApiUrl(resolvedApiBase, "/verify-payment"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -976,12 +1021,24 @@ async function buyNow() {
       );
       return;
     }
+    // Retry on-demand so users are not blocked if preload failed or was slow.
+    if (!RAZORPAY_KEY || !window.Razorpay) {
+      try {
+        await preloadRazorpayCheckout();
+      } catch (_error) {
+        // preloadRazorpayCheckout already logs details; fall through to explicit checks below.
+      }
+    }
     if (!RAZORPAY_KEY) {
-      showUserError("Payment system is still loading. Please try again in a moment.");
+      showUserError("Unable to load payment configuration right now. Please refresh and retry.");
+      return;
+    }
+    if (!window.Razorpay) {
+      showUserError("Unable to load Razorpay checkout right now. Please refresh and retry.");
       return;
     }
 
-    const orderResponse = await fetch(`${API_BASE}/create-order`, {
+    const orderResponse = await fetch(buildApiUrl(resolvedApiBase, "/create-order"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
