@@ -1,5 +1,7 @@
 const STORE_URL = "https://sarvamsai.in/store/";
 const PRODUCTION_API_BASE = "/api";
+const STORE_ENTRY_ROUTE = "/store";
+const STORE_LAUNCH_ROUTE = "/store/launch";
 function getApiBase() {
   return PRODUCTION_API_BASE;
 }
@@ -691,7 +693,9 @@ function shareStoreInvite(inviteLink) {
 
 function sarvamSaiEnterDarshanAccess(event) {
   if (event && typeof event.preventDefault === "function") event.preventDefault();
-  document.getElementById("darshan-access")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const params = new URLSearchParams(window.location.search);
+  const query = params.toString();
+  window.location.href = `${STORE_LAUNCH_ROUTE}${query ? `?${query}` : ""}`;
 }
 
 async function validatePrivateAccessKey(email, code) {
@@ -757,7 +761,8 @@ function unlockStore() {
   if (activeAccessCode) {
     localStorage.setItem("sai_access_code", activeAccessCode);
   }
-  window.location.href = "/store/home";
+  // Keep users on the launch route where store UI is mounted reliably.
+  window.location.href = STORE_LAUNCH_ROUTE;
 }
 
 function ensureRazorpayCheckoutLoaded() {
@@ -1286,6 +1291,8 @@ function mountStoreExperience() {
   const params = new URLSearchParams(window.location.search);
   const prefilledEmail = params.get("email");
   const prefilledToken = params.get("token") || params.get("code");
+  const isLaunchRoute = window.location.pathname.startsWith(STORE_LAUNCH_ROUTE);
+  const hasInviteParams = Boolean(prefilledEmail && prefilledToken);
 
   const darshanLanding = getDarshanStoreLandingHtml();
 
@@ -1293,15 +1300,21 @@ function mountStoreExperience() {
     <main class="ss-launch-wrap">
       <div id="darshan-access-flow">
         ${darshanLanding}
-        <section class="ss-card ss-gate-card" id="darshan-access">
-          <h1>Private Link Access</h1>
-          <p>Use your invite email to continue to the private store.</p>
-        </section>
+        ${
+          isLaunchRoute || hasInviteParams
+            ? `
+              <section class="ss-card ss-gate-card" id="darshan-access">
+                <h1>Private Link Access</h1>
+                <p>Use your invite email to continue to the private store.</p>
+              </section>
 
-        <section class="ss-card ss-gate-form" id="gate">
-          <input id="email" type="email" placeholder="Enter your email" />
-          <button type="button" class="ss-btn ss-btn-gold" onclick="checkAccess()">Continue to Store</button>
-        </section>
+              <section class="ss-card ss-gate-form" id="gate">
+                <input id="email" type="email" placeholder="Enter your email" />
+                <button type="button" class="ss-btn ss-btn-gold" onclick="checkAccess()">Continue to Store</button>
+              </section>
+            `
+            : ""
+        }
       </div>
 
       <div id="storeContent" style="display:none;"></div>
@@ -2112,6 +2125,10 @@ function mountStoreExperience() {
     activeAccessCode = String(prefilledToken).trim();
   }
   if (prefilledEmail && prefilledToken) {
+    if (!isLaunchRoute) {
+      window.location.href = `${STORE_LAUNCH_ROUTE}?${params.toString()}`;
+      return;
+    }
     const gateCard = document.getElementById("darshan-access");
     if (gateCard) {
       gateCard.innerHTML = `
