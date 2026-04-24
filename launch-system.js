@@ -25,6 +25,7 @@ const API_BASE = (() => {
 const START_DATE = new Date("2026-04-24");
 let razorpayScriptPromise = null;
 let razorpayKeyCache = "";
+let RAZORPAY_KEY = "";
 let reserveCtaObserver = null;
 const DEBUG = true;
 const BASE_PRICE_INR = 2999;
@@ -746,6 +747,19 @@ async function fetchRazorpayKey() {
   return razorpayKeyCache;
 }
 
+async function preloadRazorpayCheckout() {
+  try {
+    const [key] = await Promise.all([
+      fetchRazorpayKey(),
+      ensureRazorpayCheckoutLoaded()
+    ]);
+    RAZORPAY_KEY = key;
+    logDebug("Razorpay preload complete", { loaded: Boolean(window.Razorpay), hasKey: Boolean(RAZORPAY_KEY) });
+  } catch (error) {
+    logDebug("Razorpay preload failed", error);
+  }
+}
+
 async function buyNow() {
   const validationError = validateOrderSelection();
   if (validationError) {
@@ -778,8 +792,10 @@ async function buyNow() {
 
   try {
     logDebug("Starting payment", {});
-    await ensureRazorpayCheckoutLoaded();
-    const razorpayKey = await fetchRazorpayKey();
+    if (!RAZORPAY_KEY) {
+      alert("Payment system is still loading. Please try again in a moment.");
+      return;
+    }
 
     const orderResponse = await fetch(`${API_BASE}/create-order`, {
       method: "POST",
@@ -819,7 +835,7 @@ async function buyNow() {
     }
 
     const options = {
-      key: razorpayKey,
+      key: RAZORPAY_KEY,
       amount: Number(order.amount),
       currency: "INR",
       name: "SarvamSai",
@@ -2014,6 +2030,8 @@ function mountStoreExperience() {
     setStoreVisibility(true);
     renderStore();
   }
+
+  preloadRazorpayCheckout();
 }
 
 window.checkAccess = checkAccess;
