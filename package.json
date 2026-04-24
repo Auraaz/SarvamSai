@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "wrangler pages dev .",
     "deploy": "wrangler pages deploy .",
-    "d1:migrate": "wrangler d1 execute sarvamsai-db --remote --file=./schema.sql"
+    "d1:migrate": "wrangler d1 execute sarvamsai-db --remote --file=./schema.sql",
+    "sync:darshan-cache": "node ./scripts/sync-darshan-cache.mjs"
   },
   "devDependencies": {
     "wrangler": "latest"

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SarvamSai Private Store</title>
+  <title>SarvamSai Private Launch</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/webp" href="/centenary-emblem.webp">
   <link rel="icon" type="image/png" href="/centenary-emblem.png">
@@ -30,32 +30,16 @@
   </style>
 </head>
 <body>
-  <section id="product">
-    <span class="eyebrow" style="justify-content:center;">The Collectible Discovery Box</span>
-    <div
-      data-ss-box-canvas
-      data-scene-id="easter-scene"
-      data-box-id="easter-box"
-      data-scene-role="button"
-      data-box-role="button"
-      data-scene-tab-index="0"
-      data-box-tab-index="0"
-      data-scene-aria="Open Aaradhana Day poster preview"
-      data-box-aria="Reveal Aaradhana Day poster"
-      data-scene-on-click="if(window.ssEasterOpen){window.ssEasterOpen();}"
-      data-box-on-click="if(window.ssEasterOpen){window.ssEasterOpen();}"
-    ></div>
-  </section>
-  <main class="boot" id="storeBootStatus">Loading private store...</main>
+  <main class="boot" id="storeBootStatus">Loading private launch...</main>
   <noscript>
-    <main class="boot">Please enable JavaScript to access the private store.</main>
+    <main class="boot">Please enable JavaScript to access the private launch.</main>
   </noscript>
   <script>
     const statusEl = document.getElementById("storeBootStatus");
     function showBootError(message) {
       if (!statusEl) return;
       statusEl.innerHTML = `
-        <h1>Store loading issue</h1>
+        <h1>Launch loading issue</h1>
         <p>${message}</p>
         <p>Please reload or open this page directly from the official store URL.</p>
       `;
