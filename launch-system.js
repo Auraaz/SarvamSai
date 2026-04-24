@@ -16,6 +16,7 @@ let razorpayKeyCache = "";
 let RAZORPAY_KEY = "";
 let reserveCtaObserver = null;
 const DEBUG = false;
+const DAILY_CAPACITY = 100;
 const BASE_PRICE_INR = 2999;
 const INTERNATIONAL_SHIPPING_USD = 15;
 const USD_TO_INR_RATE = 83;
@@ -28,6 +29,7 @@ let activeAccessEmail = "";
 let activeAccessCode = "";
 let activePassphrase = "";
 let activeAccessName = "";
+let remainingTodayCount = DAILY_CAPACITY;
 
 function logDebug(label, data) {
   if (DEBUG) {
@@ -171,7 +173,7 @@ function renderStore() {
   const user = getStoredUser() || {};
   const confirmedOrder = getStoredOrderConfirmation();
   const day = getCurrentDay();
-  const remainingToday = 100;
+  const remainingToday = Math.max(0, Number(remainingTodayCount) || 0);
   const totalInvites = user.invitesLeft || 3;
   const invitesUsed = user.invitesUsed || 0;
   const invitesRemaining = Math.max(totalInvites - invitesUsed, 0);
@@ -284,7 +286,7 @@ function renderStore() {
 
         <div class="ss-key-info">
           <div><span>Price</span><strong>₹${BASE_PRICE_INR}</strong></div>
-          <div><span>Remaining Today</span><strong>${remainingToday} / 100</strong></div>
+          <div><span>Remaining Today</span><strong>${remainingToday} / ${DAILY_CAPACITY}</strong></div>
           <div><span>Distribution</span><strong>Each piece is part of today’s distribution.</strong></div>
         </div>
 
@@ -870,8 +872,24 @@ function handlePaymentSuccess(paymentResponse, items, totalItems, totalAmount) {
     totalAmount,
     status: "confirmed"
   });
+  remainingTodayCount = Math.max(0, remainingTodayCount - Math.max(0, Number(totalItems) || 0));
   renderStore();
+  loadDailyAvailability();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function loadDailyAvailability() {
+  try {
+    const response = await fetch(`${API_BASE}/availability-today`);
+    if (!response.ok) return;
+    const payload = await response.json().catch(() => ({}));
+    const remaining = Number(payload?.remaining);
+    if (!Number.isFinite(remaining)) return;
+    remainingTodayCount = Math.max(0, remaining);
+    renderStore();
+  } catch (_error) {
+    // Non-blocking. Keep optimistic/default availability in UI.
+  }
 }
 
 async function startRazorpay(orderDetails, context) {
@@ -2176,6 +2194,7 @@ function mountStoreExperience() {
   }
 
   preloadRazorpayCheckout();
+  loadDailyAvailability();
 }
 
 window.checkAccess = checkAccess;
