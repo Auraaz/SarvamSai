@@ -749,7 +749,14 @@ async function checkAccess() {
   const validation = await validatePrivateAccessKey(email, code);
   if (!validation.valid) {
     if (validation.reason === "service") {
-      showUserError("Validation service is unavailable right now. Please try again in a moment.");
+      // Fail-open fallback: if backend validation is temporarily down, allow
+      // access for users who arrived with a private email + code combination.
+      activeAccessEmail = email;
+      activeAccessCode = code;
+      activeAccessName = activeAccessName || resolveAccessName(email);
+      localStorage.setItem("sai_access_email", activeAccessEmail);
+      localStorage.setItem("sai_access_code", activeAccessCode);
+      unlockStore();
       return;
     }
     showUserError("Invalid private link. Please use the exact invite link sent to your email.");
@@ -2170,7 +2177,10 @@ function mountStoreExperience() {
     validatePrivateAccessKey(activeAccessEmail, activeAccessCode).then((validation) => {
       if (!validation.valid) {
         if (validation.reason === "service") {
-          showUserError("Validation service is unavailable right now. Please try again in a moment.");
+          // Fail-open fallback for temporary API outages on production domain.
+          localStorage.setItem("sai_access_email", activeAccessEmail);
+          localStorage.setItem("sai_access_code", activeAccessCode);
+          unlockStore();
           return;
         }
         showUserError("Invalid private link. Please use the exact invite link sent to your email.");
