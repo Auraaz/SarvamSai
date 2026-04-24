@@ -2129,13 +2129,16 @@ function mountStoreExperience() {
     prefillEmail(prefilledEmail);
   }
   if (prefilledEmail && prefilledCode) {
+    // Always enforce invite verification + passphrase for link-based entry.
+    // Do not allow a previous local session to auto-bypass the Darshan gate.
+    localStorage.removeItem("sai_access");
     activeAccessCode = prefilledCode;
     validateAccessCode(String(prefilledEmail).trim().toLowerCase(), prefilledCode);
   }
 
   const granted = localStorage.getItem("sai_access") === "granted";
   const grantedEmail = String(localStorage.getItem("sai_access_email") || "").trim().toLowerCase();
-  if (granted) {
+  if (granted && !(prefilledEmail && prefilledCode)) {
     activeAccessEmail = grantedEmail || activeAccessEmail;
     activePassphrase = String(localStorage.getItem("sai_access_passphrase") || "").trim();
     activeAccessCode = String(localStorage.getItem("sai_access_code") || "").trim() || activeAccessCode;
