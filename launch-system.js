@@ -3,6 +3,10 @@ const PRODUCTION_API_BASE = "/api";
 const STORE_ENTRY_ROUTE = "/store";
 const STORE_LAUNCH_ROUTE = "/store/launch";
 function getApiBase() {
+  const configuredBase = String(window?.SARVAMSAI_LAUNCH_CONFIG?.API_BASE || "").trim();
+  if (configuredBase) {
+    return configuredBase.replace(/\/+$/, "");
+  }
   return PRODUCTION_API_BASE;
 }
 const API_BASE = getApiBase();
