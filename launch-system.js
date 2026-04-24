@@ -663,27 +663,6 @@ function shareStoreInvite(inviteLink) {
   window.open(`https://wa.me/?text=${msg}`, "_blank", "noopener");
 }
 
-function isUnsupportedCheckoutContext() {
-  const ua = navigator.userAgent || "";
-  const inAppOrWebViewPattern =
-    /(FBAN|FBAV|Instagram|Line\/|MicroMessenger|wv\)|WebView|Electron|GSA|DuckDuckGo\/|MiuiBrowser)/i;
-  const host = window.location.hostname || "";
-  const isLocalHost = host === "localhost" || host === "127.0.0.1";
-  const isPreviewHost = host.endsWith(".pages.dev");
-  const isProductionHost = host === "sarvamsai.in" || host === "www.sarvamsai.in";
-
-  // Allow checkout on first-party environments.
-  if (isLocalHost || isPreviewHost || isProductionHost) {
-    return false;
-  }
-
-  if (window.top !== window.self) {
-    return true;
-  }
-
-  return inAppOrWebViewPattern.test(ua);
-}
-
 function sarvamSaiEnterDarshanAccess(event) {
   if (event && typeof event.preventDefault === "function") event.preventDefault();
   document.getElementById("darshan-access")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -768,18 +747,6 @@ async function fetchRazorpayKey() {
 }
 
 async function buyNow() {
-  if (isUnsupportedCheckoutContext()) {
-    const hintEl = document.getElementById("ssCheckoutHint");
-    const msg =
-      "Checkout needs a full browser window. Please open this page in Chrome, Edge, Safari, or Firefox and try again.";
-    if (hintEl) {
-      hintEl.textContent = msg;
-    } else {
-      alert(msg);
-    }
-    return;
-  }
-
   const validationError = validateOrderSelection();
   if (validationError) {
     const hintEl = document.getElementById("ssCheckoutHint");
@@ -840,6 +807,11 @@ async function buyNow() {
 
     const order = await orderResponse.json();
     logDebug("Order created", order);
+    console.log("Order payload:", order);
+    if (!order.order_id || !order.amount) {
+      alert("Invalid order response from server.");
+      return;
+    }
     if (!order.order_id) {
       logDebug("Common failure detected", "order.id missing -> backend issue");
       alert("Order creation failed");
@@ -848,7 +820,7 @@ async function buyNow() {
 
     const options = {
       key: razorpayKey,
-      amount: order.amount,
+      amount: Number(order.amount),
       currency: "INR",
       name: "SarvamSai",
       description: "Daily Mint",
@@ -896,14 +868,30 @@ async function buyNow() {
         }
       },
       prefill: {
-        email
+        email: email,
+        contact: items[0]?.phone || ""
       },
       theme: {
         color: "#D4AF37"
       }
     };
 
-    const rzp = new Razorpay(options);
+    if (!window.Razorpay) {
+      alert("Payment system failed to load. Please refresh.");
+      return;
+    }
+
+    console.log("Razorpay available:", !!window.Razorpay);
+
+    let rzp;
+    try {
+      rzp = new Razorpay(options);
+    } catch (e) {
+      console.error("Razorpay init failed:", e);
+      alert("Payment initialization failed. Try refreshing.");
+      return;
+    }
+
     rzp.on("payment.failed", function (response) {
       const reason =
         response?.error?.description ||
@@ -911,10 +899,16 @@ async function buyNow() {
         "Payment failed. Please try again.";
       const hintEl = document.getElementById("ssCheckoutHint");
       if (hintEl) {
-        hintEl.textContent = reason;
+        hintEl.textContent = `${reason} If this browser is restricted, open the page directly in Chrome/Edge/Safari and retry.`;
       }
     });
-    rzp.open();
+    console.log("Opening Razorpay with:", options);
+    try {
+      rzp.open();
+    } catch (e) {
+      console.error("Razorpay open failed:", e);
+      alert("Unable to open payment. Try another browser.");
+    }
   } catch (error) {
     logDebug("Payment error", error);
     alert(error.message || "Payment initialization failed.");
