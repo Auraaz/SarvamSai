@@ -823,13 +823,13 @@ async function buyNow() {
 
     const order = await orderResponse.json();
     logDebug("Order created", order);
-    console.log("Order payload:", order);
-    if (!order.order_id || !order.amount) {
-      alert("Invalid order response from server.");
+    console.log("Order response:", order);
+    if (!order.order_id) {
+      alert("Missing order_id from backend");
       return;
     }
-    if (!order.order_id) {
-      logDebug("Common failure detected", "order.id missing -> backend issue");
+    if (!order.amount) {
+      alert("Invalid order response from server.");
       alert("Order creation failed");
       return;
     }
@@ -918,7 +918,7 @@ async function buyNow() {
         hintEl.textContent = `${reason} If this browser is restricted, open the page directly in Chrome/Edge/Safari and retry.`;
       }
     });
-    console.log("Opening Razorpay with:", options);
+    console.log("Razorpay options:", options);
     try {
       rzp.open();
     } catch (e) {
