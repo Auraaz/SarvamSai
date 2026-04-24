@@ -703,23 +703,28 @@ function sarvamSaiEnterDarshanAccess(event) {
 }
 
 async function validatePrivateAccessKey(email, code) {
-  if (!email || !code) return false;
+  if (!email || !code) return { valid: false, reason: "missing" };
   try {
     const res = await fetch(`${API_BASE}/validate-access`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, code })
     });
-    if (!res.ok) return false;
+    if (!res.ok) {
+      if (res.status === 403 || res.status === 400) {
+        return { valid: false, reason: "invalid" };
+      }
+      return { valid: false, reason: "service" };
+    }
     const data = await res.json().catch(() => ({}));
-    if (!data || data.valid !== true) return false;
+    if (!data || data.valid !== true) return { valid: false, reason: "invalid" };
     activeAccessEmail = email;
     activeAccessCode = code;
     activeAccessName = activeAccessName || resolveAccessName(email);
     activePassphrase = String(data.passphrase || "").trim();
-    return true;
+    return { valid: true, reason: "" };
   } catch (_error) {
-    return false;
+    return { valid: false, reason: "service" };
   }
 }
 
@@ -739,9 +744,13 @@ async function checkAccess() {
     showUserError("Please open the private invite link from your email.");
     return;
   }
-  const isValid = await validatePrivateAccessKey(email, code);
-  if (!isValid) {
-    showUserError("Invalid or expired private link. Please request a fresh invite.");
+  const validation = await validatePrivateAccessKey(email, code);
+  if (!validation.valid) {
+    if (validation.reason === "service") {
+      showUserError("Validation service is unavailable right now. Please try again in a moment.");
+      return;
+    }
+    showUserError("Invalid private link. Please use the exact invite link sent to your email.");
     return;
   }
   unlockStore();
@@ -2140,9 +2149,13 @@ function mountStoreExperience() {
         <p>Validating your private access key...</p>
       `;
     }
-    validatePrivateAccessKey(activeAccessEmail, activeAccessCode).then((isValid) => {
-      if (!isValid) {
-        showUserError("Invalid or expired private link. Please request a fresh invite.");
+    validatePrivateAccessKey(activeAccessEmail, activeAccessCode).then((validation) => {
+      if (!validation.valid) {
+        if (validation.reason === "service") {
+          showUserError("Validation service is unavailable right now. Please try again in a moment.");
+          return;
+        }
+        showUserError("Invalid private link. Please use the exact invite link sent to your email.");
         return;
       }
       localStorage.setItem("sai_access_email", activeAccessEmail);
