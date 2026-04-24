@@ -1,9 +1,5 @@
 const STORE_URL = "https://sarvamsai.in/store/";
-/**
- * Primary API (Render) — always resolvable. When api.sarvamsai.in DNS is stable, set
- * API_BASE in config/launch-global.js to "https://api.sarvamsai.in/api" to use the custom host.
- */
-const PRODUCTION_API_BASE = "https://sarvamsai-api.onrender.com/api";
+const PRODUCTION_API_BASE = "/api";
 function getApiBase() {
   return PRODUCTION_API_BASE;
 }

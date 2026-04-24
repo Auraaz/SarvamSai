@@ -4,7 +4,6 @@ const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
-const { Pool } = require("pg");
 const Razorpay = require("razorpay");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
@@ -25,17 +24,39 @@ const USD_TO_INR_RATE = 83;
 const INTERNATIONAL_SHIPPING_INR = INTERNATIONAL_SHIPPING_USD * USD_TO_INR_RATE;
 const EMAIL_TEST_MODE = true;
 const TEST_EMAIL = "vinnakota.gupta@gmail.com";
-const DATABASE_URL = process.env.DATABASE_URL || "";
+const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || "";
+const CLOUDFLARE_D1_DATABASE_ID = process.env.CLOUDFLARE_D1_DATABASE_ID || "";
+const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
 
-if (!DATABASE_URL) {
-  console.error("DATABASE_URL is missing. Darshan access routes require PostgreSQL.");
-  process.exit(1);
+function hasD1Config() {
+  return Boolean(CLOUDFLARE_ACCOUNT_ID && CLOUDFLARE_D1_DATABASE_ID && CLOUDFLARE_API_TOKEN);
 }
 
-const db = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: process.env.DB_SSL === "false" ? false : { rejectUnauthorized: false }
-});
+function getD1ApiUrl() {
+  return `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${CLOUDFLARE_D1_DATABASE_ID}/query`;
+}
+
+async function d1Query(sql, params = []) {
+  if (!hasD1Config()) {
+    throw new Error("Cloudflare D1 config missing. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DATABASE_ID, and CLOUDFLARE_API_TOKEN.");
+  }
+
+  const response = await fetch(getD1ApiUrl(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`
+    },
+    body: JSON.stringify({ sql, params })
+  });
+  const payload = await response.json();
+  if (!response.ok || !payload?.success) {
+    const errorText = JSON.stringify(payload?.errors || payload || {});
+    throw new Error(`D1 query failed: ${errorText}`);
+  }
+  const firstResult = Array.isArray(payload.result) ? payload.result[0] : payload.result;
+  return firstResult || {};
+}
 
 function logDebug(label, data) {
   if (DEBUG) {
@@ -132,10 +153,9 @@ function getRandomPassphrase() {
 }
 
 async function initDarshanAccessTable() {
-  await db.query("CREATE EXTENSION IF NOT EXISTS pgcrypto");
-  await db.query(`
+  await d1Query(`
     CREATE TABLE IF NOT EXISTS darshan_access (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      id TEXT PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
       access_code TEXT UNIQUE NOT NULL,
       passphrase TEXT NOT NULL,
@@ -149,22 +169,23 @@ async function initDarshanAccessTable() {
 }
 
 async function findDarshanAccessByEmail(email) {
-  const result = await db.query("SELECT * FROM darshan_access WHERE email = $1", [email]);
-  return result.rows[0] || null;
+  const result = await d1Query("SELECT * FROM darshan_access WHERE email = ?", [email]);
+  return Array.isArray(result.results) && result.results.length ? result.results[0] : null;
 }
 
 async function createDarshanAccessEntry(email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
   const accessCode = crypto.randomUUID();
   const passphrase = getRandomPassphrase();
+  const id = crypto.randomUUID();
 
-  await db.query(
+  await d1Query(
     `
-      INSERT INTO darshan_access (email, access_code, passphrase, status)
-      VALUES ($1, $2, $3, 'pending')
-      ON CONFLICT (email) DO NOTHING
+      INSERT INTO darshan_access (id, email, access_code, passphrase, status)
+      VALUES (?, ?, ?, ?, 'pending')
+      ON CONFLICT(email) DO NOTHING
     `,
-    [normalizedEmail, accessCode, passphrase]
+    [id, normalizedEmail, accessCode, passphrase]
   );
 
   return findDarshanAccessByEmail(normalizedEmail);
@@ -172,11 +193,11 @@ async function createDarshanAccessEntry(email) {
 
 async function activateUser(email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
-  await db.query(
+  await d1Query(
     `
       UPDATE darshan_access
       SET status = 'active'
-      WHERE email = $1
+      WHERE email = ?
     `,
     [normalizedEmail]
   );
@@ -511,12 +532,12 @@ async function verifyPassphraseHandler(req, res) {
     if (String(user.status || "") !== "active") return res.status(403).json({ success: false });
     if (selected !== user.passphrase) return res.status(400).json({ success: false });
 
-    await db.query(
+    await d1Query(
       `
         UPDATE darshan_access
         SET status = 'used',
             last_accessed_at = NOW()
-        WHERE email = $1
+        WHERE email = ?
       `,
       [email]
     );
@@ -532,14 +553,14 @@ app.post("/api/verify-passphrase", verifyPassphraseHandler);
 
 app.get("/api/test-darshan-email", async (_req, res) => {
   try {
-    await db.query(
+    await d1Query(
       `
-        INSERT INTO darshan_access (email, access_code, passphrase, status)
-        VALUES ($1, $2, $3, 'pending')
+        INSERT INTO darshan_access (id, email, access_code, passphrase, status)
+        VALUES (?, ?, ?, ?, 'pending')
         ON CONFLICT (email)
-        DO UPDATE SET access_code = EXCLUDED.access_code, passphrase = EXCLUDED.passphrase, status = 'pending'
+        DO UPDATE SET access_code = excluded.access_code, passphrase = excluded.passphrase, status = 'pending'
       `,
-      ["vinnakota.gupta@gmail.com", "TEST123", "Love All Serve All"]
+      [crypto.randomUUID(), "vinnakota.gupta@gmail.com", "TEST123", "Love All Serve All"]
     );
     const testUser = await findDarshanAccessByEmail("vinnakota.gupta@gmail.com");
     await sendDarshanEmail(testUser);

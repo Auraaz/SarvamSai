@@ -1,0 +1,13 @@
+{
+  "name": "sarvamsai",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages deploy .",
+    "d1:migrate": "wrangler d1 execute sarvamsai-db --remote --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}

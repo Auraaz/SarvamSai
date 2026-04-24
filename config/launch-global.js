@@ -1,7 +1,6 @@
 (function () {
   window.SARVAMSAI_LAUNCH_CONFIG = {
-    // Optional — override API root (no trailing slash after …/api).
-    // Default is Render (sarvamsai-api.onrender.com). Uncomment when api.sarvamsai.in resolves:
-    // API_BASE: "https://api.sarvamsai.in/api",
+    // Optional override for API root (same-origin Cloudflare Pages default is "/api").
+    // API_BASE: "https://your-custom-domain.example/api",
   };
 })();
