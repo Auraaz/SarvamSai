@@ -700,37 +700,23 @@ function shareStoreInvite(inviteLink) {
 function sarvamSaiEnterDarshanAccess(event) {
   if (event && typeof event.preventDefault === "function") event.preventDefault();
   const params = new URLSearchParams(window.location.search);
-  const query = params.toString();
-  window.location.href = `${STORE_LAUNCH_ROUTE}${query ? `?${query}` : ""}`;
+  const linkedEmail = String(params.get("email") || "").trim().toLowerCase();
+  openStoreDirectly(linkedEmail || getUserEmail());
 }
 
-async function validatePrivateAccessKey(email, code) {
-  if (!email || !code) return { valid: false, reason: "missing" };
-  try {
-    const res = await fetch(`${API_BASE}/validate-access`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code })
-    });
-    if (!res.ok) {
-      if (res.status === 403 || res.status === 400) {
-        return { valid: false, reason: "invalid" };
-      }
-      return { valid: false, reason: "service" };
-    }
-    const data = await res.json().catch(() => ({}));
-    if (!data || data.valid !== true) return { valid: false, reason: "invalid" };
-    activeAccessEmail = email;
-    activeAccessCode = code;
-    activeAccessName = activeAccessName || resolveAccessName(email);
-    activePassphrase = String(data.passphrase || "").trim();
-    return { valid: true, reason: "" };
-  } catch (_error) {
-    return { valid: false, reason: "service" };
+function openStoreDirectly(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (normalizedEmail) {
+    activeAccessEmail = normalizedEmail;
+    activeAccessName = activeAccessName || resolveAccessName(normalizedEmail);
+    localStorage.setItem("sai_access_email", normalizedEmail);
   }
+  localStorage.setItem("sai_access", "granted");
+  setStoreVisibility(true);
+  renderStore();
 }
 
-async function checkAccess() {
+function checkAccess() {
   const emailEl = document.getElementById("email");
   if (!emailEl) return;
 
@@ -741,28 +727,7 @@ async function checkAccess() {
   }
   activeAccessName = resolveAccessName(email);
   updateDarshanHeroGreeting(activeAccessName);
-  const code = String(activeAccessCode || "").trim();
-  if (!code) {
-    showUserError("Please open the private invite link from your email.");
-    return;
-  }
-  const validation = await validatePrivateAccessKey(email, code);
-  if (!validation.valid) {
-    if (validation.reason === "service") {
-      // Fail-open fallback: if backend validation is temporarily down, allow
-      // access for users who arrived with a private email + code combination.
-      activeAccessEmail = email;
-      activeAccessCode = code;
-      activeAccessName = activeAccessName || resolveAccessName(email);
-      localStorage.setItem("sai_access_email", activeAccessEmail);
-      localStorage.setItem("sai_access_code", activeAccessCode);
-      unlockStore();
-      return;
-    }
-    showUserError("Invalid private link. Please use the exact invite link sent to your email.");
-    return;
-  }
-  unlockStore();
+  openStoreDirectly(email);
 }
 
 function prefillEmail(email) {
@@ -773,18 +738,7 @@ function prefillEmail(email) {
 }
 
 function unlockStore() {
-  localStorage.setItem("sai_access", "granted");
-  if (activeAccessEmail) {
-    localStorage.setItem("sai_access_email", activeAccessEmail);
-  }
-  if (activePassphrase) {
-    localStorage.setItem("sai_access_passphrase", activePassphrase);
-  }
-  if (activeAccessCode) {
-    localStorage.setItem("sai_access_code", activeAccessCode);
-  }
-  // Keep users on the launch route where store UI is mounted reliably.
-  window.location.href = STORE_LAUNCH_ROUTE;
+  openStoreDirectly(activeAccessEmail);
 }
 
 function ensureRazorpayCheckoutLoaded() {
@@ -1328,9 +1282,8 @@ function showConfirmation(user) {
 function mountStoreExperience() {
   const params = new URLSearchParams(window.location.search);
   const prefilledEmail = params.get("email");
-  const prefilledToken = params.get("token") || params.get("code");
   const isLaunchRoute = window.location.pathname.startsWith(STORE_LAUNCH_ROUTE);
-  const hasInviteParams = Boolean(prefilledEmail && prefilledToken);
+  const hasInviteParams = Boolean(prefilledEmail);
 
   const darshanLanding = getDarshanStoreLandingHtml();
 
@@ -2159,38 +2112,12 @@ function mountStoreExperience() {
     updateDarshanHeroGreeting(activeAccessName);
     prefillEmail(prefilledEmail);
   }
-  if (prefilledToken) {
-    activeAccessCode = String(prefilledToken).trim();
-  }
-  if (prefilledEmail && prefilledToken) {
+  if (prefilledEmail) {
     if (!isLaunchRoute) {
       window.location.href = `${STORE_LAUNCH_ROUTE}?${params.toString()}`;
       return;
     }
-    const gateCard = document.getElementById("darshan-access");
-    if (gateCard) {
-      gateCard.innerHTML = `
-        <h1>Private Link Access</h1>
-        <p>Validating your private access key...</p>
-      `;
-    }
-    validatePrivateAccessKey(activeAccessEmail, activeAccessCode).then((validation) => {
-      if (!validation.valid) {
-        if (validation.reason === "service") {
-          // Fail-open fallback for temporary API outages on production domain.
-          localStorage.setItem("sai_access_email", activeAccessEmail);
-          localStorage.setItem("sai_access_code", activeAccessCode);
-          unlockStore();
-          return;
-        }
-        showUserError("Invalid private link. Please use the exact invite link sent to your email.");
-        return;
-      }
-      localStorage.setItem("sai_access_email", activeAccessEmail);
-      localStorage.setItem("sai_access", "granted");
-      setStoreVisibility(true);
-      renderStore();
-    });
+    openStoreDirectly(activeAccessEmail);
   }
 
   const granted = localStorage.getItem("sai_access") === "granted";
