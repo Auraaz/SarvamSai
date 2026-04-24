@@ -160,52 +160,23 @@ async function upsertOrderRecord(db, order) {
   }
 }
 
-async function sendOrderConfirmationEmail(env, order) {
-  const mailerUrl = String(env.MAILER_WORKER_URL || "").trim();
-  const mailerToken = String(env.MAILER_WORKER_TOKEN || "").trim();
-  if (!mailerUrl || !mailerToken) return;
+async function sendOrderToGoogleScript(env, order) {
+  const googleScriptUrl = String(env.GOOGLE_SCRIPT_URL || "").trim();
+  if (!googleScriptUrl) return;
   if (!order?.email) return;
 
-  const recipients = Array.isArray(order.items) ? order.items : [];
-  const recipientLines = recipients.length
-    ? recipients
-        .map((item, index) => {
-          const address = [
-            item.addressLine1,
-            item.addressLine2,
-            [item.city, item.state].filter(Boolean).join(", "),
-            [item.pincode, item.country].filter(Boolean).join(", ")
-          ]
-            .filter(Boolean)
-            .join(", ");
-          return `${index + 1}. ${item.name || "-"} | ${item.phone || "-"} | ${address || "-"}`;
-        })
-        .join("\n")
-    : "No recipient details available.";
-
-  const text = [
-    "Your SarvamSai order is confirmed.",
-    "",
-    `Email: ${order.email}`,
-    `Order ID: ${order.orderId}`,
-    `Payment ID: ${order.paymentId}`,
-    `Total Pieces: ${order.totalItems}`,
-    `Total Amount: ${order.totalAmount} ${order.currency || "INR"}`,
-    "",
-    "Shipping / Recipient Details:",
-    recipientLines
-  ].join("\n");
-
-  await fetch(mailerUrl, {
+  await fetch(googleScriptUrl, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${mailerToken}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      to: order.email,
-      subject: "SarvamSai Order Confirmation",
-      text
+      action: "recordOrderPayment",
+      id: order.orderId,
+      payment_id: order.paymentId,
+      email: order.email,
+      amount: Math.round((Number(order.totalAmount) || 0) * 100),
+      status: "paid"
     })
   });
 }
@@ -276,9 +247,14 @@ export async function onRequestPost(context) {
   }
 
   try {
-    await sendOrderConfirmationEmail(env, orderRecord);
-  } catch (_error) {
+    await sendOrderToGoogleScript(env, orderRecord);
+  } catch (error) {
     // Non-blocking: order is already stored and confirmed.
+    console.error("Google Script notification failed", {
+      orderId: orderRecord.orderId,
+      paymentId: orderRecord.paymentId,
+      error: String(error?.message || error)
+    });
   }
 
   return Response.json({ success: true });

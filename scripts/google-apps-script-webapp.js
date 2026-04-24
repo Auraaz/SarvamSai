@@ -8,6 +8,8 @@ const ADMIN_NOTIFY_EMAIL = "vkgupta@vistarah.com";
 const SENDER_EMAIL = "sairam@sarvamsai.in";
 const SITE_URL = "https://sarvamsai.in";
 const EMAIL_LOG_SHEET = "EmailLog";
+const ORDER_LOG_SHEET = "OrderPayments";
+const ORDER_LOG_HEADERS = ["Order ID", "Payment ID", "Email", "Amount", "Status", "Email Sent", "Timestamp"];
 
 const REQUIRED_REG_HEADERS = [
   "rank",
@@ -58,6 +60,7 @@ function doGet(e) {
     else if (action === "validateDarshanAccess") result = validateDarshanAccess(params);
     else if (action === "verifyDarshanPassphrase") result = verifyDarshanPassphrase(params);
     else if (action === "recordPurchase") result = recordPurchase(params);
+    else if (action === "recordOrderPayment") result = recordOrderPayment(params);
     else result = { success: false, error: "unknown_action" };
   } catch (err) {
     result = { success: false, error: String(err && err.message ? err.message : err) };
@@ -77,6 +80,112 @@ function doPost(e) {
 
   const params = Object.assign({}, (e && e.parameter) || {}, body || {});
   return doGet({ parameter: params });
+}
+
+function getOrCreateOrderSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(ORDER_LOG_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(ORDER_LOG_SHEET);
+    sheet.appendRow(ORDER_LOG_HEADERS);
+  }
+
+  const currentHeaders = sheet
+    .getRange(1, 1, 1, Math.max(1, sheet.getLastColumn()))
+    .getValues()[0]
+    .map(function (h) {
+      return String(h || "").trim();
+    });
+  const expected = ORDER_LOG_HEADERS.join("|");
+  const actual = currentHeaders.slice(0, ORDER_LOG_HEADERS.length).join("|");
+  if (expected !== actual) {
+    sheet.getRange(1, 1, 1, ORDER_LOG_HEADERS.length).setValues([ORDER_LOG_HEADERS]);
+  }
+  return sheet;
+}
+
+function buildDiscoveryOrderEmailContent_(orderId, paymentId, amountInr) {
+  const safeOrderId = escapeHtml_(orderId);
+  const safePaymentId = escapeHtml_(paymentId || "-");
+  const safeAmount = escapeHtml_(amountInr.toFixed(2));
+
+  const subject = "Thank you for your Discovery Box order - SarvamSai";
+  const plainBody =
+    "Sairam,\n\n" +
+    "Thank you for your Discovery Box order.\n" +
+    "Order ID: " +
+    orderId +
+    "\nPayment ID: " +
+    (paymentId || "-") +
+    "\nAmount: INR " +
+    amountInr.toFixed(2) +
+    "\n\n" +
+    "We will keep you updated with your order status and delivery status of the Discovery Box.\n\n" +
+    "With gratitude,\nSarvamSai Team\n" +
+    SITE_URL;
+
+  const htmlBody = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background:#f6efe3;font-family:Arial,sans-serif;color:#2d2215;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f6efe3;padding:24px 12px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#fffaf2;border:1px solid #dfd0b0;">
+        <tr><td style="padding:18px 24px;background:#1a0a06;color:#f6e7c8;text-align:center;font-size:20px;font-weight:700;">SarvamSai</td></tr>
+        <tr><td style="padding:24px;">
+          <h2 style="margin:0 0 12px;color:#2d2215;">Thank you for your Discovery Box order</h2>
+          <p style="margin:0 0 12px;line-height:1.6;">Your order has been received successfully.</p>
+          <p style="margin:0 0 8px;"><strong>Order ID:</strong> ${safeOrderId}</p>
+          <p style="margin:0 0 8px;"><strong>Payment ID:</strong> ${safePaymentId}</p>
+          <p style="margin:0 0 16px;"><strong>Amount:</strong> INR ${safeAmount}</p>
+          <p style="margin:0;line-height:1.6;">We will keep your order status and delivery status of the Discovery Box updated and share progress with you.</p>
+        </td></tr>
+        <tr><td style="padding:16px 24px;background:#f0e4cd;color:#5a4630;font-size:12px;text-align:center;">
+          With gratitude, SarvamSai Team<br />
+          <a href="${SITE_URL}" style="color:#5a4630;text-decoration:none;">${SITE_URL}</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  return { subject: subject, plainBody: plainBody, htmlBody: htmlBody };
+}
+
+function sendDiscoveryOrderEmail_(email, orderId, paymentId, amountInr) {
+  const content = buildDiscoveryOrderEmailContent_(orderId, paymentId, amountInr);
+  const mailOpts = { from: SENDER_EMAIL, htmlBody: content.htmlBody, name: "SarvamSai" };
+  if (SENDER_EMAIL !== ADMIN_EMAIL) mailOpts.replyTo = ADMIN_EMAIL;
+  sendMailWithFallback_(email, content.subject, content.plainBody, mailOpts);
+}
+
+function getLatestOrderByEmail_(email) {
+  const normalized = String(email || "")
+    .trim()
+    .toLowerCase();
+  if (!normalized) return null;
+
+  const sheet = getOrCreateOrderSheet_();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return null;
+
+  const rows = sheet.getRange(2, 1, lastRow - 1, ORDER_LOG_HEADERS.length).getValues();
+  for (let i = rows.length - 1; i >= 0; i -= 1) {
+    const rowEmail = String(rows[i][2] || "")
+      .trim()
+      .toLowerCase();
+    if (rowEmail === normalized) {
+      return {
+        orderId: String(rows[i][0] || "").trim(),
+        paymentId: String(rows[i][1] || "").trim(),
+        email: rowEmail,
+        amountPaise: safeNumber_(rows[i][3], 0),
+        status: String(rows[i][4] || "").trim()
+      };
+    }
+  }
+  return null;
 }
 
 // -- CORE HELPERS ------------------------------------------------
@@ -440,6 +549,35 @@ function recordPurchase(params) {
     purchase_count: purchaseCount + 1,
     total_spent_inr: totalSpent + amount
   };
+}
+
+function recordOrderPayment(params) {
+  const orderId = String(params.id || params.order_id || "").trim();
+  const paymentId = String(params.payment_id || "").trim();
+  const email = String(params.email || "")
+    .trim()
+    .toLowerCase();
+  const amountPaise = safeNumber_(params.amount, 0);
+  const status = String(params.status || "paid")
+    .trim()
+    .toLowerCase();
+
+  if (!orderId || !email) return { success: false, error: "missing_order_or_email" };
+
+  const amountInr = Math.max(0, amountPaise / 100);
+  let emailSent = "NO";
+
+  try {
+    sendDiscoveryOrderEmail_(email, orderId, paymentId, amountInr);
+    emailSent = "YES";
+  } catch (e) {
+    logEmailFailure_("recordOrderPayment", e);
+  }
+
+  const sheet = getOrCreateOrderSheet_();
+  sheet.appendRow([orderId, paymentId, email, amountPaise, status, emailSent, nowIso_()]);
+
+  return { success: true, email_sent: emailSent };
 }
 
 // -- GET USER / LEADERBOARD -------------------------------------
@@ -830,4 +968,30 @@ function testDarshanInviteSelf() {
   const email = Session.getActiveUser().getEmail().toLowerCase();
   const link = SITE_URL + "/store?email=" + encodeURIComponent(email) + "&code=" + encodeURIComponent(generateAccessCode_());
   sendDarshanInviteEmail_(email, randomPassphrase_(), link);
+}
+
+function helperSendStyledOrderEmail() {
+  // Hardcode the target email here before running this helper.
+  const hardcodedEmail = "replace-with-customer-email@example.com";
+  const normalizedEmail = String(hardcodedEmail || "")
+    .trim()
+    .toLowerCase();
+  if (!normalizedEmail || normalizedEmail.indexOf("@") < 1) {
+    throw new Error("Please set a valid hardcodedEmail in helperSendStyledOrderEmail().");
+  }
+
+  const latestOrder = getLatestOrderByEmail_(normalizedEmail);
+  if (!latestOrder || !latestOrder.orderId) {
+    throw new Error("No order found in OrderPayments for " + normalizedEmail);
+  }
+
+  const amountInr = Math.max(0, safeNumber_(latestOrder.amountPaise, 0) / 100);
+  sendDiscoveryOrderEmail_(normalizedEmail, latestOrder.orderId, latestOrder.paymentId, amountInr);
+
+  Logger.log(
+    "Styled order email sent to %s for order %s (payment %s).",
+    normalizedEmail,
+    latestOrder.orderId,
+    latestOrder.paymentId || "-"
+  );
 }
