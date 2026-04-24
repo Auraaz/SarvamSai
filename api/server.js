@@ -1,43 +1,51 @@
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 const express = require("express");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
-const dotenv = require("dotenv");
 const Razorpay = require("razorpay");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 
-dotenv.config({ path: path.join(__dirname, ".env") });
-dotenv.config({ path: path.join(__dirname, "..", ".env") });
-
 const app = express();
 app.set("trust proxy", 1);
 const PORT = Number(process.env.PORT || 8787);
+const DEBUG = true;
 const DATA_DIR = path.join(__dirname, "data");
 const ORDERS_PATH = path.join(DATA_DIR, "orders.json");
 
-const RAZORPAY_KEY = process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY || "";
-const RAZORPAY_SECRET = process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET || "";
+const RAZORPAY_KEY = process.env.RAZORPAY_KEY || process.env.RAZORPAY_KEY_ID || "";
+const RAZORPAY_SECRET = process.env.RAZORPAY_SECRET || process.env.RAZORPAY_KEY_SECRET || "";
 const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || RAZORPAY_SECRET;
 const BASE_PRICE_INR = 2999;
 const INTERNATIONAL_SHIPPING_USD = 15;
 const USD_TO_INR_RATE = 83;
 const INTERNATIONAL_SHIPPING_INR = INTERNATIONAL_SHIPPING_USD * USD_TO_INR_RATE;
 
+function logDebug(label, data) {
+  if (DEBUG) {
+    console.log(`[DEBUG] ${label}:`, data);
+  }
+}
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY || process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET || process.env.RAZORPAY_KEY_SECRET
+});
+
 if (!RAZORPAY_KEY || !RAZORPAY_SECRET) {
   console.warn("RAZORPAY_KEY or RAZORPAY_SECRET is missing. Payment endpoints will fail until configured.");
 }
 
-function getRazorpayClient() {
-  if (!RAZORPAY_KEY || !RAZORPAY_SECRET) {
-    throw new Error("Razorpay environment keys are not configured.");
-  }
-  return new Razorpay({
-    key_id: RAZORPAY_KEY,
-    key_secret: RAZORPAY_SECRET
-  });
-}
+console.log("ENV CHECK:");
+console.log("KEY:", RAZORPAY_KEY ? "OK" : "MISSING");
+console.log("SECRET:", RAZORPAY_SECRET ? "OK" : "MISSING");
+console.log("KEY:", process.env.RAZORPAY_KEY);
+console.log("SECRET:", process.env.RAZORPAY_SECRET ? "LOADED" : "MISSING");
+console.log("RAZORPAY_KEY:", process.env.RAZORPAY_KEY || process.env.RAZORPAY_KEY_ID || "MISSING");
+console.log("RAZORPAY_SECRET:", (process.env.RAZORPAY_SECRET || process.env.RAZORPAY_KEY_SECRET) ? "LOADED" : "MISSING");
+console.log("RAZORPAY_SECRET loaded:", (process.env.RAZORPAY_SECRET || process.env.RAZORPAY_KEY_SECRET) ? "YES" : "NO");
 
 app.use((req, res, next) => {
   if (req.path === "/razorpay-webhook") {
@@ -329,6 +337,7 @@ app.get("/payment-config", sendPaymentConfig);
 app.get("/api/payment-config", sendPaymentConfig);
 
 async function createOrderHandler(req, res) {
+  logDebug("Incoming create-order", req.body);
   const { email, totalItems, totalAmount } = req.body || {};
   const normalizedItems = normalizeOrderItems(getRequestItems(req.body));
   const providedItems = Number(totalItems) || 0;
@@ -366,7 +375,7 @@ async function createOrderHandler(req, res) {
   }
 
   try {
-    const order = await getRazorpayClient().orders.create({
+    const order = await razorpay.orders.create({
       amount: computedAmountPaise,
       currency: "INR",
       receipt: "receipt_" + Date.now(),
@@ -378,12 +387,14 @@ async function createOrderHandler(req, res) {
         repeatBuyer: isRepeatBuyer ? "true" : "false"
       }
     });
+    logDebug("Order created", order);
     return res.json({
       order_id: order.id,
       amount: order.amount,
       currency: order.currency
     });
   } catch (error) {
+    logDebug("Create order error", error);
     console.error("create-order failed:", error);
     const statusCode = Number(error?.statusCode) || Number(error?.error?.statusCode) || 500;
     if (statusCode === 401) {
@@ -396,82 +407,45 @@ async function createOrderHandler(req, res) {
 app.post("/create-order", createOrderHandler);
 app.post("/api/create-order", createOrderHandler);
 
-async function verifyPaymentHandler(req, res) {
-  const {
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature,
-    email,
-    totalItems,
-    totalAmount
-  } = req.body || {};
-  const normalizedItems = normalizeOrderItems(getRequestItems(req.body));
-  const itemsValidationError = validateOrderItems(normalizedItems);
-  const totals = computeOrderTotals(normalizedItems);
-  const providedItems = Number(totalItems) || 0;
-  const providedAmount = Number(totalAmount) || 0;
+app.post("/api/verify-payment", (req, res) => {
+  const crypto = require("crypto");
+  const { order_id, payment_id, signature } = req.body || {};
 
-  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-    return res.status(400).json({ success: false, error: "Missing Razorpay signature fields." });
-  }
-  if (normalizedItems.length === 0) {
-    return res.status(400).json({ success: false, error: "At least one item is required." });
-  }
-  if (itemsValidationError) {
-    return res.status(400).json({ success: false, error: itemsValidationError });
-  }
-  if (providedItems !== totals.totalItems || providedAmount !== totals.totalAmount) {
-    return res.status(400).json({ success: false, error: "Order totals do not match selected recipients." });
+  console.log("Incoming verify:", req.body);
+  if (!order_id || !payment_id || !signature) {
+    return res.status(400).json({
+      success: false,
+      error: "Missing required payment verification fields."
+    });
   }
   if (!RAZORPAY_SECRET) {
-    return res.status(500).json({ success: false, error: "RAZORPAY_SECRET is not configured." });
+    return res.status(500).json({
+      success: false,
+      error: "RAZORPAY_SECRET is not configured."
+    });
   }
 
-  const body = razorpay_order_id + "|" + razorpay_payment_id;
-  const expectedSignature = crypto
+  const body = order_id + "|" + payment_id;
+
+  console.log("Body string:", body);
+
+  const expected = crypto
     .createHmac("sha256", RAZORPAY_SECRET)
-    .update(body.toString())
+    .update(body)
     .digest("hex");
 
-  if (expectedSignature !== razorpay_signature) {
-    return res.status(400).json({ success: false, error: "Invalid signature." });
+  console.log("Expected signature:", expected);
+  console.log("Received signature:", signature);
+
+  if (expected === signature) {
+    return res.json({ success: true });
+  } else {
+    return res.status(400).json({
+      success: false,
+      error: "Invalid signature"
+    });
   }
-
-  const softLimitFlag = normalizedItems.length > 4;
-  const repeatedEmailCount = readOrders().filter(
-    (orderRecord) => String(orderRecord.email || "").trim().toLowerCase() === String(email || "").trim().toLowerCase()
-  ).length;
-  const isRepeatBuyer = repeatedEmailCount > 0;
-
-  const orderRecord = {
-    email: email || "unknown",
-    items: normalizedItems,
-    totalItems: totals.totalItems,
-    totalAmount: totals.totalAmount,
-    baseAmount: totals.baseAmount,
-    internationalCount: totals.internationalCount,
-    shippingSurchargeAmount: totals.shippingSurchargeAmount,
-    highQuantityOrder: totals.totalItems >= 3,
-    softLimitFlag,
-    repeatBuyer: isRepeatBuyer,
-    paymentId: razorpay_payment_id,
-    orderId: razorpay_order_id,
-    date: new Date().toISOString(),
-    status: "confirmed"
-  };
-
-  try {
-    saveOrder(orderRecord);
-    await sendEmail(orderRecord);
-    return res.json({ success: true, order: orderRecord });
-  } catch (error) {
-    console.error("verify-payment failed:", error);
-    return res.status(500).json({ success: false, error: "Payment verified but post-processing failed." });
-  }
-}
-
-app.post("/verify-payment", verifyPaymentHandler);
-app.post("/api/verify-payment", verifyPaymentHandler);
+});
 
 app.post(
   "/razorpay-webhook",

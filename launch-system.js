@@ -26,6 +26,7 @@ const START_DATE = new Date("2026-04-24");
 let razorpayScriptPromise = null;
 let razorpayKeyCache = "";
 let reserveCtaObserver = null;
+const DEBUG = true;
 const BASE_PRICE_INR = 2999;
 const INTERNATIONAL_SHIPPING_USD = 15;
 const USD_TO_INR_RATE = 83;
@@ -34,6 +35,12 @@ const ORDER_CONFIRMATION_STORAGE_KEY = "sai_last_confirmed_order";
 let order = {
   items: []
 };
+
+function logDebug(label, data) {
+  if (DEBUG) {
+    console.log(`[DEBUG] ${label}:`, data);
+  }
+}
 
 function generateCode() {
   return "SAI-" + Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -266,6 +273,9 @@ function renderStore() {
 
         ${reserveButtonPrimary}
         <p class="ss-note">Secure checkout powered by Razorpay</p>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;">
+          <button type="button" class="ss-btn ss-btn-ghost ss-btn-mini" onclick="testCreateOrder()">Test Create Order</button>
+        </div>
       </article>
     </section>
 
@@ -678,6 +688,7 @@ function checkAccess() {
   const email = emailEl.value.trim().toLowerCase();
   const code = codeEl.value.trim().toUpperCase();
   const storedUser = getStoredUser();
+  logDebug("Access attempt", { email, code, storedUser });
   if (!storedUser || !storedUser.email || !storedUser.code) {
     alert("No registration found in this browser session. Please join the queue first on this same site URL.");
     return;
@@ -692,10 +703,12 @@ function checkAccess() {
     storedEmail === email &&
     storedCode === code
   ) {
+    logDebug("Access granted", {});
     localStorage.setItem("sai_access", "granted");
     setStoreVisibility(true);
     renderStore();
   } else {
+    logDebug("Access denied", {});
     alert("Invalid credentials");
   }
 }
@@ -745,37 +758,6 @@ async function fetchRazorpayKey() {
   return razorpayKeyCache;
 }
 
-async function verifyPayment(razorpayResponse, checkoutMeta) {
-  const response = await fetch(`${API_BASE}/verify-payment`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...razorpayResponse,
-      email: checkoutMeta.email,
-      items: checkoutMeta.items,
-      totalItems: checkoutMeta.totalItems,
-      totalAmount: checkoutMeta.totalAmount
-    })
-  });
-
-  const result = await response.json();
-  if (!response.ok || !result.success) {
-    throw new Error(result.error || "Payment verification failed.");
-  }
-
-  setStoredOrderConfirmation(
-    result.order || {
-      paymentId: razorpayResponse.razorpay_payment_id,
-      items: checkoutMeta.items,
-      totalItems: checkoutMeta.totalItems,
-      totalAmount: checkoutMeta.totalAmount,
-      status: "confirmed"
-    }
-  );
-  renderStore();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
 async function buyNow() {
   if (isUnsupportedCheckoutContext()) {
     const hintEl = document.getElementById("ssCheckoutHint");
@@ -819,6 +801,7 @@ async function buyNow() {
   }
 
   try {
+    logDebug("Starting payment", {});
     await ensureRazorpayCheckoutLoaded();
     const razorpayKey = await fetchRazorpayKey();
 
@@ -832,6 +815,7 @@ async function buyNow() {
         totalAmount
       })
     });
+    logDebug("Order response status", orderResponse.status);
 
     if (!orderResponse.ok) {
       let message = "Could not create Razorpay order.";
@@ -841,10 +825,17 @@ async function buyNow() {
       } catch (_error) {
         // ignore JSON parse error and fallback to generic message
       }
+      logDebug("Common failure detected", "fetch fails -> route issue or backend error");
       throw new Error(message);
     }
 
     const order = await orderResponse.json();
+    logDebug("Order created", order);
+    if (!order.order_id) {
+      logDebug("Common failure detected", "order.id missing -> backend issue");
+      alert("Order creation failed");
+      return;
+    }
 
     const options = {
       key: razorpayKey,
@@ -855,7 +846,34 @@ async function buyNow() {
       order_id: order.order_id,
       handler: async function (response) {
         try {
-          await verifyPayment(response, { email, items, totalItems, totalAmount });
+          console.log("Razorpay response:", response);
+          const verifyRes = await fetch(`${API_BASE}/verify-payment`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              order_id: response.razorpay_order_id,
+              payment_id: response.razorpay_payment_id,
+              signature: response.razorpay_signature
+            })
+          });
+          const verifyData = await verifyRes.json();
+          console.log("Verify result:", verifyData);
+          if (verifyData.success) {
+            alert("Payment verified successfully");
+            setStoredOrderConfirmation({
+              paymentId: response.razorpay_payment_id,
+              items,
+              totalItems,
+              totalAmount,
+              status: "confirmed"
+            });
+            renderStore();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            alert("Payment verification failed");
+          }
         } catch (error) {
           alert(error.message || "Verification failed. Please contact support.");
         }
@@ -889,8 +907,43 @@ async function buyNow() {
     });
     rzp.open();
   } catch (error) {
+    logDebug("Payment error", error);
     alert(error.message || "Payment initialization failed.");
   }
+}
+
+function testCreateOrder() {
+  logDebug("Test Create Order started", {});
+  fetch(`${API_BASE}/create-order`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: getUserEmail() || "debug@sarvamsai.in",
+      items: [
+        {
+          type: "self",
+          name: "Debug User",
+          phone: "9999999999",
+          addressLine1: "Debug Address 1",
+          addressLine2: "",
+          city: "Puttaparthi",
+          state: "Andhra Pradesh",
+          pincode: "515134",
+          country: "India"
+        }
+      ],
+      totalItems: 1,
+      totalAmount: BASE_PRICE_INR
+    })
+  })
+    .then((res) => res.json().then((body) => ({ status: res.status, body })))
+    .then(({ status, body }) => {
+      logDebug("Test order status", status);
+      logDebug("Test order", body);
+    })
+    .catch((error) => {
+      logDebug("Test Create Order error", error);
+    });
 }
 
 function mountHomeExperience() {
@@ -1971,6 +2024,7 @@ window.addItem = addItem;
 window.removeItem = removeItem;
 window.updateItemField = updateItemField;
 window.sarvamSaiEnterDarshanAccess = sarvamSaiEnterDarshanAccess;
+window.testCreateOrder = testCreateOrder;
 
 if (window.location.pathname.startsWith("/store")) {
   mountStoreExperience();
