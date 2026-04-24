@@ -166,23 +166,45 @@ function getLatestOrderByEmail_(email) {
     .toLowerCase();
   if (!normalized) return null;
 
-  const sheet = getOrCreateOrderSheet_();
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return null;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const allSheets = ss.getSheets();
+  const preferred = ss.getSheetByName(ORDER_LOG_SHEET);
+  const sheets = preferred ? [preferred].concat(allSheets.filter(function (s) { return s.getName() !== ORDER_LOG_SHEET; })) : allSheets;
 
-  const rows = sheet.getRange(2, 1, lastRow - 1, ORDER_LOG_HEADERS.length).getValues();
-  for (let i = rows.length - 1; i >= 0; i -= 1) {
-    const rowEmail = String(rows[i][2] || "")
-      .trim()
-      .toLowerCase();
-    if (rowEmail === normalized) {
-      return {
-        orderId: String(rows[i][0] || "").trim(),
-        paymentId: String(rows[i][1] || "").trim(),
-        email: rowEmail,
-        amountPaise: safeNumber_(rows[i][3], 0),
-        status: String(rows[i][4] || "").trim()
-      };
+  for (let s = 0; s < sheets.length; s += 1) {
+    const sheet = sheets[s];
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
+    if (lastRow < 2 || lastCol < 1) continue;
+
+    const headers = sheet
+      .getRange(1, 1, 1, lastCol)
+      .getValues()[0]
+      .map(function (h) {
+        return String(h || "").trim().toLowerCase();
+      });
+
+    const idxOrder = headers.indexOf("order id");
+    const idxPayment = headers.indexOf("payment id");
+    const idxEmail = headers.indexOf("email");
+    const idxAmount = headers.indexOf("amount");
+    const idxStatus = headers.indexOf("status");
+    if (idxOrder < 0 || idxEmail < 0 || idxAmount < 0) continue;
+
+    const rows = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+    for (let i = rows.length - 1; i >= 0; i -= 1) {
+      const rowEmail = String(rows[i][idxEmail] || "")
+        .trim()
+        .toLowerCase();
+      if (rowEmail === normalized) {
+        return {
+          orderId: String(rows[i][idxOrder] || "").trim(),
+          paymentId: idxPayment >= 0 ? String(rows[i][idxPayment] || "").trim() : "",
+          email: rowEmail,
+          amountPaise: safeNumber_(rows[i][idxAmount], 0),
+          status: idxStatus >= 0 ? String(rows[i][idxStatus] || "").trim() : ""
+        };
+      }
     }
   }
   return null;
@@ -972,7 +994,11 @@ function testDarshanInviteSelf() {
 
 function helperSendStyledOrderEmail() {
   // Hardcode the target email here before running this helper.
-  const hardcodedEmail = "replace-with-customer-email@example.com";
+  const hardcodedEmail = "vinnakota.gupta@gmail.com";
+  // Optional fallback values if OrderPayments does not have this email yet.
+  const fallbackOrderId = "";
+  const fallbackPaymentId = "";
+  const fallbackAmountInr = 0;
   const normalizedEmail = String(hardcodedEmail || "")
     .trim()
     .toLowerCase();
@@ -981,17 +1007,38 @@ function helperSendStyledOrderEmail() {
   }
 
   const latestOrder = getLatestOrderByEmail_(normalizedEmail);
-  if (!latestOrder || !latestOrder.orderId) {
-    throw new Error("No order found in OrderPayments for " + normalizedEmail);
+  if (latestOrder && latestOrder.orderId) {
+    const amountInr = Math.max(0, safeNumber_(latestOrder.amountPaise, 0) / 100);
+    sendDiscoveryOrderEmail_(normalizedEmail, latestOrder.orderId, latestOrder.paymentId, amountInr);
+
+    Logger.log(
+      "Styled order email sent from sheet data to %s for order %s (payment %s).",
+      normalizedEmail,
+      latestOrder.orderId,
+      latestOrder.paymentId || "-"
+    );
+    return;
   }
 
-  const amountInr = Math.max(0, safeNumber_(latestOrder.amountPaise, 0) / 100);
-  sendDiscoveryOrderEmail_(normalizedEmail, latestOrder.orderId, latestOrder.paymentId, amountInr);
+  if (!fallbackOrderId || safeNumber_(fallbackAmountInr, 0) <= 0) {
+    throw new Error(
+      "No order found in OrderPayments for " +
+        normalizedEmail +
+        ". Set fallbackOrderId and fallbackAmountInr in helperSendStyledOrderEmail() to send manually."
+    );
+  }
+
+  sendDiscoveryOrderEmail_(
+    normalizedEmail,
+    String(fallbackOrderId).trim(),
+    String(fallbackPaymentId || "").trim(),
+    Math.max(0, safeNumber_(fallbackAmountInr, 0))
+  );
 
   Logger.log(
-    "Styled order email sent to %s for order %s (payment %s).",
+    "Styled order email sent using fallback data to %s for order %s (payment %s).",
     normalizedEmail,
-    latestOrder.orderId,
-    latestOrder.paymentId || "-"
+    String(fallbackOrderId).trim(),
+    String(fallbackPaymentId || "").trim() || "-"
   );
 }
