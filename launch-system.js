@@ -22,15 +22,6 @@ let activeAccessEmail = "";
 let activeAccessCode = "";
 let activePassphrase = "";
 let activeAccessName = "";
-const PASS_PHRASES = [
-  "Love All Serve All",
-  "Help Ever Hurt Never",
-  "Hands that Serve are Holier",
-  "Start the Day with Love",
-  "Duty Without Love is Deplorable",
-  "Be Simple and Sincere",
-  "Service to Man is Service to God"
-];
 
 function logDebug(label, data) {
   if (DEBUG) {
@@ -252,6 +243,13 @@ function renderStore() {
         </button>
       </div>
     </header>
+
+    <section class="ss-glass-card ss-personal-message-card">
+      <p class="ss-personal-message-label">Personal message from Bhagawan to you</p>
+      <div class="ss-personal-message-passphrase">
+        ${escapeHtml(displayPassphrase || "Your personal message will appear after invite validation.")}
+      </div>
+    </section>
 
     <section class="ss-glass-card ss-product-hero-card" id="product">
       <span class="eyebrow" style="justify-content:center;">The Collectible Discovery Box</span>
@@ -573,6 +571,7 @@ function renderMyOrders(orders) {
         : "<div>-</div>";
       return `
       <article class="ss-order-item">
+        <div class="ss-order-row"><span>Email</span><strong>${escapeHtml(order.email || getUserEmail() || "-")}</strong></div>
         <div class="ss-order-row"><span>Status</span><strong>${escapeHtml(order.status || "confirmed")}</strong></div>
         <div class="ss-order-row"><span>Recipients</span><strong>${recipientsCount}</strong></div>
         <div class="ss-order-row"><span>Total Pieces</span><strong>${escapeHtml(totalItems || 0)}</strong></div>
@@ -695,147 +694,55 @@ function sarvamSaiEnterDarshanAccess(event) {
   document.getElementById("darshan-access")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function checkAccess() {
-  const emailEl = document.getElementById("email");
-  if (!emailEl) return;
-
-  const email = emailEl.value.trim().toLowerCase();
-  const code = activeAccessCode;
-  if (!email || !code) {
-    showUserError("Please use your access link from the email.");
-    return;
-  }
-  activeAccessName = resolveAccessName(email);
-  updateDarshanHeroGreeting(activeAccessName);
-  validateAccessCode(email, code);
-}
-
-function prefillEmail(email) {
-  const emailInput = document.getElementById("email");
-  if (emailInput) {
-    emailInput.value = String(email || "").trim().toLowerCase();
-  }
-}
-
-function shuffleOptions(list) {
-  const copied = Array.isArray(list) ? [...list] : [];
-  for (let i = copied.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = copied[i];
-    copied[i] = copied[j];
-    copied[j] = temp;
-  }
-  return copied;
-}
-
-function generateOptions(correct) {
-  const shuffled = PASS_PHRASES
-    .filter((p) => p !== correct)
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 2);
-  return shuffleOptions([correct, ...shuffled]);
-}
-
-function renderOptions(options) {
-  const container = document.getElementById("phrase-options");
-  if (!container) return;
-  container.innerHTML = options
-    .map((opt) => `<button type="button" class="phrase-option ss-btn ss-btn-ghost">${escapeHtml(opt)}</button>`)
-    .join("");
-}
-
-function showPassphraseScreen() {
-  const gate = document.getElementById("gate");
-  if (!gate) return;
-  const options = generateOptions(activePassphrase);
-  const greeting = activeAccessName ? `Sairam ${escapeHtml(activeAccessName)}, enter Darshan.` : "Sairam, enter Darshan.";
-  gate.innerHTML = `
-    <h2 style="margin:0;font-family:'Cormorant Garamond', Georgia, serif;color:var(--ss-burgundy);font-size:1.7rem;">${greeting}</h2>
-    <p style="margin:0;color:var(--ss-muted);">Complete your passphrase challenge to continue to the private store.</p>
-    <div id="phrase-options" style="display:grid;gap:0.55rem;"></div>
-    <p id="message" style="margin:0.2rem 0 0;color:var(--ss-muted);"></p>
-  `;
-  renderOptions(options);
-}
-
-function showGateError(message) {
-  const gate = document.getElementById("gate");
-  if (!gate) return;
-  let errorEl = document.getElementById("gateError");
-  if (!errorEl) {
-    errorEl = document.createElement("p");
-    errorEl.id = "gateError";
-    errorEl.style.color = "#9b1c31";
-    errorEl.style.margin = "0.2rem 0 0";
-    gate.appendChild(errorEl);
-  }
-  errorEl.textContent = message;
-}
-
-function setGateValidationState(isLoading) {
-  const validateBtn = document.querySelector("#gate .ss-btn");
-  if (!validateBtn) return;
-  if (isLoading) {
-    validateBtn.textContent = "Validating invitation...";
-    validateBtn.setAttribute("disabled", "disabled");
-    return;
-  }
-  validateBtn.textContent = "Validate Access Link";
-  validateBtn.removeAttribute("disabled");
-}
-
-async function validateAccessCode(email, code) {
-  setGateValidationState(true);
+async function validatePrivateAccessKey(email, code) {
+  if (!email || !code) return false;
   try {
     const res = await fetch(`${API_BASE}/validate-access`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, code })
     });
-
-    const data = await res.json();
-    if (data.valid) {
-      activeAccessEmail = email;
-      activeAccessName = activeAccessName || resolveAccessName(email);
-      activeAccessCode = code;
-      activePassphrase = String(data.passphrase || "");
-      showPassphraseScreen();
-    } else {
-      showGateError("Invalid access link");
-    }
+    if (!res.ok) return false;
+    const data = await res.json().catch(() => ({}));
+    if (!data || data.valid !== true) return false;
+    activeAccessEmail = email;
+    activeAccessCode = code;
+    activeAccessName = activeAccessName || resolveAccessName(email);
+    activePassphrase = String(data.passphrase || "").trim();
+    return true;
   } catch (_error) {
-    showGateError("Unable to validate your access link right now.");
-  } finally {
-    setGateValidationState(false);
-  }
-}
-
-function showSoftError() {
-  const msg = document.getElementById("message");
-  if (!msg) return;
-  msg.innerText = "Take a moment… recall the message again.";
-  if (activePassphrase) {
-    renderOptions(generateOptions(activePassphrase));
-  }
-}
-
-async function verifyPassphraseSelection(email, selectedText) {
-  try {
-    const response = await fetch(`${API_BASE}/verify-passphrase`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, selected: selectedText })
-    });
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      showGateError(String(err?.error || "Passphrase verification failed."));
-      return false;
-    }
-    const payload = await response.json();
-    return Boolean(payload?.success);
-  } catch (_error) {
-    showGateError("Unable to verify passphrase right now.");
     return false;
+  }
+}
+
+async function checkAccess() {
+  const emailEl = document.getElementById("email");
+  if (!emailEl) return;
+
+  const email = emailEl.value.trim().toLowerCase();
+  if (!email) {
+    showUserError("Please enter your email to continue.");
+    return;
+  }
+  activeAccessName = resolveAccessName(email);
+  updateDarshanHeroGreeting(activeAccessName);
+  const code = String(activeAccessCode || "").trim();
+  if (!code) {
+    showUserError("Please open the private invite link from your email.");
+    return;
+  }
+  const isValid = await validatePrivateAccessKey(email, code);
+  if (!isValid) {
+    showUserError("Invalid or expired private link. Please request a fresh invite.");
+    return;
+  }
+  unlockStore();
+}
+
+function prefillEmail(email) {
+  const emailInput = document.getElementById("email");
+  if (emailInput) {
+    emailInput.value = String(email || "").trim().toLowerCase();
   }
 }
 
@@ -851,19 +758,6 @@ function unlockStore() {
     localStorage.setItem("sai_access_code", activeAccessCode);
   }
   window.location.href = "/store/home";
-}
-
-async function onPhraseOptionSelect(selectedText) {
-  if (!activeAccessEmail) {
-    showSoftError();
-    return;
-  }
-  const isValid = await verifyPassphraseSelection(activeAccessEmail, selectedText);
-  if (isValid) {
-    unlockStore();
-  } else {
-    showSoftError();
-  }
 }
 
 function ensureRazorpayCheckoutLoaded() {
@@ -988,7 +882,11 @@ async function startRazorpay(orderDetails, context) {
           body: JSON.stringify({
             razorpay_order_id: orderDetails.order_id,
             razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature
+            razorpay_signature: response.razorpay_signature,
+            email,
+            items,
+            totalItems,
+            totalAmount
           })
         });
         const data = await verifyRes.json();
@@ -1387,7 +1285,7 @@ function showConfirmation(user) {
 function mountStoreExperience() {
   const params = new URLSearchParams(window.location.search);
   const prefilledEmail = params.get("email");
-  const prefilledCode = params.get("code");
+  const prefilledToken = params.get("token") || params.get("code");
 
   const darshanLanding = getDarshanStoreLandingHtml();
 
@@ -1396,13 +1294,13 @@ function mountStoreExperience() {
       <div id="darshan-access-flow">
         ${darshanLanding}
         <section class="ss-card ss-gate-card" id="darshan-access">
-          <h1 id="ssGateGreeting">Your Darshan Awaits</h1>
-          <p id="ssGateLead">Before you enter, recall this guiding thought.</p>
+          <h1>Private Link Access</h1>
+          <p>Use your invite email to continue to the private store.</p>
         </section>
 
         <section class="ss-card ss-gate-form" id="gate">
           <input id="email" type="email" placeholder="Enter your email" />
-          <button type="button" class="ss-btn ss-btn-gold" onclick="checkAccess()">Validate Access Link</button>
+          <button type="button" class="ss-btn ss-btn-gold" onclick="checkAccess()">Continue to Store</button>
         </section>
       </div>
 
@@ -1770,6 +1668,31 @@ function mountStoreExperience() {
       font-size: 0.86rem;
       color: var(--ss-muted);
       line-height: 1.45;
+    }
+    .ss-personal-message-card {
+      text-align: center;
+      border-color: rgba(184, 146, 42, 0.34);
+      background: linear-gradient(180deg, rgba(255, 251, 243, 0.96), rgba(250, 244, 232, 0.9));
+    }
+    .ss-personal-message-label {
+      margin: 0;
+      color: var(--ss-burgundy);
+      font-family: "Cinzel", serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .ss-personal-message-passphrase {
+      margin-top: 0.6rem;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid rgba(184, 146, 42, 0.28);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--ss-burgundy);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(1.1rem, 3.6vw, 1.45rem);
+      line-height: 1.35;
+      font-weight: 600;
     }
     .ss-product-hero-card {
       padding: 1rem;
@@ -2180,29 +2103,37 @@ function mountStoreExperience() {
   document.head.appendChild(style);
 
   if (prefilledEmail) {
-    const greetingEl = document.getElementById("ssGateGreeting");
-    const leadEl = document.getElementById("ssGateLead");
     activeAccessName = resolveAccessName(prefilledEmail);
+    activeAccessEmail = String(prefilledEmail).trim().toLowerCase();
     updateDarshanHeroGreeting(activeAccessName);
-    if (greetingEl) {
-      greetingEl.textContent = `Sairam ${activeAccessName}, enter Darshan.`;
-    }
-    if (leadEl) {
-      leadEl.textContent = "We recognize your invitation. Complete the passphrase challenge to enter the private store.";
-    }
     prefillEmail(prefilledEmail);
   }
-  if (prefilledEmail && prefilledCode) {
-    // Always enforce invite verification + passphrase for link-based entry.
-    // Do not allow a previous local session to auto-bypass the Darshan gate.
-    localStorage.removeItem("sai_access");
-    activeAccessCode = prefilledCode;
-    validateAccessCode(String(prefilledEmail).trim().toLowerCase(), prefilledCode);
+  if (prefilledToken) {
+    activeAccessCode = String(prefilledToken).trim();
+  }
+  if (prefilledEmail && prefilledToken) {
+    const gateCard = document.getElementById("darshan-access");
+    if (gateCard) {
+      gateCard.innerHTML = `
+        <h1>Private Link Access</h1>
+        <p>Validating your private access key...</p>
+      `;
+    }
+    validatePrivateAccessKey(activeAccessEmail, activeAccessCode).then((isValid) => {
+      if (!isValid) {
+        showUserError("Invalid or expired private link. Please request a fresh invite.");
+        return;
+      }
+      localStorage.setItem("sai_access_email", activeAccessEmail);
+      localStorage.setItem("sai_access", "granted");
+      setStoreVisibility(true);
+      renderStore();
+    });
   }
 
   const granted = localStorage.getItem("sai_access") === "granted";
   const grantedEmail = String(localStorage.getItem("sai_access_email") || "").trim().toLowerCase();
-  if (granted && !(prefilledEmail && prefilledCode)) {
+  if (granted && !prefilledEmail) {
     activeAccessEmail = grantedEmail || activeAccessEmail;
     activePassphrase = String(localStorage.getItem("sai_access_passphrase") || "").trim();
     activeAccessCode = String(localStorage.getItem("sai_access_code") || "").trim() || activeAccessCode;
@@ -2224,11 +2155,6 @@ window.addItem = addItem;
 window.removeItem = removeItem;
 window.updateItemField = updateItemField;
 window.sarvamSaiEnterDarshanAccess = sarvamSaiEnterDarshanAccess;
-document.addEventListener("click", (e) => {
-  if (!e.target || !e.target.classList || !e.target.classList.contains("phrase-option")) return;
-  const selected = String(e.target.innerText || "").trim();
-  onPhraseOptionSelect(selected);
-});
 
 if (window.location.pathname.startsWith("/store")) {
   mountStoreExperience();

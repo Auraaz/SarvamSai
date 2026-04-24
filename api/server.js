@@ -251,11 +251,31 @@ function renderDarshanEmail(user) {
   const passphrase = String(user?.passphrase || "").trim();
   const accessLink = `https://sarvamsai.in/store?email=${encodeURIComponent(email)}&code=${encodeURIComponent(accessCode)}`;
 
-  return `
-    <p>Your Darshan invitation is ready.</p>
-    <p><strong>Passphrase:</strong> ${sanitizeHtml(passphrase)}</p>
-    <p><a href="${accessLink}">${accessLink}</a></p>
-  `;
+  return renderEmailShell(`
+    <h2 style="margin:0 0 12px;font-size:26px;line-height:1.25;color:#5a1520;">Your Darshan Invitation</h2>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#4c3128;">
+      Your private link is ready. Click below to enter the SarvamSai private store.
+    </p>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #efe4d2;border-radius:8px;overflow:hidden;background:#fffdfa;margin-bottom:14px;">
+      <tr>
+        <td style="padding:10px 12px;background:#f8f1e3;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Invite Email</td>
+        <td style="padding:10px 12px;background:#f8f1e3;color:#4c3128;font-size:14px;">${sanitizeHtml(email)}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Passphrase</td>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#4c3128;font-size:14px;">${sanitizeHtml(passphrase || "Shared in your access flow")}</td>
+      </tr>
+    </table>
+    <p style="margin:0;">
+      <a href="${accessLink}" style="display:inline-block;background:#b8922a;color:#fff8e8;text-decoration:none;font-weight:700;padding:11px 16px;border-radius:8px;">
+        Open Private Store
+      </a>
+    </p>
+    <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:#7c6357;word-break:break-all;">
+      If the button does not work, use this link:<br/>
+      <a href="${accessLink}" style="color:#5a1520;">${accessLink}</a>
+    </p>
+  `);
 }
 
 async function sendDarshanEmail(user) {
@@ -437,6 +457,95 @@ function formatRecipientsHtml(itemsRaw) {
         `Phone: ${sanitizeHtml(item.phone)}`
     )
     .join("<br/><br/>");
+}
+
+function renderEmailShell(contentHtml) {
+  return `
+    <div style="margin:0;padding:0;background:#f6f1e7;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;color:#22150f;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f1e7;padding:24px 12px;">
+        <tr>
+          <td align="center">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e6d7bf;border-radius:12px;overflow:hidden;">
+              <tr>
+                <td style="background:linear-gradient(135deg,#4f1621,#7b2232);padding:20px 24px;color:#f8e7be;">
+                  <div style="font-size:12px;letter-spacing:2px;font-weight:700;text-transform:uppercase;">SarvamSai</div>
+                  <div style="font-size:22px;line-height:1.3;font-weight:700;margin-top:8px;color:#fdf3d0;">A Centenary Offering</div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:24px;">${contentHtml}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+}
+
+function renderOrderConfirmationEmail(order) {
+  const items = normalizeOrderItems(order?.items || []);
+  const recipientRows = items.length
+    ? items
+        .map((item, index) => {
+          const address = [
+            item.addressLine1,
+            item.addressLine2,
+            [item.city, item.state].filter(Boolean).join(", "),
+            [item.pincode, item.country].filter(Boolean).join(", ")
+          ]
+            .filter(Boolean)
+            .join(", ");
+          return `
+            <tr>
+              <td style="padding:10px 12px;border-top:1px solid #efe4d2;font-size:14px;color:#41251e;">${index + 1}</td>
+              <td style="padding:10px 12px;border-top:1px solid #efe4d2;font-size:14px;color:#41251e;">${sanitizeHtml(item.name || "-")}</td>
+              <td style="padding:10px 12px;border-top:1px solid #efe4d2;font-size:14px;color:#6b5449;">${sanitizeHtml(address || "-")}</td>
+              <td style="padding:10px 12px;border-top:1px solid #efe4d2;font-size:14px;color:#6b5449;">${sanitizeHtml(item.phone || "-")}</td>
+            </tr>
+          `;
+        })
+        .join("")
+    : `<tr><td colspan="4" style="padding:12px;border-top:1px solid #efe4d2;color:#6b5449;">No recipient details found.</td></tr>`;
+
+  return renderEmailShell(`
+    <h2 style="margin:0 0 12px;font-size:26px;line-height:1.25;color:#5a1520;">Order Confirmed</h2>
+    <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#4c3128;">
+      Your SarvamSai reservation is confirmed. Thank you for being part of this sacred journey.
+    </p>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #efe4d2;border-radius:8px;overflow:hidden;background:#fffdfa;margin-bottom:14px;">
+      <tr>
+        <td style="padding:10px 12px;background:#f8f1e3;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Email</td>
+        <td style="padding:10px 12px;background:#f8f1e3;color:#4c3128;font-size:14px;">${sanitizeHtml(order?.email || "-")}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Payment ID</td>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#4c3128;font-size:14px;">${sanitizeHtml(order?.paymentId || "-")}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Order ID</td>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#4c3128;font-size:14px;">${sanitizeHtml(order?.orderId || "-")}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Total Pieces</td>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#4c3128;font-size:14px;">${sanitizeHtml(order?.totalItems || 0)}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Total Amount</td>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#4c3128;font-size:14px;">Rs. ${sanitizeHtml(order?.totalAmount || 0)}</td>
+      </tr>
+    </table>
+    <h3 style="margin:16px 0 8px;font-size:18px;line-height:1.3;color:#5a1520;">Recipient Details</h3>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #efe4d2;border-radius:8px;overflow:hidden;background:#fffdfa;">
+      <tr style="background:#f8f1e3;">
+        <th align="left" style="padding:10px 12px;color:#5a1520;font-size:12px;text-transform:uppercase;letter-spacing:0.6px;">#</th>
+        <th align="left" style="padding:10px 12px;color:#5a1520;font-size:12px;text-transform:uppercase;letter-spacing:0.6px;">Name</th>
+        <th align="left" style="padding:10px 12px;color:#5a1520;font-size:12px;text-transform:uppercase;letter-spacing:0.6px;">Address</th>
+        <th align="left" style="padding:10px 12px;color:#5a1520;font-size:12px;text-transform:uppercase;letter-spacing:0.6px;">Phone</th>
+      </tr>
+      ${recipientRows}
+    </table>
+  `);
 }
 
 app.get("/health", (_req, res) => {
@@ -665,7 +774,11 @@ function verifyPaymentHandler(req, res) {
     razorpay_signature,
     order_id,
     payment_id,
-    signature
+    signature,
+    email,
+    items,
+    totalItems,
+    totalAmount
   } = req.body || {};
   const finalOrderId = razorpay_order_id || order_id;
   const finalPaymentId = razorpay_payment_id || payment_id;
@@ -693,6 +806,40 @@ function verifyPaymentHandler(req, res) {
 
   if (expected === finalSignature) {
     console.log("Payment verified:", finalPaymentId);
+    const normalizedItems = normalizeOrderItems(items);
+    const totals = computeOrderTotals(normalizedItems);
+    const orderRecord = {
+      email: String(email || "").trim().toLowerCase(),
+      items: normalizedItems,
+      totalItems: Number(totalItems) || totals.totalItems,
+      totalAmount: Number(totalAmount) || totals.totalAmount,
+      baseAmount: totals.baseAmount,
+      internationalCount: totals.internationalCount,
+      shippingSurchargeAmount: totals.shippingSurchargeAmount,
+      highQuantityOrder: (Number(totalItems) || totals.totalItems) >= 3,
+      softLimitFlag: normalizedItems.length > 4,
+      repeatBuyer: false,
+      paymentId: finalPaymentId,
+      orderId: finalOrderId,
+      date: new Date().toISOString(),
+      status: "confirmed"
+    };
+    if (orderRecord.email) {
+      const repeatedEmailCount = readOrders().filter(
+        (existingOrder) => String(existingOrder.email || "").trim().toLowerCase() === orderRecord.email
+      ).length;
+      orderRecord.repeatBuyer = repeatedEmailCount > 0;
+    }
+    saveOrder(orderRecord);
+    if (orderRecord.email) {
+      sendEmail({
+        to: orderRecord.email,
+        subject: "SarvamSai Order Confirmation",
+        html: renderOrderConfirmationEmail(orderRecord)
+      }).catch((error) => {
+        console.error("Failed to send order confirmation email:", error);
+      });
+    }
     return res.json({ success: true });
   } else {
     return res.status(400).json({
