@@ -61,9 +61,7 @@ let reserveCtaObserver = null;
 const DEBUG = false;
 const DAILY_CAPACITY = 100;
 const BASE_PRICE_INR = 2499;
-const INTERNATIONAL_SHIPPING_USD = 15;
-const USD_TO_INR_RATE = 83;
-const INTERNATIONAL_SHIPPING_INR = INTERNATIONAL_SHIPPING_USD * USD_TO_INR_RATE;
+const INDIA_ONLY_NOTICE = "International shipping starts soon. We are currently serving addresses in India only.";
 const ORDER_CONFIRMATION_STORAGE_KEY = "sai_last_confirmed_order";
 let order = {
   items: []
@@ -365,6 +363,9 @@ function renderStore() {
           You have entered the private invitation layer of the same offering.
         </p>
 
+        <p class="ss-checkout-hint" style="margin:0 0 0.85rem;padding:0.55rem 0.7rem;border:1px solid rgba(184,146,42,0.3);border-radius:10px;background:rgba(243,236,224,0.8);color:var(--ss-burgundy);">
+          ${INDIA_ONLY_NOTICE}
+        </p>
         <div class="ss-key-info">
           <div><span>Price</span><strong>₹${BASE_PRICE_INR}</strong></div>
           <div><span>Remaining Today</span><strong>${remainingToday} / ${DAILY_CAPACITY}</strong></div>
@@ -378,8 +379,6 @@ function renderStore() {
           <div id="ssItemList" class="ss-gift-list"></div>
           <div class="ss-order-total">
             <span>Total pieces: <strong id="ssTotalItems">0</strong></span>
-            <span>International addresses: <strong id="ssInternationalCount">0</strong></span>
-            <span>Shipping surcharge: <strong id="ssShippingSurcharge">₹0</strong></span>
             <span>Total amount: <strong id="ssTotalAmount">₹0</strong></span>
           </div>
           <p id="ssSoftLimitHint" class="ss-checkout-hint"></p>
@@ -405,16 +404,12 @@ function renderStore() {
 
     <section class="ss-shipping-grid">
       <article class="ss-glass-card">
-        <h3>Worldwide Shipping</h3>
-        <p>Delivered safely to all countries with secure handling.</p>
+        <h3>India Shipping</h3>
+        <p>Deliveries are currently available only within India.</p>
       </article>
       <article class="ss-glass-card">
-        <h3>International ($15)</h3>
-        <p>Global delivery with tracked handling and dispatch care.</p>
-      </article>
-      <article class="ss-glass-card">
-        <h3>Secure Packaging</h3>
-        <p>Premium protection for your collectible during transit.</p>
+        <h3>International Shipping</h3>
+        <p>Starting soon. We will announce global availability shortly.</p>
       </article>
     </section>
 
@@ -452,21 +447,9 @@ function getTotalItems() {
   return Array.isArray(order.items) ? order.items.length : 0;
 }
 
-function isInternationalCountry(countryValue) {
-  const country = String(countryValue || "").trim().toLowerCase();
-  if (!country) return false;
-  return country !== "india";
-}
-
-function getInternationalItemsCount() {
-  if (!Array.isArray(order.items)) return 0;
-  return order.items.filter((item) => isInternationalCountry(item.country)).length;
-}
-
 function getTotalAmount() {
   const baseAmount = getTotalItems() * BASE_PRICE_INR;
-  const internationalSurcharge = getInternationalItemsCount() * INTERNATIONAL_SHIPPING_INR;
-  return baseAmount + internationalSurcharge;
+  return baseAmount;
 }
 
 function addItem() {
@@ -481,7 +464,7 @@ function addItem() {
     city: "",
     state: "",
     pincode: "",
-    country: ""
+    country: "India"
   });
 
   renderItems();
@@ -535,7 +518,7 @@ function renderItems() {
         </div>
         <div class="ss-gift-grid-2">
           <input type="text" placeholder="Postal / ZIP code *" value="${escapeHtml(item.pincode || "")}" oninput="updateItemField(${index}, 'pincode', this.value)" />
-          <input type="text" placeholder="Country *" value="${escapeHtml(item.country || "")}" oninput="updateItemField(${index}, 'country', this.value)" />
+          <input type="text" value="India" readonly aria-readonly="true" />
         </div>
       </article>
     `
@@ -551,7 +534,7 @@ function validateOrderSelection() {
   }
   for (let i = 0; i < order.items.length; i += 1) {
     const item = order.items[i] || {};
-    if (!item.name || !item.phone || !item.addressLine1 || !item.city || !item.state || !item.pincode || !item.country) {
+    if (!item.name || !item.phone || !item.addressLine1 || !item.city || !item.state || !item.pincode) {
       return `Please complete all details for Piece ${i + 1}.`;
     }
     if (String(item.phone).replace(/\D/g, "").length < 7) {
@@ -564,12 +547,8 @@ function validateOrderSelection() {
 function updateOrderSummary() {
   const totalItemsEl = document.getElementById("ssTotalItems");
   const totalAmountEl = document.getElementById("ssTotalAmount");
-  const internationalCountEl = document.getElementById("ssInternationalCount");
-  const shippingSurchargeEl = document.getElementById("ssShippingSurcharge");
   if (totalItemsEl) totalItemsEl.textContent = String(getTotalItems());
   if (totalAmountEl) totalAmountEl.textContent = `₹${getTotalAmount()}`;
-  if (internationalCountEl) internationalCountEl.textContent = String(getInternationalItemsCount());
-  if (shippingSurchargeEl) shippingSurchargeEl.textContent = `₹${getInternationalItemsCount() * INTERNATIONAL_SHIPPING_INR}`;
 }
 
 function initOrderFlow() {
@@ -1006,7 +985,7 @@ async function buyNow() {
     city: item.city,
     state: item.state,
     pincode: item.pincode,
-    country: item.country
+    country: "India"
   }));
   const totalItems = getTotalItems();
   const totalAmount = getTotalAmount();

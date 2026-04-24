@@ -413,7 +413,7 @@ function getOrderItemsFromRecord(orderRecord) {
 function isInternationalCountry(countryValue) {
   const country = String(countryValue || "").trim().toLowerCase();
   if (!country) return false;
-  return country !== "india";
+  return false;
 }
 
 function computeOrderTotals(items) {
