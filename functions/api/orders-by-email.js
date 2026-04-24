@@ -27,6 +27,29 @@ async function ensureOrdersTable(db) {
       `
     )
     .run();
+  await db
+    .prepare(
+      `
+        CREATE TABLE IF NOT EXISTS order_items (
+          id TEXT PRIMARY KEY,
+          payment_id TEXT NOT NULL,
+          order_id TEXT NOT NULL,
+          email TEXT NOT NULL,
+          item_index INTEGER NOT NULL,
+          item_type TEXT,
+          recipient_name TEXT,
+          recipient_phone TEXT,
+          address_line1 TEXT,
+          address_line2 TEXT,
+          city TEXT,
+          state TEXT,
+          pincode TEXT,
+          country TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      `
+    )
+    .run();
 }
 
 export async function onRequestGet({ request, env }) {
@@ -53,6 +76,37 @@ export async function onRequestGet({ request, env }) {
     .all();
 
   const rows = Array.isArray(result?.results) ? result.results : [];
+  const itemRowsResult = await env.DB
+    .prepare(
+      `
+        SELECT payment_id, item_index, item_type, recipient_name, recipient_phone,
+               address_line1, address_line2, city, state, pincode, country
+        FROM order_items
+        WHERE email = ?
+        ORDER BY payment_id, item_index ASC
+      `
+    )
+    .bind(email)
+    .all();
+  const itemRows = Array.isArray(itemRowsResult?.results) ? itemRowsResult.results : [];
+  const itemsByPaymentId = itemRows.reduce((acc, row) => {
+    const paymentId = String(row.payment_id || "").trim();
+    if (!paymentId) return acc;
+    if (!acc[paymentId]) acc[paymentId] = [];
+    acc[paymentId].push({
+      type: String(row.item_type || "").trim() || "gift",
+      name: String(row.recipient_name || "").trim(),
+      phone: String(row.recipient_phone || "").trim(),
+      addressLine1: String(row.address_line1 || "").trim(),
+      addressLine2: String(row.address_line2 || "").trim(),
+      city: String(row.city || "").trim(),
+      state: String(row.state || "").trim(),
+      pincode: String(row.pincode || "").trim(),
+      country: String(row.country || "").trim()
+    });
+    return acc;
+  }, {});
+
   const orders = rows.map((row) => ({
     email: String(row.email || "").trim().toLowerCase(),
     orderId: String(row.order_id || "").trim(),
@@ -61,7 +115,7 @@ export async function onRequestGet({ request, env }) {
     totalAmount: Number(row.total_amount) || 0,
     currency: String(row.currency || "INR").trim().toUpperCase(),
     status: String(row.status || "confirmed").trim(),
-    items: parseItems(row.items_json),
+    items: itemsByPaymentId[String(row.payment_id || "").trim()] || parseItems(row.items_json),
     date: String(row.created_at || "")
   }));
 

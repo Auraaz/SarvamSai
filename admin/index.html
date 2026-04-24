@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SarvamSai Admin Orders</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f7f4ee; color: #23180e; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    .card { background: #fff; border: 1px solid #e5d8c0; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+    input, button { font-size: 14px; padding: 10px 12px; border-radius: 8px; border: 1px solid #d8c6aa; }
+    button { background: #6e4b1e; color: #fff; border: none; cursor: pointer; }
+    button:hover { filter: brightness(1.05); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .muted { color: #6b5a3e; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+    th, td { border: 1px solid #eadfcd; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #f8f1e3; }
+    code { background: #f2ecdf; border-radius: 6px; padding: 2px 5px; }
+    .status { margin-top: 8px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2 style="margin:0 0 10px;">SarvamSai Admin Orders</h2>
+      <div class="row">
+        <input id="token" type="password" placeholder="Admin token" style="min-width:280px;" />
+        <button id="loadBtn" type="button">Load Orders</button>
+      </div>
+      <p class="muted">Uses <code>/api/admin-orders</code> with <code>ADMIN_DASHBOARD_TOKEN</code>.</p>
+      <div id="status" class="status muted">Waiting for token.</div>
+    </div>
+
+    <div class="card">
+      <div id="ordersContainer" class="muted">No data loaded.</div>
+    </div>
+  </div>
+
+  <script>
+    const tokenInput = document.getElementById("token");
+    const loadBtn = document.getElementById("loadBtn");
+    const statusEl = document.getElementById("status");
+    const ordersContainer = document.getElementById("ordersContainer");
+
+    function esc(v) {
+      return String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function renderOrders(orders) {
+      if (!Array.isArray(orders) || !orders.length) {
+        ordersContainer.innerHTML = "<p class='muted'>No orders found.</p>";
+        return;
+      }
+      const rows = orders.map((o) => {
+        const items = Array.isArray(o.items) && o.items.length
+          ? o.items.map((item, idx) => {
+              const address = [item.addressLine1, item.addressLine2, [item.city, item.state].filter(Boolean).join(", "), [item.pincode, item.country].filter(Boolean).join(", ")]
+                .filter(Boolean)
+                .join(", ");
+              return `${idx + 1}) ${esc(item.name)} | ${esc(item.phone)} | ${esc(address)}`;
+            }).join("<br>")
+          : "-";
+        return `
+          <tr>
+            <td>${esc(o.createdAt)}</td>
+            <td>${esc(o.email)}</td>
+            <td><code>${esc(o.orderId)}</code></td>
+            <td><code>${esc(o.paymentId)}</code></td>
+            <td>${esc(o.totalItems)}</td>
+            <td>${esc(o.totalAmount)} ${esc(o.currency)}</td>
+            <td>${esc(o.status)}</td>
+            <td>${items}</td>
+          </tr>
+        `;
+      }).join("");
+      ordersContainer.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Email</th><th>Order ID</th><th>Payment ID</th>
+              <th>Items</th><th>Amount</th><th>Status</th><th>Shipping Details</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function loadOrders() {
+      const token = String(tokenInput.value || "").trim();
+      if (!token) {
+        statusEl.textContent = "Enter admin token first.";
+        return;
+      }
+      statusEl.textContent = "Loading...";
+      try {
+        const response = await fetch("/api/admin-orders?limit=200", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          statusEl.textContent = payload?.error || `Request failed (${response.status}).`;
+          return;
+        }
+        statusEl.textContent = `Loaded ${Array.isArray(payload.orders) ? payload.orders.length : 0} orders.`;
+        renderOrders(payload.orders || []);
+      } catch (error) {
+        statusEl.textContent = `Failed to load orders: ${error.message || error}`;
+      }
+    }
+
+    loadBtn.addEventListener("click", loadOrders);
+    tokenInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loadOrders();
+    });
+  </script>
+</body>
+</html>
