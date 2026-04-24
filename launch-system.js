@@ -723,6 +723,32 @@ function ensureRazorpayCheckoutLoaded() {
   return razorpayScriptPromise;
 }
 
+function isLikelyUnsupportedCheckoutContext() {
+  const ua = String(navigator.userAgent || "").toLowerCase();
+  const inAppOrWebView =
+    /\bwv\b/.test(ua) ||
+    ua.includes("fbav") ||
+    ua.includes("instagram") ||
+    ua.includes("line/") ||
+    ua.includes("micromessenger") ||
+    ua.includes("linkedinapp") ||
+    ua.includes("snapchat");
+  const inIframe = (() => {
+    try {
+      return window.top !== window.self;
+    } catch (_e) {
+      return true;
+    }
+  })();
+  const insecureContext = window.location.protocol !== "https:" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+  return inAppOrWebView || inIframe || insecureContext;
+}
+
+function setCheckoutHintMessage(message) {
+  const hintEl = document.getElementById("ssCheckoutHint");
+  if (hintEl) hintEl.textContent = message;
+}
+
 async function fetchRazorpayKey() {
   if (razorpayKeyCache) return razorpayKeyCache;
   const response = await fetch(`${API_BASE}/payment-config`);
@@ -792,6 +818,13 @@ async function buyNow() {
 
   try {
     logDebug("Starting payment", {});
+    if (isLikelyUnsupportedCheckoutContext()) {
+      setCheckoutHintMessage(
+        "This browser context may block Razorpay checkout. Open this page directly in Chrome/Edge/Safari (not inside an in-app browser or embedded preview) and retry."
+      );
+      alert("Checkout requires a standard browser tab. Please open this page directly in Chrome, Edge, or Safari.");
+      return;
+    }
     if (!RAZORPAY_KEY) {
       alert("Payment system is still loading. Please try again in a moment.");
       return;
@@ -850,9 +883,9 @@ async function buyNow() {
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              order_id: response.razorpay_order_id,
-              payment_id: response.razorpay_payment_id,
-              signature: response.razorpay_signature
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
             })
           });
           const verifyData = await verifyRes.json();
@@ -913,17 +946,24 @@ async function buyNow() {
         response?.error?.description ||
         response?.error?.reason ||
         "Payment failed. Please try again.";
-      const hintEl = document.getElementById("ssCheckoutHint");
-      if (hintEl) {
-        hintEl.textContent = `${reason} If this browser is restricted, open the page directly in Chrome/Edge/Safari and retry.`;
+      const lowered = String(reason).toLowerCase();
+      if (lowered.includes("browser is not supported") || lowered.includes("not supported")) {
+        setCheckoutHintMessage(
+          "This environment is blocking Razorpay modal. Open this exact page URL in a normal Chrome/Edge/Safari tab and retry."
+        );
+        return;
       }
+      setCheckoutHintMessage(`${reason} If this browser is restricted, open the page directly in Chrome/Edge/Safari and retry.`);
     });
     console.log("Razorpay options:", options);
     try {
       rzp.open();
     } catch (e) {
       console.error("Razorpay open failed:", e);
-      alert("Unable to open payment. Try another browser.");
+      setCheckoutHintMessage(
+        "Could not open Razorpay modal in this browser context. Open this page directly in Chrome/Edge/Safari and retry."
+      );
+      alert("Unable to open payment in this browser context. Please use a standard browser tab.");
     }
   } catch (error) {
     logDebug("Payment error", error);
