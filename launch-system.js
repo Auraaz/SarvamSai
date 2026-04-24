@@ -119,6 +119,42 @@ function getUserEmail() {
   return String(localStorage.getItem("sai_access_email") || "").trim().toLowerCase();
 }
 
+async function loadUserDataByEmail(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) return;
+  try {
+    const response = await fetch(`${API_BASE}/access-profile?email=${encodeURIComponent(normalizedEmail)}`);
+    if (!response.ok) return;
+    const payload = await response.json().catch(() => ({}));
+    const profile = payload?.profile;
+    if (!profile || String(profile.email || "").trim().toLowerCase() !== normalizedEmail) return;
+
+    const existingUser = getStoredUser() || {};
+    const mergedUser = {
+      ...existingUser,
+      email: normalizedEmail,
+      name: String(profile.name || existingUser.name || resolveAccessName(normalizedEmail)).trim(),
+      code: String(profile.code || existingUser.code || "").trim(),
+      invitesLeft: Number(profile.invitesLeft ?? existingUser.invitesLeft ?? 3),
+      invitesUsed: Number(profile.invitesUsed ?? existingUser.invitesUsed ?? 0),
+      status: String(profile.status || existingUser.status || "active").trim().toLowerCase()
+    };
+    localStorage.setItem("user", JSON.stringify(mergedUser));
+
+    activeAccessEmail = normalizedEmail;
+    activeAccessName = mergedUser.name || activeAccessName;
+    if (mergedUser.code) activeAccessCode = mergedUser.code;
+    if (profile.passphrase) {
+      activePassphrase = String(profile.passphrase).trim();
+      localStorage.setItem("sai_access_passphrase", activePassphrase);
+    }
+    updateDarshanHeroGreeting(activeAccessName);
+    renderStore();
+  } catch (_error) {
+    // Non-blocking enrichment from sheets.
+  }
+}
+
 function getUserInitials(user) {
   if (!user) return "SS";
   const source = (user.name || user.email || "SS").trim();
@@ -334,32 +370,6 @@ function renderStore() {
       <article class="ss-glass-card">
         <h3>Secure Packaging</h3>
         <p>Premium protection for your collectible during transit.</p>
-      </article>
-    </section>
-
-    <section class="ss-panels-grid">
-      <article class="ss-glass-card">
-        <h3>Your Access</h3>
-        <div class="ss-line-row">
-          <span>Passphrase</span>
-          <code id="ssAccessPassphrase">${escapeHtml(displayPassphrase || "Not available")}</code>
-          <button class="ss-btn ss-btn-ghost" type="button" onclick="copyStoreText('${escapeHtml(displayPassphrase)}', 'Passphrase copied')">Copy</button>
-        </div>
-        <div class="ss-line-row">
-          <span>Invites Left</span>
-          <strong>${invitesRemaining} / ${totalInvites}</strong>
-        </div>
-      </article>
-
-      <article class="ss-glass-card">
-        <h3>Invite & Share</h3>
-        <div class="ss-line-row">
-          <span>Invite Link</span>
-          <code id="ssInviteLink">${inviteLink}</code>
-          <button class="ss-btn ss-btn-ghost" type="button" onclick="copyStoreText('${inviteLink}', 'Invite link copied')">Copy</button>
-        </div>
-        <button class="ss-btn ss-btn-ghost" type="button" onclick="shareStoreInvite('${inviteLink}')">Share on WhatsApp</button>
-        <p class="ss-note">Invite up to 3 devotees to join this offering.</p>
       </article>
     </section>
 
@@ -714,6 +724,7 @@ function openStoreDirectly(email) {
   localStorage.setItem("sai_access", "granted");
   setStoreVisibility(true);
   renderStore();
+  loadUserDataByEmail(normalizedEmail);
 }
 
 function checkAccess() {
