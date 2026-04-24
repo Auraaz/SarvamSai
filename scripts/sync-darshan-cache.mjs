@@ -82,9 +82,23 @@ async function fetchRowsFromAppScript() {
   const payload = await response.json().catch(() => null);
   if (!payload) throw new Error("Apps Script response is not valid JSON.");
 
-  const rows = Array.isArray(payload) ? payload : Array.isArray(payload.rows) ? payload.rows : [];
+  const rows = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload.rows)
+      ? payload.rows
+      : Array.isArray(payload.data)
+        ? payload.data
+        : Array.isArray(payload.records)
+          ? payload.records
+          : Array.isArray(payload.result)
+            ? payload.result
+            : [];
   if (!rows.length) {
-    throw new Error("No rows returned. Ensure Apps Script supports action=exportDarshanAccess and returns rows[].");
+    const keys = Object.keys(payload || {});
+    throw new Error(
+      `No rows returned from Apps Script export. Response keys: ${keys.join(", ") || "(none)"}. ` +
+      "Expected an array at payload, payload.rows, payload.data, payload.records, or payload.result."
+    );
   }
   return rows;
 }
@@ -130,7 +144,19 @@ async function d1Query(sql, params) {
 
 async function main() {
   const source = getEnv("SYNC_SOURCE", "apps-script");
-  const rawRows = source === "csv" ? await fetchRowsFromCsv() : await fetchRowsFromAppScript();
+  let rawRows = [];
+  if (source === "csv") {
+    rawRows = await fetchRowsFromCsv();
+  } else {
+    try {
+      rawRows = await fetchRowsFromAppScript();
+    } catch (error) {
+      const csvUrl = getEnv("GOOGLE_SHEET_CSV_URL");
+      if (!csvUrl) throw error;
+      console.warn(`Apps Script export failed (${error.message}). Falling back to CSV source...`);
+      rawRows = await fetchRowsFromCsv();
+    }
+  }
   const normalized = rawRows.map(normalizeRow).filter(Boolean);
 
   if (!normalized.length) {

@@ -38,28 +38,5 @@ export async function onRequestPost({ request, env }) {
     );
   }
 
-  if (env.DB) {
-    const cachedEmail = String(payload?.email || email || "").trim().toLowerCase();
-    const cachedCode = String(payload?.access_code || payload?.accessCode || payload?.code || "").trim();
-    const cachedPassphrase = String(payload?.passphrase || "").trim();
-    if (cachedEmail && cachedCode) {
-      env.DB.prepare(
-        `
-          INSERT INTO darshan_access (id, email, access_code, passphrase, status, created_at, last_accessed_at)
-          VALUES (lower(hex(randomblob(16))), ?, ?, ?, 'active', datetime('now'), datetime('now'))
-          ON CONFLICT(email)
-          DO UPDATE SET
-            access_code = excluded.access_code,
-            passphrase = excluded.passphrase,
-            status = 'active',
-            last_accessed_at = datetime('now')
-        `
-      )
-        .bind(cachedEmail, cachedCode, cachedPassphrase)
-        .run()
-        .catch(() => {});
-    }
-  }
-
   return Response.json(payload);
 }
