@@ -29,7 +29,10 @@ export async function onRequestPost(context) {
   }
 
   if (!payload || payload.success !== true) {
-    return Response.json({ success: false }, { status: 400 });
+    return Response.json(
+      { success: false, error: payload?.error || "Passphrase verification failed." },
+      { status: 400 }
+    );
   }
 
   return Response.json({ success: true });

@@ -81,6 +81,12 @@ function resolveAccessName(email) {
   return parts.join(" ") || "Devotee";
 }
 
+function updateDarshanHeroGreeting(name) {
+  const heroNameEl = document.getElementById("darshanHeroName");
+  if (!heroNameEl) return;
+  heroNameEl.textContent = String(name || "Devotee");
+}
+
 function getStoredOrderConfirmation() {
   try {
     const raw = localStorage.getItem(ORDER_CONFIRMATION_STORAGE_KEY);
@@ -700,6 +706,7 @@ function checkAccess() {
     return;
   }
   activeAccessName = resolveAccessName(email);
+  updateDarshanHeroGreeting(activeAccessName);
   validateAccessCode(email, code);
 }
 
@@ -792,6 +799,9 @@ function showSoftError() {
   const msg = document.getElementById("message");
   if (!msg) return;
   msg.innerText = "Take a moment… recall the message again.";
+  if (activePassphrase) {
+    renderOptions(generateOptions(activePassphrase));
+  }
 }
 
 async function verifyPassphraseSelection(email, selectedText) {
@@ -801,10 +811,15 @@ async function verifyPassphraseSelection(email, selectedText) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, selected: selectedText })
     });
-    if (!response.ok) return false;
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      showGateError(String(err?.error || "Passphrase verification failed."));
+      return false;
+    }
     const payload = await response.json();
     return Boolean(payload?.success);
   } catch (_error) {
+    showGateError("Unable to verify passphrase right now.");
     return false;
   }
 }
@@ -1103,7 +1118,7 @@ function getDarshanStoreLandingHtml() {
     <div class="darshan-layer-inner">
       <p class="darshan-invite-tag">YOU'RE INVITED</p>
 
-      <h2>Do you have a <span>darshan</span> appointment?</h2>
+      <h2>Sairam <span id="darshanHeroName">Devotee</span>,</h2>
 
       <p class="darshan-subtext">
         This journey is by invitation and intention.
@@ -2153,6 +2168,7 @@ function mountStoreExperience() {
     const greetingEl = document.getElementById("ssGateGreeting");
     const leadEl = document.getElementById("ssGateLead");
     activeAccessName = resolveAccessName(prefilledEmail);
+    updateDarshanHeroGreeting(activeAccessName);
     if (greetingEl) {
       greetingEl.textContent = `Sairam ${activeAccessName}, enter Darshan.`;
     }
