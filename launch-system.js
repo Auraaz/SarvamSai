@@ -216,14 +216,21 @@ function renderStore() {
       </div>
     </header>
 
-    <section class="ss-glass-card ss-product-hero-card">
-      <iframe
-        class="ss-product-hero-frame"
-        src="/homepage-product-section.html"
-        title="SarvamSai Product Section"
-        loading="lazy"
-        referrerpolicy="no-referrer"
-      ></iframe>
+    <section class="ss-glass-card ss-product-hero-card" id="product">
+      <span class="eyebrow" style="justify-content:center;">The Collectible Discovery Box</span>
+      <div
+        data-ss-box-canvas
+        data-scene-id="easter-scene"
+        data-box-id="easter-box"
+        data-scene-role="button"
+        data-box-role="button"
+        data-scene-tab-index="0"
+        data-box-tab-index="0"
+        data-scene-aria="Open Aaradhana Day poster preview"
+        data-box-aria="Reveal Aaradhana Day poster"
+        data-scene-on-click="if(window.ssEasterOpen){window.ssEasterOpen();}"
+        data-box-on-click="if(window.ssEasterOpen){window.ssEasterOpen();}"
+      ></div>
     </section>
 
     <section class="ss-hero-grid">
@@ -1535,17 +1542,8 @@ function mountStoreExperience() {
       line-height: 1.45;
     }
     .ss-product-hero-card {
-      padding: 0.4rem;
+      padding: 1rem;
       overflow: hidden;
-    }
-    .ss-product-hero-frame {
-      width: 100%;
-      min-height: 1220px;
-      border: 0;
-      display: block;
-      border-radius: 12px;
-      background: var(--ss-ivory);
-      max-width: 100%;
     }
     .ss-hero-copy-full {
       max-width: 760px;
@@ -1897,9 +1895,6 @@ function mountStoreExperience() {
       .ss-panels-grid {
         grid-template-columns: 1fr 1fr;
       }
-      .ss-product-hero-frame {
-        min-height: 1300px;
-      }
     }
     @media (max-width: 760px) {
       .ss-launch-wrap {
@@ -1942,9 +1937,6 @@ function mountStoreExperience() {
       .ss-hero-visual .scene {
         transform: scale(0.85);
         transform-origin: center top;
-      }
-      .ss-product-hero-frame {
-        min-height: 1140px;
       }
       .ss-order-total {
         flex-direction: column;
