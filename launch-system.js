@@ -198,6 +198,36 @@ async function loadUserDataByEmail(email) {
   }
 }
 
+async function hydratePassphraseFromInvite(email, code) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const normalizedCode = String(code || "").trim();
+  if (!normalizedEmail || !normalizedCode) return;
+
+  try {
+    const response = await fetch(buildApiUrl(resolvedApiBase, "/validate-access"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: normalizedEmail, code: normalizedCode })
+    });
+    if (!response.ok) return;
+
+    const payload = await response.json().catch(() => ({}));
+    if (!payload || payload.valid !== true) return;
+
+    activeAccessCode = normalizedCode;
+    localStorage.setItem("sai_access_code", normalizedCode);
+
+    const passphrase = String(payload.passphrase || "").trim();
+    if (!passphrase) return;
+
+    activePassphrase = passphrase;
+    localStorage.setItem("sai_access_passphrase", passphrase);
+    renderStore();
+  } catch (_error) {
+    // Non-blocking enrichment from invite validation.
+  }
+}
+
 function getUserInitials(user) {
   if (!user) return "SS";
   const source = (user.name || user.email || "SS").trim();
@@ -753,6 +783,10 @@ function openStoreDirectly(email) {
   setStoreVisibility(true);
   renderStore();
   loadUserDataByEmail(normalizedEmail);
+  hydratePassphraseFromInvite(
+    normalizedEmail,
+    activeAccessCode || String(localStorage.getItem("sai_access_code") || "").trim()
+  );
 }
 
 function checkAccess() {
@@ -1333,6 +1367,7 @@ function showConfirmation(user) {
 function mountStoreExperience() {
   const params = new URLSearchParams(window.location.search);
   const prefilledEmail = params.get("email");
+  const prefilledCode = String(params.get("code") || "").trim();
   const isLaunchRoute = window.location.pathname.startsWith(STORE_LAUNCH_ROUTE);
   const hasInviteParams = Boolean(prefilledEmail);
 
@@ -2160,6 +2195,10 @@ function mountStoreExperience() {
   if (prefilledEmail) {
     activeAccessName = resolveAccessName(prefilledEmail);
     activeAccessEmail = String(prefilledEmail).trim().toLowerCase();
+    if (prefilledCode) {
+      activeAccessCode = prefilledCode;
+      localStorage.setItem("sai_access_code", prefilledCode);
+    }
     updateDarshanHeroGreeting(activeAccessName);
     prefillEmail(prefilledEmail);
   }
