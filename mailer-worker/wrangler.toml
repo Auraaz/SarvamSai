@@ -1,0 +1,7 @@
+name = "sarvamsai-mailer"
+main = "src/index.js"
+compatibility_date = "2026-04-24"
+
+[[send_email]]
+name = "MAILER"
+allowed_sender_addresses = ["sairam@sarvamsai.in"]

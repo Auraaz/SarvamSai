@@ -1,38 +1,43 @@
-import { EmailMessage } from "cloudflare:email";
-
-function createRawEmail({ from, to, subject, text }) {
-  return [
-    `From: SarvamSai <${from}>`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=UTF-8",
-    "Content-Transfer-Encoding: 8bit",
-    "",
-    text
-  ].join("\r\n");
-}
-
 export async function onRequestPost({ env }) {
-  const from = "sairam@sarvamsai.in";
-  const to = "sairam@sarvamsai.in";
-  const subject = "SarvamSai Cloudflare test email";
-  const text =
-    "This is a test email sent from Cloudflare Pages Functions for Darshan queue confirmation flow.";
+  const mailerUrl = String(env.MAILER_WORKER_URL || "").trim();
+  const mailerToken = String(env.MAILER_WORKER_TOKEN || "").trim();
+  const targetEmail = String(env.TEST_EMAIL_TO || "sairam@sarvamsai.in").trim();
 
-  const raw = createRawEmail({ from, to, subject, text });
-  const message = new EmailMessage(from, to, raw);
-
-  try {
-    await env.MAILER.send(message);
-    return Response.json({ success: true, sentTo: to });
-  } catch (error) {
+  if (!mailerUrl || !mailerToken) {
     return Response.json(
       {
         success: false,
-        error: String(error?.message || error || "Email send failed")
+        error: "MAILER_WORKER_URL or MAILER_WORKER_TOKEN is not configured."
       },
       { status: 500 }
     );
   }
+
+  const response = await fetch(mailerUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${mailerToken}`
+    },
+    body: JSON.stringify({
+      to: targetEmail,
+      subject: "SarvamSai Cloudflare test email",
+      text: "This is a test email sent from Cloudflare Worker mailer for Darshan queue flow."
+    })
+  });
+
+  const contentType = String(response.headers.get("content-type") || "").toLowerCase();
+  if (contentType.includes("application/json")) {
+    const payload = await response.json().catch(() => ({}));
+    return Response.json(payload, { status: response.status });
+  }
+
+  const text = await response.text();
+  return Response.json(
+    {
+      success: response.ok,
+      error: text || "Mailer worker returned a non-JSON response."
+    },
+    { status: response.status }
+  );
 }
