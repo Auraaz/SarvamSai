@@ -667,6 +667,15 @@ function isUnsupportedCheckoutContext() {
   const ua = navigator.userAgent || "";
   const inAppOrWebViewPattern =
     /(FBAN|FBAV|Instagram|Line\/|MicroMessenger|wv\)|WebView|Electron|GSA|DuckDuckGo\/|MiuiBrowser)/i;
+  const host = window.location.hostname || "";
+  const isLocalHost = host === "localhost" || host === "127.0.0.1";
+  const isPreviewHost = host.endsWith(".pages.dev");
+  const isProductionHost = host === "sarvamsai.in" || host === "www.sarvamsai.in";
+
+  // Allow checkout on first-party environments.
+  if (isLocalHost || isPreviewHost || isProductionHost) {
+    return false;
+  }
 
   if (window.top !== window.self) {
     return true;
