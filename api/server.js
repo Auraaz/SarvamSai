@@ -26,9 +26,7 @@ const USD_TO_INR_RATE = 83;
 const INTERNATIONAL_SHIPPING_INR = INTERNATIONAL_SHIPPING_USD * USD_TO_INR_RATE;
 
 if (!RAZORPAY_KEY || !RAZORPAY_SECRET) {
-  console.warn(
-    "RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are missing. Set them on the host (e.g. Render) for payment-config, create-order, and verify-payment."
-  );
+  console.warn("RAZORPAY_KEY or RAZORPAY_SECRET is missing. Payment endpoints will fail until configured.");
 }
 
 function getRazorpayClient() {
@@ -41,12 +39,8 @@ function getRazorpayClient() {
   });
 }
 
-function isRazorpayWebhookPath(p) {
-  return p === "/razorpay-webhook" || p === "/api/razorpay-webhook";
-}
-
 app.use((req, res, next) => {
-  if (isRazorpayWebhookPath(req.path)) {
+  if (req.path === "/razorpay-webhook") {
     return next();
   }
   return bodyParser.json()(req, res, next);
@@ -395,15 +389,7 @@ async function createOrderHandler(req, res) {
     if (statusCode === 401) {
       return res.status(401).json({ error: "Razorpay authentication failed. Check credentials." });
     }
-    const razorpayDesc =
-      (error?.error && typeof error.error === "object" && (error.error.description || error.error.reason)) ||
-      (typeof error?.error === "string" ? error.error : null) ||
-      error?.description ||
-      error?.message;
-    const detail = razorpayDesc ? String(razorpayDesc).trim().slice(0, 400) : "";
-    return res.status(500).json({
-      error: detail ? `Unable to create order. ${detail}` : "Unable to create order."
-    });
+    return res.status(500).json({ error: "Unable to create order." });
   }
 }
 
@@ -487,71 +473,70 @@ async function verifyPaymentHandler(req, res) {
 app.post("/verify-payment", verifyPaymentHandler);
 app.post("/api/verify-payment", verifyPaymentHandler);
 
-const razorpayWebhookRaw = express.raw({ type: "application/json" });
+app.post(
+  "/razorpay-webhook",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const signature = req.headers["x-razorpay-signature"];
+    if (!signature) {
+      return res.status(400).json({ success: false, error: "Missing webhook signature." });
+    }
+    if (!RAZORPAY_WEBHOOK_SECRET) {
+      return res.status(500).json({ success: false, error: "Webhook secret is not configured." });
+    }
 
-function razorpayWebhookHandler(req, res) {
-  const signature = req.headers["x-razorpay-signature"];
-  if (!signature) {
-    return res.status(400).json({ success: false, error: "Missing webhook signature." });
+    const expectedSignature = crypto
+      .createHmac("sha256", RAZORPAY_WEBHOOK_SECRET)
+      .update(req.body)
+      .digest("hex");
+
+    if (expectedSignature !== signature) {
+      return res.status(400).json({ success: false, error: "Webhook signature mismatch." });
+    }
+
+    let eventPayload = null;
+    try {
+      eventPayload = JSON.parse(req.body.toString("utf8"));
+    } catch (error) {
+      return res.status(400).json({ success: false, error: "Invalid webhook payload." });
+    }
+
+    const event = eventPayload.event || "unknown";
+    const paymentEntity = eventPayload?.payload?.payment?.entity || {};
+    const notes = paymentEntity.notes || {};
+    const itemsCount = Math.max(0, Number(notes.itemsCount) || 0);
+    const internationalCount = Math.max(0, Number(notes.internationalCount) || 0);
+    const softLimitFlag = String(notes.highQuantityOrder || "").toLowerCase() === "true";
+    const repeatBuyer = String(notes.repeatBuyer || "").toLowerCase() === "true";
+
+    const record = {
+      email: notes.email || "unknown",
+      items: Array.from({ length: itemsCount }).map(() => ({
+        type: "gift",
+        name: "",
+        address: "",
+        phone: "",
+        shippingStatus: "pending",
+        trackingId: ""
+      })),
+      totalItems: itemsCount,
+      totalAmount: (itemsCount * BASE_PRICE_INR) + (internationalCount * INTERNATIONAL_SHIPPING_INR),
+      baseAmount: itemsCount * BASE_PRICE_INR,
+      internationalCount,
+      shippingSurchargeAmount: internationalCount * INTERNATIONAL_SHIPPING_INR,
+      highQuantityOrder: itemsCount >= 3,
+      softLimitFlag,
+      repeatBuyer,
+      paymentId: paymentEntity.id || "unknown",
+      orderId: paymentEntity.order_id || "unknown",
+      date: new Date().toISOString(),
+      status: event.includes("captured") ? "confirmed" : `webhook:${event}`
+    };
+
+    saveOrder(record);
+    return res.json({ success: true });
   }
-  if (!RAZORPAY_WEBHOOK_SECRET) {
-    return res.status(500).json({ success: false, error: "Webhook secret is not configured." });
-  }
-
-  const expectedSignature = crypto
-    .createHmac("sha256", RAZORPAY_WEBHOOK_SECRET)
-    .update(req.body)
-    .digest("hex");
-
-  if (expectedSignature !== signature) {
-    return res.status(400).json({ success: false, error: "Webhook signature mismatch." });
-  }
-
-  let eventPayload = null;
-  try {
-    eventPayload = JSON.parse(req.body.toString("utf8"));
-  } catch (error) {
-    return res.status(400).json({ success: false, error: "Invalid webhook payload." });
-  }
-
-  const event = eventPayload.event || "unknown";
-  const paymentEntity = eventPayload?.payload?.payment?.entity || {};
-  const notes = paymentEntity.notes || {};
-  const itemsCount = Math.max(0, Number(notes.itemsCount) || 0);
-  const internationalCount = Math.max(0, Number(notes.internationalCount) || 0);
-  const softLimitFlag = String(notes.highQuantityOrder || "").toLowerCase() === "true";
-  const repeatBuyer = String(notes.repeatBuyer || "").toLowerCase() === "true";
-
-  const record = {
-    email: notes.email || "unknown",
-    items: Array.from({ length: itemsCount }).map(() => ({
-      type: "gift",
-      name: "",
-      address: "",
-      phone: "",
-      shippingStatus: "pending",
-      trackingId: ""
-    })),
-    totalItems: itemsCount,
-    totalAmount: itemsCount * BASE_PRICE_INR + internationalCount * INTERNATIONAL_SHIPPING_INR,
-    baseAmount: itemsCount * BASE_PRICE_INR,
-    internationalCount,
-    shippingSurchargeAmount: internationalCount * INTERNATIONAL_SHIPPING_INR,
-    highQuantityOrder: itemsCount >= 3,
-    softLimitFlag,
-    repeatBuyer,
-    paymentId: paymentEntity.id || "unknown",
-    orderId: paymentEntity.order_id || "unknown",
-    date: new Date().toISOString(),
-    status: event.includes("captured") ? "confirmed" : `webhook:${event}`
-  };
-
-  saveOrder(record);
-  return res.json({ success: true });
-}
-
-app.post("/razorpay-webhook", razorpayWebhookRaw, razorpayWebhookHandler);
-app.post("/api/razorpay-webhook", razorpayWebhookRaw, razorpayWebhookHandler);
+);
 
 app.get("/orders-by-email", (req, res) => {
   const email = String(req.query.email || "").trim().toLowerCase();

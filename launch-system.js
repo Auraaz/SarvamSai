@@ -1,9 +1,9 @@
 const STORE_URL = "https://sarvamsai.in/store/";
 /**
- * Production API — custom domain (same Render service). Override in config/launch-global.js
- * if you need the direct Render hostname (e.g. DNS issues).
+ * Primary API (Render) — always resolvable. When api.sarvamsai.in DNS is stable, set
+ * API_BASE in config/launch-global.js to "https://api.sarvamsai.in/api" to use the custom host.
  */
-const PRODUCTION_API_BASE = "https://api.sarvamsai.in/api";
+const PRODUCTION_API_BASE = "https://sarvamsai-api.onrender.com/api";
 const launchConfig = window.SARVAMSAI_LAUNCH_CONFIG || {};
 const API_BASE = (() => {
   const override =
@@ -258,10 +258,7 @@ function renderStore() {
         </div>
 
         ${reserveButtonPrimary}
-        <p class="ss-note">Secure checkout powered by Razorpay.</p>
-        <p class="ss-note" style="font-size:0.82rem;margin-top:0.35rem;line-height:1.45;">
-          If Razorpay says this browser is not supported: turn off Chrome’s <strong>Device Toolbar</strong> (toggle device mode, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd>) or DevTools responsive emulation, then try again — or open this page in a normal tab on your phone.
-        </p>
+        <p class="ss-note">Secure checkout powered by Razorpay</p>
       </article>
     </section>
 
@@ -776,7 +773,7 @@ async function buyNow() {
   if (isUnsupportedCheckoutContext()) {
     const hintEl = document.getElementById("ssCheckoutHint");
     const msg =
-      "Checkout cannot run in this embedded or in-app browser. Open the store in Chrome, Edge, Safari, or Firefox (full tab, not an in-app webview). If you use Chrome DevTools, turn off Device Toolbar (Ctrl+Shift+M).";
+      "Checkout needs a full browser window. Please open this page in Chrome, Edge, Safari, or Firefox and try again.";
     if (hintEl) {
       hintEl.textContent = msg;
     } else {
