@@ -103,6 +103,56 @@ async function upsertOrderRecord(db, order) {
     .run();
 }
 
+async function sendOrderConfirmationEmail(env, order) {
+  const mailerUrl = String(env.MAILER_WORKER_URL || "").trim();
+  const mailerToken = String(env.MAILER_WORKER_TOKEN || "").trim();
+  if (!mailerUrl || !mailerToken) return;
+  if (!order?.email) return;
+
+  const recipients = Array.isArray(order.items) ? order.items : [];
+  const recipientLines = recipients.length
+    ? recipients
+        .map((item, index) => {
+          const address = [
+            item.addressLine1,
+            item.addressLine2,
+            [item.city, item.state].filter(Boolean).join(", "),
+            [item.pincode, item.country].filter(Boolean).join(", ")
+          ]
+            .filter(Boolean)
+            .join(", ");
+          return `${index + 1}. ${item.name || "-"} | ${item.phone || "-"} | ${address || "-"}`;
+        })
+        .join("\n")
+    : "No recipient details available.";
+
+  const text = [
+    "Your SarvamSai order is confirmed.",
+    "",
+    `Email: ${order.email}`,
+    `Order ID: ${order.orderId}`,
+    `Payment ID: ${order.paymentId}`,
+    `Total Pieces: ${order.totalItems}`,
+    `Total Amount: ${order.totalAmount} ${order.currency || "INR"}`,
+    "",
+    "Shipping / Recipient Details:",
+    recipientLines
+  ].join("\n");
+
+  await fetch(mailerUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${mailerToken}`
+    },
+    body: JSON.stringify({
+      to: order.email,
+      subject: "SarvamSai Order Confirmation",
+      text
+    })
+  });
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   const {
@@ -128,24 +178,37 @@ export async function onRequestPost(context) {
     return Response.json({ success: false }, { status: 400 });
   }
 
-  if (env.DB) {
-    try {
-      await upsertOrderRecord(env.DB, {
-        email: String(email || "").trim().toLowerCase(),
-        orderId: String(razorpay_order_id || "").trim(),
-        paymentId: String(razorpay_payment_id || "").trim(),
-        totalItems: Math.max(0, Number(totalItems) || normalizeItems(items).length),
-        totalAmount: Math.max(0, Number(totalAmount) || 0),
-        currency: String(currency || "INR").trim().toUpperCase() || "INR",
-        status: "confirmed",
-        items: normalizeItems(items)
-      });
-    } catch (error) {
-      return Response.json(
-        { success: false, error: `Payment verified but order storage failed: ${String(error?.message || error)}` },
-        { status: 500 }
-      );
-    }
+  if (!env.DB) {
+    return Response.json(
+      { success: false, error: "Payment verified but D1 DB is not configured, so order cannot be stored." },
+      { status: 500 }
+    );
+  }
+
+  const orderRecord = {
+    email: String(email || "").trim().toLowerCase(),
+    orderId: String(razorpay_order_id || "").trim(),
+    paymentId: String(razorpay_payment_id || "").trim(),
+    totalItems: Math.max(0, Number(totalItems) || normalizeItems(items).length),
+    totalAmount: Math.max(0, Number(totalAmount) || 0),
+    currency: String(currency || "INR").trim().toUpperCase() || "INR",
+    status: "confirmed",
+    items: normalizeItems(items)
+  };
+
+  try {
+    await upsertOrderRecord(env.DB, orderRecord);
+  } catch (error) {
+    return Response.json(
+      { success: false, error: `Payment verified but order storage failed: ${String(error?.message || error)}` },
+      { status: 500 }
+    );
+  }
+
+  try {
+    await sendOrderConfirmationEmail(env, orderRecord);
+  } catch (_error) {
+    // Non-blocking: order is already stored and confirmed.
   }
 
   return Response.json({ success: true });
