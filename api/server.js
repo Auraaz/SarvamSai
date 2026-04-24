@@ -11,7 +11,7 @@ const cors = require("cors");
 const app = express();
 app.set("trust proxy", 1);
 const PORT = Number(process.env.PORT || 8787);
-const DEBUG = true;
+const DEBUG = false;
 const DATA_DIR = path.join(__dirname, "data");
 const ORDERS_PATH = path.join(DATA_DIR, "orders.json");
 
@@ -38,12 +38,6 @@ if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
   console.warn("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is missing. Payment endpoints will fail until configured.");
 }
 
-console.log("ENV CHECK:");
-console.log("RAZORPAY KEY:", process.env.RAZORPAY_KEY_ID);
-console.log("RAZORPAY SECRET:", process.env.RAZORPAY_KEY_SECRET ? "LOADED" : "MISSING");
-console.log("KEY:", RAZORPAY_KEY_ID ? "OK" : "MISSING");
-console.log("SECRET:", RAZORPAY_KEY_SECRET ? "OK" : "MISSING");
-
 app.use((req, res, next) => {
   if (req.path === "/razorpay-webhook") {
     return next();
@@ -54,13 +48,7 @@ app.use((req, res, next) => {
 const CORS_DEFAULT_ORIGINS = [
   "https://sarvamsai.in",
   "https://www.sarvamsai.in",
-  "https://api.sarvamsai.in",
-  "http://localhost:5500",
-  "http://127.0.0.1:5500",
-  "http://localhost:8080",
-  "http://127.0.0.1:8080",
-  "http://localhost:8787",
-  "http://127.0.0.1:8787"
+  "https://api.sarvamsai.in"
 ];
 
 function parseCorsExtraOrigins() {
@@ -334,7 +322,6 @@ app.get("/payment-config", sendPaymentConfig);
 app.get("/api/payment-config", sendPaymentConfig);
 
 async function createOrderHandler(req, res) {
-  logDebug("Incoming create-order", req.body);
   const { email, totalItems, totalAmount, amount, currency, receipt } = req.body || {};
   const normalizedItems = normalizeOrderItems(getRequestItems(req.body));
   const hasDirectAmount = Number.isFinite(Number(amount)) && Number(amount) > 0;
@@ -402,14 +389,13 @@ async function createOrderHandler(req, res) {
       receipt: orderReceipt,
       notes: orderNotes
     });
-    logDebug("Order created", order);
+    console.log("Order created:", order.id);
     return res.json({
       order_id: order.id,
       amount: order.amount,
       currency: order.currency
     });
   } catch (error) {
-    logDebug("Create order error", error);
     console.error("create-order failed:", error);
     const statusCode = Number(error?.statusCode) || Number(error?.status) || 0;
     if (statusCode === 401) {
@@ -435,7 +421,6 @@ function verifyPaymentHandler(req, res) {
   const finalPaymentId = razorpay_payment_id || payment_id;
   const finalSignature = razorpay_signature || signature;
 
-  console.log("Incoming verify:", req.body);
   if (!finalOrderId || !finalPaymentId || !finalSignature) {
     return res.status(400).json({
       success: false,
@@ -451,17 +436,13 @@ function verifyPaymentHandler(req, res) {
 
   const body = finalOrderId + "|" + finalPaymentId;
 
-  console.log("Body string:", body);
-
   const expected = crypto
     .createHmac("sha256", RAZORPAY_KEY_SECRET)
     .update(body)
     .digest("hex");
 
-  console.log("Expected signature:", expected);
-  console.log("Received signature:", finalSignature);
-
   if (expected === finalSignature) {
+    console.log("Payment verified:", finalPaymentId);
     return res.json({ success: true });
   } else {
     return res.status(400).json({

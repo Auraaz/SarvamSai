@@ -4,30 +4,16 @@ const STORE_URL = "https://sarvamsai.in/store/";
  * API_BASE in config/launch-global.js to "https://api.sarvamsai.in/api" to use the custom host.
  */
 const PRODUCTION_API_BASE = "https://sarvamsai-api.onrender.com/api";
-const launchConfig = window.SARVAMSAI_LAUNCH_CONFIG || {};
-const API_BASE = (() => {
-  const override =
-    typeof launchConfig.API_BASE === "string" ? launchConfig.API_BASE.trim().replace(/\/$/, "") : "";
-  if (override) return override;
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-    return "http://localhost:8787/api";
-  }
-  const host = window.location.hostname;
-  // Static site hosts have no /api — call the deployed API.
-  if (host === "sarvamsai.in" || host === "www.sarvamsai.in") {
-    return PRODUCTION_API_BASE;
-  }
-  if (/^[a-z0-9-]+\.sarvamsai\.pages\.dev$/i.test(host)) {
-    return PRODUCTION_API_BASE;
-  }
-  return "/api";
-})();
+function getApiBase() {
+  return PRODUCTION_API_BASE;
+}
+const API_BASE = getApiBase();
 const START_DATE = new Date("2026-04-24");
 let razorpayScriptPromise = null;
 let razorpayKeyCache = "";
 let RAZORPAY_KEY = "";
 let reserveCtaObserver = null;
-const DEBUG = true;
+const DEBUG = false;
 const BASE_PRICE_INR = 2999;
 const INTERNATIONAL_SHIPPING_USD = 15;
 const USD_TO_INR_RATE = 83;
@@ -41,6 +27,11 @@ function logDebug(label, data) {
   if (DEBUG) {
     console.log(`[DEBUG] ${label}:`, data);
   }
+}
+
+function showUserError(message) {
+  console.error(message);
+  setCheckoutHintMessage(message);
 }
 
 function generateCode() {
@@ -652,7 +643,7 @@ function scrollSwaroopaTrack(direction) {
 function copyStoreText(value, noticeText) {
   if (!value) return;
   navigator.clipboard.writeText(value).then(function () {
-    if (noticeText) alert(noticeText);
+    if (noticeText) showUserError(noticeText);
   });
 }
 
@@ -679,7 +670,7 @@ function checkAccess() {
   const storedUser = getStoredUser();
   logDebug("Access attempt", { email, code, storedUser });
   if (!storedUser || !storedUser.email || !storedUser.code) {
-    alert("No registration found in this browser session. Please join the queue first on this same site URL.");
+    showUserError("No registration found in this browser session. Please join the queue first on this same site URL.");
     return;
   }
   const storedEmail = (storedUser && storedUser.email ? String(storedUser.email) : "").trim().toLowerCase();
@@ -698,7 +689,7 @@ function checkAccess() {
     renderStore();
   } else {
     logDebug("Access denied", {});
-    alert("Invalid credentials");
+    showUserError("Invalid credentials");
   }
 }
 
@@ -740,7 +731,7 @@ function isLikelyUnsupportedCheckoutContext() {
       return true;
     }
   })();
-  const insecureContext = window.location.protocol !== "https:" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+  const insecureContext = window.location.protocol !== "https:";
   return inAppOrWebView || inIframe || insecureContext;
 }
 
@@ -786,6 +777,88 @@ async function preloadRazorpayCheckout() {
   }
 }
 
+function handlePaymentSuccess(paymentResponse, items, totalItems, totalAmount) {
+  setStoredOrderConfirmation({
+    paymentId: paymentResponse.razorpay_payment_id,
+    items,
+    totalItems,
+    totalAmount,
+    status: "confirmed"
+  });
+  renderStore();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function startRazorpay(orderDetails, context) {
+  const { items, totalItems, totalAmount, email } = context;
+  if (!orderDetails || !orderDetails.order_id) {
+    showUserError("Unable to initiate payment.");
+    return;
+  }
+  if (!window.Razorpay) {
+    showUserError("Payment system failed to load. Please refresh and retry.");
+    return;
+  }
+
+  const options = {
+    key: orderDetails.key || RAZORPAY_KEY,
+    amount: Number(orderDetails.amount),
+    currency: orderDetails.currency || "INR",
+    name: "SarvamSai",
+    description: "Daily Mint",
+    order_id: orderDetails.order_id,
+    handler: async function (response) {
+      try {
+        const verifyRes = await fetch(`${API_BASE}/verify-payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: orderDetails.order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          })
+        });
+        const data = await verifyRes.json();
+        if (!data.success) {
+          throw new Error("Verification failed");
+        }
+        handlePaymentSuccess(response, items, totalItems, totalAmount);
+      } catch (_err) {
+        showUserError("Payment verification failed.");
+      }
+    },
+    modal: {
+      ondismiss: function () {
+        logDebug("Payment modal closed", {});
+      }
+    },
+    prefill: {
+      email: email,
+      contact: items[0]?.phone || ""
+    },
+    theme: {
+      color: "#D4AF37"
+    }
+  };
+
+  const rzp = new Razorpay(options);
+  rzp.on("payment.failed", function (response) {
+    const reason =
+      response?.error?.description ||
+      response?.error?.reason ||
+      "Payment failed. Please try again.";
+    const lowered = String(reason).toLowerCase();
+    if (lowered.includes("browser is not supported") || lowered.includes("not supported")) {
+      showUserError(
+        "This environment is blocking Razorpay modal. Open this exact page URL in a normal Chrome/Edge/Safari tab and retry."
+      );
+      return;
+    }
+    showUserError(reason);
+  });
+  rzp.open();
+}
+
 async function buyNow() {
   const validationError = validateOrderSelection();
   if (validationError) {
@@ -812,21 +885,20 @@ async function buyNow() {
 
   const email = getUserEmail();
   if (!email) {
-    alert("Please complete access with a valid email first.");
+    showUserError("Please complete access with a valid email first.");
     return;
   }
 
   try {
     logDebug("Starting payment", {});
     if (isLikelyUnsupportedCheckoutContext()) {
-      setCheckoutHintMessage(
+      showUserError(
         "This browser context may block Razorpay checkout. Open this page directly in Chrome/Edge/Safari (not inside an in-app browser or embedded preview) and retry."
       );
-      alert("Checkout requires a standard browser tab. Please open this page directly in Chrome, Edge, or Safari.");
       return;
     }
     if (!RAZORPAY_KEY) {
-      alert("Payment system is still loading. Please try again in a moment.");
+      showUserError("Payment system is still loading. Please try again in a moment.");
       return;
     }
 
@@ -856,120 +928,27 @@ async function buyNow() {
 
     const order = await orderResponse.json();
     logDebug("Order created", order);
-    console.log("Order response:", order);
     if (!order.order_id) {
-      alert("Missing order_id from backend");
+      showUserError("Unable to initiate payment.");
       return;
     }
     if (!order.amount) {
-      alert("Invalid order response from server.");
-      alert("Order creation failed");
+      showUserError("Invalid order response from server.");
       return;
     }
-
-    const options = {
-      key: RAZORPAY_KEY,
-      amount: Number(order.amount),
-      currency: "INR",
-      name: "SarvamSai",
-      description: "Daily Mint",
-      order_id: order.order_id,
-      handler: async function (response) {
-        try {
-          console.log("Razorpay response:", response);
-          const verifyRes = await fetch(`${API_BASE}/verify-payment`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            })
-          });
-          const verifyData = await verifyRes.json();
-          console.log("Verify result:", verifyData);
-          if (verifyData.success) {
-            alert("Payment verified successfully");
-            setStoredOrderConfirmation({
-              paymentId: response.razorpay_payment_id,
-              items,
-              totalItems,
-              totalAmount,
-              status: "confirmed"
-            });
-            renderStore();
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          } else {
-            alert("Payment verification failed");
-          }
-        } catch (error) {
-          alert(error.message || "Verification failed. Please contact support.");
-        }
+    await startRazorpay(
+      {
+        ...order,
+        key: RAZORPAY_KEY
       },
-      modal: {
-        ondismiss: function () {
-          const hintEl = document.getElementById("ssCheckoutHint");
-          if (hintEl) {
-            hintEl.textContent = "Checkout was closed. You can resume whenever you are ready.";
-          }
-        }
-      },
-      prefill: {
-        email: email,
-        contact: items[0]?.phone || ""
-      },
-      theme: {
-        color: "#D4AF37"
-      }
-    };
-
-    if (!window.Razorpay) {
-      alert("Payment system failed to load. Please refresh.");
-      return;
-    }
-
-    console.log("Razorpay available:", !!window.Razorpay);
-
-    let rzp;
-    try {
-      rzp = new Razorpay(options);
-    } catch (e) {
-      console.error("Razorpay init failed:", e);
-      alert("Payment initialization failed. Try refreshing.");
-      return;
-    }
-
-    rzp.on("payment.failed", function (response) {
-      const reason =
-        response?.error?.description ||
-        response?.error?.reason ||
-        "Payment failed. Please try again.";
-      const lowered = String(reason).toLowerCase();
-      if (lowered.includes("browser is not supported") || lowered.includes("not supported")) {
-        setCheckoutHintMessage(
-          "This environment is blocking Razorpay modal. Open this exact page URL in a normal Chrome/Edge/Safari tab and retry."
-        );
-        return;
-      }
-      setCheckoutHintMessage(`${reason} If this browser is restricted, open the page directly in Chrome/Edge/Safari and retry.`);
-    });
-    console.log("Razorpay options:", options);
-    try {
-      rzp.open();
-    } catch (e) {
-      console.error("Razorpay open failed:", e);
-      setCheckoutHintMessage(
-        "Could not open Razorpay modal in this browser context. Open this page directly in Chrome/Edge/Safari and retry."
-      );
-      alert("Unable to open payment in this browser context. Please use a standard browser tab.");
-    }
+      { items, totalItems, totalAmount, email }
+    );
   } catch (error) {
     logDebug("Payment error", error);
-    alert(error.message || "Payment initialization failed.");
+    showUserError(error.message || "Payment initialization failed.");
   }
 }
+
 
 function testCreateOrder() {
   logDebug("Test Create Order started", {});
