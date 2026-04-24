@@ -772,7 +772,20 @@ function showGateError(message) {
   errorEl.textContent = message;
 }
 
+function setGateValidationState(isLoading) {
+  const validateBtn = document.querySelector("#gate .ss-btn");
+  if (!validateBtn) return;
+  if (isLoading) {
+    validateBtn.textContent = "Validating invitation...";
+    validateBtn.setAttribute("disabled", "disabled");
+    return;
+  }
+  validateBtn.textContent = "Validate Access Link";
+  validateBtn.removeAttribute("disabled");
+}
+
 async function validateAccessCode(email, code) {
+  setGateValidationState(true);
   try {
     const res = await fetch(`${API_BASE}/validate-access`, {
       method: "POST",
@@ -792,6 +805,8 @@ async function validateAccessCode(email, code) {
     }
   } catch (_error) {
     showGateError("Unable to validate your access link right now.");
+  } finally {
+    setGateValidationState(false);
   }
 }
 
@@ -2182,11 +2197,6 @@ function mountStoreExperience() {
     // Do not allow a previous local session to auto-bypass the Darshan gate.
     localStorage.removeItem("sai_access");
     activeAccessCode = prefilledCode;
-    const validateBtn = document.querySelector("#gate .ss-btn");
-    if (validateBtn) {
-      validateBtn.textContent = "Validating invitation...";
-      validateBtn.setAttribute("disabled", "disabled");
-    }
     validateAccessCode(String(prefilledEmail).trim().toLowerCase(), prefilledCode);
   }
 
