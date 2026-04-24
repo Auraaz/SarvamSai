@@ -151,7 +151,7 @@ function renderStore() {
   const totalInvites = user.invitesLeft || 3;
   const invitesUsed = user.invitesUsed || 0;
   const invitesRemaining = Math.max(totalInvites - invitesUsed, 0);
-  const accessCode = user.code || "SAI-XXXXX";
+  const displayPassphrase = activePassphrase || String(localStorage.getItem("sai_access_passphrase") || "").trim();
   const inviteLink = getInviteLink(user);
   const userInitials = getUserInitials(user);
   const swaroopas = [
@@ -276,9 +276,6 @@ function renderStore() {
 
         ${reserveButtonPrimary}
         <p class="ss-note">Secure checkout powered by Razorpay</p>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;">
-          <button type="button" class="ss-btn ss-btn-ghost ss-btn-mini" onclick="testCreateOrder()">Test Create Order</button>
-        </div>
       </article>
     </section>
 
@@ -311,9 +308,9 @@ function renderStore() {
       <article class="ss-glass-card">
         <h3>Your Access</h3>
         <div class="ss-line-row">
-          <span>Access Code</span>
-          <code id="ssAccessCode">${accessCode}</code>
-          <button class="ss-btn ss-btn-ghost" type="button" onclick="copyStoreText('${accessCode}', 'Access code copied')">Copy</button>
+          <span>Passphrase</span>
+          <code id="ssAccessPassphrase">${escapeHtml(displayPassphrase || "Not available")}</code>
+          <button class="ss-btn ss-btn-ghost" type="button" onclick="copyStoreText('${escapeHtml(displayPassphrase)}', 'Passphrase copied')">Copy</button>
         </div>
         <div class="ss-line-row">
           <span>Invites Left</span>
@@ -793,6 +790,12 @@ function unlockStore() {
   if (activeAccessEmail) {
     localStorage.setItem("sai_access_email", activeAccessEmail);
   }
+  if (activePassphrase) {
+    localStorage.setItem("sai_access_passphrase", activePassphrase);
+  }
+  if (activeAccessCode) {
+    localStorage.setItem("sai_access_code", activeAccessCode);
+  }
   window.location.href = "/store/home";
 }
 
@@ -1065,40 +1068,6 @@ async function buyNow() {
   }
 }
 
-
-function testCreateOrder() {
-  logDebug("Test Create Order started", {});
-  fetch(`${API_BASE}/create-order`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: getUserEmail() || "debug@sarvamsai.in",
-      items: [
-        {
-          type: "self",
-          name: "Debug User",
-          phone: "9999999999",
-          addressLine1: "Debug Address 1",
-          addressLine2: "",
-          city: "Puttaparthi",
-          state: "Andhra Pradesh",
-          pincode: "515134",
-          country: "India"
-        }
-      ],
-      totalItems: 1,
-      totalAmount: BASE_PRICE_INR
-    })
-  })
-    .then((res) => res.json().then((body) => ({ status: res.status, body })))
-    .then(({ status, body }) => {
-      logDebug("Test order status", status);
-      logDebug("Test order", body);
-    })
-    .catch((error) => {
-      logDebug("Test Create Order error", error);
-    });
-}
 
 function mountHomeExperience() {
   // Darshan / private-mint invite lives on /store only, not the marketing homepage.
@@ -2168,6 +2137,8 @@ function mountStoreExperience() {
   const grantedEmail = String(localStorage.getItem("sai_access_email") || "").trim().toLowerCase();
   if (granted) {
     activeAccessEmail = grantedEmail || activeAccessEmail;
+    activePassphrase = String(localStorage.getItem("sai_access_passphrase") || "").trim();
+    activeAccessCode = String(localStorage.getItem("sai_access_code") || "").trim() || activeAccessCode;
     setStoreVisibility(true);
     renderStore();
   }
@@ -2186,7 +2157,6 @@ window.addItem = addItem;
 window.removeItem = removeItem;
 window.updateItemField = updateItemField;
 window.sarvamSaiEnterDarshanAccess = sarvamSaiEnterDarshanAccess;
-window.testCreateOrder = testCreateOrder;
 document.addEventListener("click", (e) => {
   if (!e.target || !e.target.classList || !e.target.classList.contains("phrase-option")) return;
   const selected = String(e.target.innerText || "").trim();
