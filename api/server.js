@@ -252,28 +252,34 @@ function renderDarshanEmail(user) {
   const accessLink = `https://sarvamsai.in/store?email=${encodeURIComponent(email)}&code=${encodeURIComponent(accessCode)}`;
 
   return renderEmailShell(`
-    <h2 style="margin:0 0 12px;font-size:26px;line-height:1.25;color:#5a1520;">Your Darshan Invitation</h2>
-    <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#4c3128;">
-      Your private link is ready. Click below to enter the SarvamSai private store.
+    <h2 style="margin:0 0 12px;font-family:Georgia,serif;font-size:28px;line-height:1.25;color:#5a1520;">Your Darshan Invitation</h2>
+    <p style="margin:0 0 16px;font-family:Georgia,serif;font-size:15px;line-height:1.8;color:#4c3128;">
+      Your private darshan link is ready. Enter the SarvamSai private store using the details below.
     </p>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #efe4d2;border-radius:8px;overflow:hidden;background:#fffdfa;margin-bottom:14px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #e8d8bd;border-radius:8px;overflow:hidden;background:#fffdfa;margin-bottom:16px;">
       <tr>
-        <td style="padding:10px 12px;background:#f8f1e3;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Invite Email</td>
-        <td style="padding:10px 12px;background:#f8f1e3;color:#4c3128;font-size:14px;">${sanitizeHtml(email)}</td>
+        <td style="padding:10px 12px;background:#f8f1e3;color:#5a1520;font-family:Georgia,serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Invite Email</td>
+        <td style="padding:10px 12px;background:#f8f1e3;color:#4c3128;font-family:Georgia,serif;font-size:14px;">${sanitizeHtml(email)}</td>
       </tr>
       <tr>
-        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#5a1520;font-size:13px;font-weight:700;text-transform:uppercase;">Passphrase</td>
-        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#4c3128;font-size:14px;">${sanitizeHtml(passphrase || "Shared in your access flow")}</td>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#5a1520;font-family:Georgia,serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Passphrase</td>
+        <td style="padding:10px 12px;border-top:1px solid #efe4d2;color:#4c3128;font-family:Georgia,serif;font-size:14px;">${sanitizeHtml(passphrase || "Shared in your access flow")}</td>
       </tr>
     </table>
-    <p style="margin:0;">
-      <a href="${accessLink}" style="display:inline-block;background:#b8922a;color:#fff8e8;text-decoration:none;font-weight:700;padding:11px 16px;border-radius:8px;">
+    <p style="margin:0 0 8px;">
+      <a href="${accessLink}" style="display:inline-block;background:#5a1520;color:#fdf2d4;text-decoration:none;font-family:Georgia,serif;font-weight:700;letter-spacing:0.2px;padding:12px 18px;border-radius:999px;">
         Open Private Store
       </a>
     </p>
-    <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:#7c6357;word-break:break-all;">
+    <p style="margin:0 0 14px;font-family:Georgia,serif;font-size:13px;line-height:1.75;color:#6b5449;">
+      If this button does not work, copy and open this secure link:
+    </p>
+    <p style="margin:0 0 12px;padding:12px 14px;border-left:3px solid #c8a84b;background:#f5eee2;font-family:Georgia,serif;font-size:12px;line-height:1.6;color:#5a1520;word-break:break-all;">
+      <a href="${accessLink}" style="color:#5a1520;text-decoration:none;">${accessLink}</a>
+    </p>
+    <p style="margin:0;font-family:Georgia,serif;font-size:13px;line-height:1.75;color:#7c6357;">
       If the button does not work, use this link:<br/>
-      <a href="${accessLink}" style="color:#5a1520;">${accessLink}</a>
+      Keep this email private as the link is personalized to your invitation.
     </p>
   `);
 }
@@ -461,19 +467,42 @@ function formatRecipientsHtml(itemsRaw) {
 
 function renderEmailShell(contentHtml) {
   return `
-    <div style="margin:0;padding:0;background:#f6f1e7;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;color:#22150f;">
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f1e7;padding:24px 12px;">
+    <div style="margin:0;padding:0;background:#f0ebe0;font-family:Georgia,serif;color:#22150f;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f0ebe0;padding:24px 12px;">
         <tr>
           <td align="center">
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e6d7bf;border-radius:12px;overflow:hidden;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #e6d7bf;border-radius:12px;overflow:hidden;">
               <tr>
-                <td style="background:linear-gradient(135deg,#4f1621,#7b2232);padding:20px 24px;color:#f8e7be;">
-                  <div style="font-size:12px;letter-spacing:2px;font-weight:700;text-transform:uppercase;">SarvamSai</div>
-                  <div style="font-size:22px;line-height:1.3;font-weight:700;margin-top:8px;color:#fdf3d0;">A Centenary Offering</div>
+                <td style="height:3px;background:linear-gradient(to right,#c8a84b,#e8cc7a,#c8a84b);"></td>
+              </tr>
+              <tr>
+                <td style="background:#1a0a06;padding:0;text-align:center;">
+                  <img src="https://sarvamsai.in/sarvamsai-hero-transparent.webp" width="320" alt="Sarvam Sai" style="display:block;margin:0 auto;max-width:320px;width:100%;" />
                 </td>
               </tr>
               <tr>
-                <td style="padding:24px;">${contentHtml}</td>
+                <td style="background:#6b1e2a;padding:16px 28px;text-align:center;border-bottom:1px solid rgba(200,168,75,0.2);">
+                  <p style="margin:0;font-family:Georgia,serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#c8a84b;">Sairam from SarvamSai</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:30px 28px;background:#faf6ef;">${contentHtml}</td>
+              </tr>
+              <tr>
+                <td style="background:#fdf6ee;padding:24px 28px;text-align:center;border-top:1px solid #e0d8c8;">
+                  <img src="https://sarvamsai.in/lotus-feet.webp" width="120" alt="Lotus Feet of Bhagawan Sri Sathya Sai Baba" style="display:block;margin:0 auto;max-width:120px;opacity:0.9;" />
+                  <p style="margin:12px 0 0;font-family:Georgia,serif;font-style:italic;font-size:14px;color:#9a7520;">Sarvam Sai Mayam - Everything is Sai.</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="background:#3a2210;padding:22px 24px;text-align:center;">
+                  <p style="margin:0 0 4px;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#c8a84b;">With devotion</p>
+                  <p style="margin:0 0 4px;font-family:Georgia,serif;font-size:14px;color:rgba(243,232,192,0.9);">The SarvamSai Team</p>
+                  <a href="https://sarvamsai.in" style="font-family:Georgia,serif;font-size:12px;color:rgba(200,168,75,0.75);text-decoration:none;">sarvamsai.in</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="height:3px;background:linear-gradient(to right,#c8a84b,#e8cc7a,#c8a84b);"></td>
               </tr>
             </table>
           </td>
