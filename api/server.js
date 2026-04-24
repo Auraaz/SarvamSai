@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const { Pool } = require("pg");
 const Razorpay = require("razorpay");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
@@ -22,6 +23,19 @@ const BASE_PRICE_INR = 2999;
 const INTERNATIONAL_SHIPPING_USD = 15;
 const USD_TO_INR_RATE = 83;
 const INTERNATIONAL_SHIPPING_INR = INTERNATIONAL_SHIPPING_USD * USD_TO_INR_RATE;
+const EMAIL_TEST_MODE = true;
+const TEST_EMAIL = "vinnakota.gupta@gmail.com";
+const DATABASE_URL = process.env.DATABASE_URL || "";
+
+if (!DATABASE_URL) {
+  console.error("DATABASE_URL is missing. Darshan access routes require PostgreSQL.");
+  process.exit(1);
+}
+
+const db = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: process.env.DB_SSL === "false" ? false : { rejectUnauthorized: false }
+});
 
 function logDebug(label, data) {
   if (DEBUG) {
@@ -102,6 +116,72 @@ function writeOrders(orders) {
   fs.writeFileSync(ORDERS_PATH, JSON.stringify(orders, null, 2), "utf8");
 }
 
+const PASS_PHRASES = [
+  "Love All Serve All",
+  "Help Ever Hurt Never",
+  "Hands that Serve are Holier",
+  "Start the Day with Love",
+  "Duty Without Love is Deplorable",
+  "Be Simple and Sincere",
+  "Service to Man is Service to God"
+];
+
+function getRandomPassphrase() {
+  const index = Math.floor(Math.random() * PASS_PHRASES.length);
+  return PASS_PHRASES[index];
+}
+
+async function initDarshanAccessTable() {
+  await db.query("CREATE EXTENSION IF NOT EXISTS pgcrypto");
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS darshan_access (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      email TEXT UNIQUE NOT NULL,
+      access_code TEXT UNIQUE NOT NULL,
+      passphrase TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      invite_count INT DEFAULT 0,
+      max_invites INT DEFAULT 3,
+      created_at TIMESTAMP DEFAULT NOW(),
+      last_accessed_at TIMESTAMP
+    )
+  `);
+}
+
+async function findDarshanAccessByEmail(email) {
+  const result = await db.query("SELECT * FROM darshan_access WHERE email = $1", [email]);
+  return result.rows[0] || null;
+}
+
+async function createDarshanAccessEntry(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const accessCode = crypto.randomUUID();
+  const passphrase = getRandomPassphrase();
+
+  await db.query(
+    `
+      INSERT INTO darshan_access (email, access_code, passphrase, status)
+      VALUES ($1, $2, $3, 'pending')
+      ON CONFLICT (email) DO NOTHING
+    `,
+    [normalizedEmail, accessCode, passphrase]
+  );
+
+  return findDarshanAccessByEmail(normalizedEmail);
+}
+
+async function activateUser(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  await db.query(
+    `
+      UPDATE darshan_access
+      SET status = 'active'
+      WHERE email = $1
+    `,
+    [normalizedEmail]
+  );
+}
+
 function saveOrder(order) {
   const existing = readOrders();
   const index = existing.findIndex((item) => item.paymentId === order.paymentId);
@@ -129,7 +209,7 @@ function createTransporter() {
   });
 }
 
-async function sendEmail(order) {
+async function sendEmail(payload) {
   const transporter = createTransporter();
   if (!transporter) {
     console.warn("Email transporter is not configured. Skipping email confirmation.");
@@ -138,17 +218,48 @@ async function sendEmail(order) {
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
-    to: order.email,
-    subject: "SarvamSai Order Confirmation",
-    html: `
-      <p>Your order has been confirmed.</p>
-      <p><strong>Total pieces:</strong> ${order.totalItems || 0}</p>
-      <p><strong>Recipients:</strong><br/>${formatRecipientsHtml(order.items)}</p>
-      <p>Each piece is part of today’s distribution.</p>
-      <p>This piece is part of the SarvamSai 100-day journey.</p>
-      <p>Thank you.</p>
-    `
+    to: payload.to,
+    subject: payload.subject,
+    html: payload.html
   });
+}
+
+function renderDarshanEmail(user) {
+  const email = String(user?.email || "").trim().toLowerCase();
+  const accessCode = String(user?.access_code || "").trim();
+  const passphrase = String(user?.passphrase || "").trim();
+  const accessLink = `https://sarvamsai.in/store?email=${encodeURIComponent(email)}&code=${encodeURIComponent(accessCode)}`;
+
+  return `
+    <p>Your Darshan invitation is ready.</p>
+    <p><strong>Passphrase:</strong> ${sanitizeHtml(passphrase)}</p>
+    <p><a href="${accessLink}">${accessLink}</a></p>
+  `;
+}
+
+async function sendDarshanEmail(user) {
+  const targetEmail = EMAIL_TEST_MODE ? TEST_EMAIL : user.email;
+
+  console.log("Sending Darshan email to:", targetEmail);
+
+  await sendEmail({
+    to: targetEmail,
+    subject: "Your Darshan Awaits",
+    html: renderDarshanEmail(user)
+  });
+
+  await activateUser(user.email);
+}
+
+async function sendDarshanEmailsToUsers(users) {
+  if (EMAIL_TEST_MODE) {
+    console.log("TEST MODE ACTIVE — skipping bulk send");
+    return;
+  }
+
+  for (const user of users) {
+    await sendDarshanEmail(user);
+  }
 }
 
 function sanitizeHtml(value) {
@@ -320,6 +431,124 @@ function sendPaymentConfig(_req, res) {
 
 app.get("/payment-config", sendPaymentConfig);
 app.get("/api/payment-config", sendPaymentConfig);
+
+async function registerDarshanHandler(req, res) {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ success: false, error: "email is required." });
+  }
+  try {
+    await createDarshanAccessEntry(email);
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("register darshan failed:", error);
+    return res.status(500).json({ success: false, error: "Could not register darshan access." });
+  }
+}
+
+app.post("/register", registerDarshanHandler);
+app.post("/api/register", registerDarshanHandler);
+
+async function generateStoreAccessHandler(req, res) {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ error: "email is required." });
+  }
+  try {
+    const entry = await createDarshanAccessEntry(email);
+    if (!entry) {
+      return res.status(500).json({ error: "Could not create access entry." });
+    }
+    return res.json({
+      access: entry,
+      link: `https://sarvamsai.in/store?email=${encodeURIComponent(entry.email)}&code=${encodeURIComponent(entry.access_code)}`
+    });
+  } catch (error) {
+    console.error("generate-access failed:", error);
+    return res.status(500).json({ error: "Could not generate access." });
+  }
+}
+
+app.post("/generate-access", generateStoreAccessHandler);
+app.post("/api/generate-access", generateStoreAccessHandler);
+
+async function validateAccessHandler(req, res) {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const code = String(req.body?.code || "").trim();
+  if (!email || !code) {
+    return res.status(400).json({ valid: false, error: "email and code are required." });
+  }
+
+  try {
+    const user = await findDarshanAccessByEmail(email);
+    if (!user) return res.status(403).json({ valid: false });
+    if (String(user.access_code || "") !== code) return res.status(403).json({ valid: false });
+    if (String(user.status || "") !== "active") return res.status(403).json({ valid: false });
+
+    return res.json({
+      valid: true,
+      passphrase: user.passphrase
+    });
+  } catch (error) {
+    console.error("validate-access failed:", error);
+    return res.status(500).json({ valid: false, error: "Could not validate access." });
+  }
+}
+
+app.post("/validate-access", validateAccessHandler);
+app.post("/api/validate-access", validateAccessHandler);
+
+async function verifyPassphraseHandler(req, res) {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const selected = String(req.body?.selected || "").trim();
+  if (!email || !selected) {
+    return res.status(400).json({ success: false, error: "email and selected are required." });
+  }
+
+  try {
+    const user = await findDarshanAccessByEmail(email);
+    if (!user) return res.status(403).json({ success: false });
+    if (String(user.status || "") !== "active") return res.status(403).json({ success: false });
+    if (selected !== user.passphrase) return res.status(400).json({ success: false });
+
+    await db.query(
+      `
+        UPDATE darshan_access
+        SET status = 'used',
+            last_accessed_at = NOW()
+        WHERE email = $1
+      `,
+      [email]
+    );
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("verify-passphrase failed:", error);
+    return res.status(500).json({ success: false, error: "Could not verify passphrase." });
+  }
+}
+
+app.post("/verify-passphrase", verifyPassphraseHandler);
+app.post("/api/verify-passphrase", verifyPassphraseHandler);
+
+app.get("/api/test-darshan-email", async (_req, res) => {
+  try {
+    await db.query(
+      `
+        INSERT INTO darshan_access (email, access_code, passphrase, status)
+        VALUES ($1, $2, $3, 'pending')
+        ON CONFLICT (email)
+        DO UPDATE SET access_code = EXCLUDED.access_code, passphrase = EXCLUDED.passphrase, status = 'pending'
+      `,
+      ["vinnakota.gupta@gmail.com", "TEST123", "Love All Serve All"]
+    );
+    const testUser = await findDarshanAccessByEmail("vinnakota.gupta@gmail.com");
+    await sendDarshanEmail(testUser);
+    return res.send("Test email sent");
+  } catch (error) {
+    console.error("Failed to send Darshan test email:", error);
+    return res.status(500).send("Failed to send test email");
+  }
+});
 
 async function createOrderHandler(req, res) {
   const { email, totalItems, totalAmount, amount, currency, receipt } = req.body || {};
@@ -666,7 +895,15 @@ app.get("/orders", (_req, res) => {
   </html>`);
 });
 
-ensureStorage();
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`SarvamSai API listening on port ${PORT}`);
+async function startServer() {
+  ensureStorage();
+  await initDarshanAccessTable();
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`SarvamSai API listening on port ${PORT}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error("Failed to start API server:", error);
+  process.exit(1);
 });

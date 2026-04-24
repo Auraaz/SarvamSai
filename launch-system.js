@@ -22,6 +22,18 @@ const ORDER_CONFIRMATION_STORAGE_KEY = "sai_last_confirmed_order";
 let order = {
   items: []
 };
+let activeAccessEmail = "";
+let activeAccessCode = "";
+let activePassphrase = "";
+const PASS_PHRASES = [
+  "Love All Serve All",
+  "Help Ever Hurt Never",
+  "Hands that Serve are Holier",
+  "Start the Day with Love",
+  "Duty Without Love is Deplorable",
+  "Be Simple and Sincere",
+  "Service to Man is Service to God"
+];
 
 function logDebug(label, data) {
   if (DEBUG) {
@@ -79,7 +91,10 @@ function clearStoredOrderConfirmation() {
 
 function getUserEmail() {
   const user = getStoredUser();
-  return user && user.email ? String(user.email).trim().toLowerCase() : "";
+  if (user && user.email) {
+    return String(user.email).trim().toLowerCase();
+  }
+  return String(localStorage.getItem("sai_access_email") || "").trim().toLowerCase();
 }
 
 function getUserInitials(user) {
@@ -662,34 +677,139 @@ function sarvamSaiEnterDarshanAccess(event) {
 
 function checkAccess() {
   const emailEl = document.getElementById("email");
-  const codeEl = document.getElementById("code");
-  if (!emailEl || !codeEl) return;
+  if (!emailEl) return;
 
   const email = emailEl.value.trim().toLowerCase();
-  const code = codeEl.value.trim().toUpperCase();
-  const storedUser = getStoredUser();
-  logDebug("Access attempt", { email, code, storedUser });
-  if (!storedUser || !storedUser.email || !storedUser.code) {
-    showUserError("No registration found in this browser session. Please join the queue first on this same site URL.");
+  const code = activeAccessCode;
+  if (!email || !code) {
+    showUserError("Please use your access link from the email.");
     return;
   }
-  const storedEmail = (storedUser && storedUser.email ? String(storedUser.email) : "").trim().toLowerCase();
-  const storedCode = (storedUser && storedUser.code ? String(storedUser.code) : "").trim().toUpperCase();
+  validateAccessCode(email, code);
+}
 
-  if (
-    storedUser &&
-    storedEmail &&
-    storedCode &&
-    storedEmail === email &&
-    storedCode === code
-  ) {
-    logDebug("Access granted", {});
-    localStorage.setItem("sai_access", "granted");
-    setStoreVisibility(true);
-    renderStore();
+function prefillEmail(email) {
+  const emailInput = document.getElementById("email");
+  if (emailInput) {
+    emailInput.value = String(email || "").trim().toLowerCase();
+  }
+}
+
+function shuffleOptions(list) {
+  const copied = Array.isArray(list) ? [...list] : [];
+  for (let i = copied.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = copied[i];
+    copied[i] = copied[j];
+    copied[j] = temp;
+  }
+  return copied;
+}
+
+function generateOptions(correct) {
+  const shuffled = PASS_PHRASES
+    .filter((p) => p !== correct)
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 2);
+  return shuffleOptions([correct, ...shuffled]);
+}
+
+function renderOptions(options) {
+  const container = document.getElementById("phrase-options");
+  if (!container) return;
+  container.innerHTML = options
+    .map((opt) => `<button type="button" class="phrase-option ss-btn ss-btn-ghost">${escapeHtml(opt)}</button>`)
+    .join("");
+}
+
+function showPassphraseScreen() {
+  const gate = document.getElementById("gate");
+  if (!gate) return;
+  const options = generateOptions(activePassphrase);
+  gate.innerHTML = `
+    <h2 style="margin:0;font-family:'Cormorant Garamond', Georgia, serif;color:var(--ss-burgundy);font-size:1.7rem;">Your Darshan Awaits</h2>
+    <p style="margin:0;color:var(--ss-muted);">Before you enter, recall this guiding thought</p>
+    <div id="phrase-options" style="display:grid;gap:0.55rem;"></div>
+    <p id="message" style="margin:0.2rem 0 0;color:var(--ss-muted);"></p>
+  `;
+  renderOptions(options);
+}
+
+function showGateError(message) {
+  const gate = document.getElementById("gate");
+  if (!gate) return;
+  let errorEl = document.getElementById("gateError");
+  if (!errorEl) {
+    errorEl = document.createElement("p");
+    errorEl.id = "gateError";
+    errorEl.style.color = "#9b1c31";
+    errorEl.style.margin = "0.2rem 0 0";
+    gate.appendChild(errorEl);
+  }
+  errorEl.textContent = message;
+}
+
+async function validateAccessCode(email, code) {
+  try {
+    const res = await fetch(`${API_BASE}/validate-access`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code })
+    });
+
+    const data = await res.json();
+    if (data.valid) {
+      activeAccessEmail = email;
+      activeAccessCode = code;
+      activePassphrase = String(data.passphrase || "");
+      showPassphraseScreen();
+    } else {
+      showGateError("Invalid access link");
+    }
+  } catch (_error) {
+    showGateError("Unable to validate your access link right now.");
+  }
+}
+
+function showSoftError() {
+  const msg = document.getElementById("message");
+  if (!msg) return;
+  msg.innerText = "Take a moment… recall the message again.";
+}
+
+async function verifyPassphraseSelection(email, selectedText) {
+  try {
+    const response = await fetch(`${API_BASE}/verify-passphrase`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, selected: selectedText })
+    });
+    if (!response.ok) return false;
+    const payload = await response.json();
+    return Boolean(payload?.success);
+  } catch (_error) {
+    return false;
+  }
+}
+
+function unlockStore() {
+  localStorage.setItem("sai_access", "granted");
+  if (activeAccessEmail) {
+    localStorage.setItem("sai_access_email", activeAccessEmail);
+  }
+  window.location.href = "/store/home";
+}
+
+async function onPhraseOptionSelect(selectedText) {
+  if (!activeAccessEmail) {
+    showSoftError();
+    return;
+  }
+  const isValid = await verifyPassphraseSelection(activeAccessEmail, selectedText);
+  if (isValid) {
+    unlockStore();
   } else {
-    logDebug("Access denied", {});
-    showUserError("Invalid credentials");
+    showSoftError();
   }
 }
 
@@ -1248,6 +1368,7 @@ function showConfirmation(user) {
 function mountStoreExperience() {
   const params = new URLSearchParams(window.location.search);
   const prefilledEmail = params.get("email");
+  const prefilledCode = params.get("code");
 
   const darshanLanding = getDarshanStoreLandingHtml();
 
@@ -1256,14 +1377,13 @@ function mountStoreExperience() {
       <div id="darshan-access-flow">
         ${darshanLanding}
         <section class="ss-card ss-gate-card" id="darshan-access">
-          <h1>Darshan Access</h1>
-          <p>Enter your registered details to continue.</p>
+          <h1>Your Darshan Awaits</h1>
+          <p>Before you enter, recall this guiding thought.</p>
         </section>
 
         <section class="ss-card ss-gate-form" id="gate">
           <input id="email" type="email" placeholder="Enter your email" />
-          <input id="code" type="text" placeholder="Enter access code" />
-          <button type="button" class="ss-btn ss-btn-gold" onclick="checkAccess()">Enter Store</button>
+          <button type="button" class="ss-btn ss-btn-gold" onclick="checkAccess()">Validate Access Link</button>
         </section>
       </div>
 
@@ -2041,11 +2161,17 @@ function mountStoreExperience() {
   document.head.appendChild(style);
 
   if (prefilledEmail) {
-    const emailInput = document.getElementById("email");
-    if (emailInput) emailInput.value = prefilledEmail;
+    prefillEmail(prefilledEmail);
+  }
+  if (prefilledEmail && prefilledCode) {
+    activeAccessCode = prefilledCode;
+    validateAccessCode(String(prefilledEmail).trim().toLowerCase(), prefilledCode);
   }
 
-  if (localStorage.getItem("sai_access") === "granted") {
+  const granted = localStorage.getItem("sai_access") === "granted";
+  const grantedEmail = String(localStorage.getItem("sai_access_email") || "").trim().toLowerCase();
+  if (granted) {
+    activeAccessEmail = grantedEmail || activeAccessEmail;
     setStoreVisibility(true);
     renderStore();
   }
@@ -2065,6 +2191,11 @@ window.removeItem = removeItem;
 window.updateItemField = updateItemField;
 window.sarvamSaiEnterDarshanAccess = sarvamSaiEnterDarshanAccess;
 window.testCreateOrder = testCreateOrder;
+document.addEventListener("click", (e) => {
+  if (!e.target || !e.target.classList || !e.target.classList.contains("phrase-option")) return;
+  const selected = String(e.target.innerText || "").trim();
+  onPhraseOptionSelect(selected);
+});
 
 if (window.location.pathname.startsWith("/store")) {
   mountStoreExperience();
