@@ -438,6 +438,10 @@ function renderStore() {
     </div>
   `;
 
+  if (window.SarvamSaiBoxCanvas && typeof window.SarvamSaiBoxCanvas.mount === "function") {
+    window.SarvamSaiBoxCanvas.mount(storeContent);
+  }
+
   syncFooterCtaVisibility();
   initOrderFlow();
   loadMyOrders();
