@@ -21,6 +21,7 @@ let order = {
 let activeAccessEmail = "";
 let activeAccessCode = "";
 let activePassphrase = "";
+let activeAccessName = "";
 const PASS_PHRASES = [
   "Love All Serve All",
   "Help Ever Hurt Never",
@@ -58,6 +59,26 @@ function getStoredUser() {
   } catch (error) {
     return null;
   }
+}
+
+function toTitleCaseWord(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+function resolveAccessName(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const storedUser = getStoredUser();
+  if (storedUser && String(storedUser.email || "").trim().toLowerCase() === normalizedEmail && storedUser.name) {
+    return String(storedUser.name).trim();
+  }
+  const localPart = normalizedEmail.split("@")[0] || "";
+  const parts = localPart
+    .split(/[._-]+/)
+    .map((part) => toTitleCaseWord(part))
+    .filter(Boolean);
+  return parts.join(" ") || "Devotee";
 }
 
 function getStoredOrderConfirmation() {
@@ -678,6 +699,7 @@ function checkAccess() {
     showUserError("Please use your access link from the email.");
     return;
   }
+  activeAccessName = resolveAccessName(email);
   validateAccessCode(email, code);
 }
 
@@ -719,9 +741,10 @@ function showPassphraseScreen() {
   const gate = document.getElementById("gate");
   if (!gate) return;
   const options = generateOptions(activePassphrase);
+  const greeting = activeAccessName ? `Sairam ${escapeHtml(activeAccessName)}, enter Darshan.` : "Sairam, enter Darshan.";
   gate.innerHTML = `
-    <h2 style="margin:0;font-family:'Cormorant Garamond', Georgia, serif;color:var(--ss-burgundy);font-size:1.7rem;">Your Darshan Awaits</h2>
-    <p style="margin:0;color:var(--ss-muted);">Before you enter, recall this guiding thought</p>
+    <h2 style="margin:0;font-family:'Cormorant Garamond', Georgia, serif;color:var(--ss-burgundy);font-size:1.7rem;">${greeting}</h2>
+    <p style="margin:0;color:var(--ss-muted);">Complete your passphrase challenge to continue to the private store.</p>
     <div id="phrase-options" style="display:grid;gap:0.55rem;"></div>
     <p id="message" style="margin:0.2rem 0 0;color:var(--ss-muted);"></p>
   `;
@@ -753,6 +776,7 @@ async function validateAccessCode(email, code) {
     const data = await res.json();
     if (data.valid) {
       activeAccessEmail = email;
+      activeAccessName = activeAccessName || resolveAccessName(email);
       activeAccessCode = code;
       activePassphrase = String(data.passphrase || "");
       showPassphraseScreen();
@@ -1342,8 +1366,8 @@ function mountStoreExperience() {
       <div id="darshan-access-flow">
         ${darshanLanding}
         <section class="ss-card ss-gate-card" id="darshan-access">
-          <h1>Your Darshan Awaits</h1>
-          <p>Before you enter, recall this guiding thought.</p>
+          <h1 id="ssGateGreeting">Your Darshan Awaits</h1>
+          <p id="ssGateLead">Before you enter, recall this guiding thought.</p>
         </section>
 
         <section class="ss-card ss-gate-form" id="gate">
@@ -2126,6 +2150,15 @@ function mountStoreExperience() {
   document.head.appendChild(style);
 
   if (prefilledEmail) {
+    const greetingEl = document.getElementById("ssGateGreeting");
+    const leadEl = document.getElementById("ssGateLead");
+    activeAccessName = resolveAccessName(prefilledEmail);
+    if (greetingEl) {
+      greetingEl.textContent = `Sairam ${activeAccessName}, enter Darshan.`;
+    }
+    if (leadEl) {
+      leadEl.textContent = "We recognize your invitation. Complete the passphrase challenge to enter the private store.";
+    }
     prefillEmail(prefilledEmail);
   }
   if (prefilledEmail && prefilledCode) {
@@ -2133,6 +2166,11 @@ function mountStoreExperience() {
     // Do not allow a previous local session to auto-bypass the Darshan gate.
     localStorage.removeItem("sai_access");
     activeAccessCode = prefilledCode;
+    const validateBtn = document.querySelector("#gate .ss-btn");
+    if (validateBtn) {
+      validateBtn.textContent = "Validating invitation...";
+      validateBtn.setAttribute("disabled", "disabled");
+    }
     validateAccessCode(String(prefilledEmail).trim().toLowerCase(), prefilledCode);
   }
 
