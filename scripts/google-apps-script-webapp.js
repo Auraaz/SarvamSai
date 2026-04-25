@@ -1278,3 +1278,134 @@ function helperSendStyledOrderEmail() {
     String(fallbackPaymentId || "").trim() || "-"
   );
 }
+
+function helperResendMissingOrderConfirmations(limit) {
+  const maxToSend = Math.max(1, safeNumber_(limit, 50));
+  const trackingSheet = getOrCreateOrderTrackingSheet();
+  const pending = getPendingOrdersForResend_(trackingSheet, maxToSend);
+  const summary = { scanned: pending.scanned, attempted: 0, sent: 0, failed: 0, failures: [] };
+
+  for (let i = 0; i < pending.rows.length; i += 1) {
+    const row = pending.rows[i];
+    summary.attempted += 1;
+
+    const orderData = {
+      id: row.orderId,
+      payment_id: row.paymentId,
+      email: row.email,
+      amount_inr: row.amountInr,
+      status: row.status || "paid",
+      total_items: row.totalItems,
+      phone: row.phone,
+      shipping_address: row.shippingAddress,
+      buyer_name: resolveBuyerName_({}, row.email),
+      order_date: row.timestamp || nowIso_()
+    };
+
+    try {
+      const html = buildDarshanEmailHTML(orderData);
+      MailApp.sendEmail({
+        to: row.email,
+        subject: "Thank you for your Discovery Box order - SarvamSai",
+        htmlBody: html
+      });
+      markTrackingEmailSent_(trackingSheet, row.rowIndex, row.notesIndex);
+      summary.sent += 1;
+    } catch (e) {
+      summary.failed += 1;
+      const err = String(e && e.message ? e.message : e);
+      summary.failures.push({ order_id: row.orderId, email: row.email, error: err });
+      logEmailFailure_("helperResendMissingOrderConfirmations", e);
+    }
+  }
+
+  Logger.log(
+    "Resend helper complete. scanned=%s attempted=%s sent=%s failed=%s",
+    summary.scanned,
+    summary.attempted,
+    summary.sent,
+    summary.failed
+  );
+  if (summary.failures.length) {
+    Logger.log("Resend failures: %s", JSON.stringify(summary.failures));
+  }
+  return summary;
+}
+
+function getPendingOrdersForResend_(sheet, limit) {
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) return { scanned: 0, rows: [] };
+
+  const headers = sheet
+    .getRange(1, 1, 1, lastCol)
+    .getValues()[0]
+    .map(function (h) {
+      return String(h || "").trim().toLowerCase();
+    });
+
+  const idxOrder = headers.indexOf("order id");
+  const idxPayment = headers.indexOf("payment id");
+  const idxEmail = headers.indexOf("email");
+  const idxAmount = headers.indexOf("amount");
+  const idxStatus = headers.indexOf("status");
+  const idxEmailSent = headers.indexOf("email sent");
+  const idxTimestamp = headers.indexOf("timestamp");
+  const idxNotes = headers.indexOf("notes");
+  const idxTotalItems = headers.indexOf("number of discovery boxes");
+  const idxPhone = headers.indexOf("phone");
+  const idxAddress = headers.indexOf("shipping address");
+
+  if (idxOrder < 0 || idxEmail < 0 || idxEmailSent < 0) return { scanned: 0, rows: [] };
+
+  const values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  const rows = [];
+  for (let i = 0; i < values.length; i += 1) {
+    if (rows.length >= limit) break;
+    const row = values[i];
+    const emailSent = String(row[idxEmailSent] || "")
+      .trim()
+      .toUpperCase();
+    if (emailSent === "YES") continue;
+
+    const email = String(row[idxEmail] || "")
+      .trim()
+      .toLowerCase();
+    const orderId = String(row[idxOrder] || "").trim();
+    if (!email || !orderId) continue;
+
+    rows.push({
+      rowIndex: i + 2,
+      notesIndex: idxNotes >= 0 ? idxNotes + 1 : -1,
+      orderId: orderId,
+      paymentId: idxPayment >= 0 ? String(row[idxPayment] || "").trim() : "",
+      email: email,
+      amountInr: idxAmount >= 0 ? Math.max(0, safeNumber_(row[idxAmount], 0)) : 0,
+      status: idxStatus >= 0 ? String(row[idxStatus] || "").trim().toLowerCase() : "paid",
+      timestamp: idxTimestamp >= 0 ? String(row[idxTimestamp] || "").trim() : "",
+      totalItems: idxTotalItems >= 0 ? Math.max(0, safeNumber_(row[idxTotalItems], 0)) : 0,
+      phone: idxPhone >= 0 ? String(row[idxPhone] || "").trim() : "",
+      shippingAddress: idxAddress >= 0 ? String(row[idxAddress] || "").trim() : ""
+    });
+  }
+
+  return { scanned: values.length, rows: rows };
+}
+
+function markTrackingEmailSent_(sheet, rowIndex, notesColIndex) {
+  const headers = sheet
+    .getRange(1, 1, 1, Math.max(1, sheet.getLastColumn()))
+    .getValues()[0]
+    .map(function (h) {
+      return String(h || "").trim().toLowerCase();
+    });
+  const idxEmailSent = headers.indexOf("email sent");
+  if (idxEmailSent >= 0) {
+    sheet.getRange(rowIndex, idxEmailSent + 1).setValue("YES");
+  }
+  if (notesColIndex > 0) {
+    const existing = String(sheet.getRange(rowIndex, notesColIndex).getValue() || "").trim();
+    const stamp = "Resent confirmation at " + nowIso_();
+    sheet.getRange(rowIndex, notesColIndex).setValue(existing ? existing + " | " + stamp : stamp);
+  }
+}
