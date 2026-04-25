@@ -104,14 +104,18 @@ function getOrCreateOrderSheet_() {
   return sheet;
 }
 
-function buildDiscoveryOrderEmailContent_(orderId, paymentId, amountInr) {
+function buildDiscoveryOrderEmailContent_(orderId, paymentId, amountInr, buyerName, orderDate) {
   const safeOrderId = escapeHtml_(orderId);
   const safePaymentId = escapeHtml_(paymentId || "-");
   const safeAmount = escapeHtml_(amountInr.toFixed(2));
+  const safeOrderDate = escapeHtml_(formatOrderDateDisplay_(orderDate));
+  const safeMintDate = escapeHtml_(formatMintDateDisplay_(orderDate));
+  const safeBuyerName = escapeHtml_(buyerName || "");
+  const greetingText = safeBuyerName ? "Sairam " + safeBuyerName : "Sairam";
 
   const subject = "Thank you for your Discovery Box order - SarvamSai";
   const plainBody =
-    "Sairam,\n\n" +
+    (buyerName ? "Sairam " + buyerName + "\n\n" : "Sairam\n\n") +
     "Thank you for your Discovery Box order.\n" +
     "Order ID: " +
     orderId +
@@ -126,24 +130,66 @@ function buildDiscoveryOrderEmailContent_(orderId, paymentId, amountInr) {
 
   const htmlBody = `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0" /></head>
-<body style="margin:0;padding:0;background:#f6efe3;font-family:Arial,sans-serif;color:#2d2215;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f6efe3;padding:24px 12px;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:0;background:#f3ede2;font-family:Georgia,serif;color:#2d2215;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3ede2;padding:24px 12px;">
     <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#fffaf2;border:1px solid #dfd0b0;">
-        <tr><td style="padding:18px 24px;background:#1a0a06;color:#f6e7c8;text-align:center;font-size:20px;font-weight:700;">SarvamSai</td></tr>
-        <tr><td style="padding:24px;">
-          <h2 style="margin:0 0 12px;color:#2d2215;">Thank you for your Discovery Box order</h2>
-          <p style="margin:0 0 12px;line-height:1.6;">Your order has been received successfully.</p>
-          <p style="margin:0 0 8px;"><strong>Order ID:</strong> ${safeOrderId}</p>
-          <p style="margin:0 0 8px;"><strong>Payment ID:</strong> ${safePaymentId}</p>
-          <p style="margin:0 0 16px;"><strong>Amount:</strong> INR ${safeAmount}</p>
-          <p style="margin:0;line-height:1.6;">We will keep your order status and delivery status of the Discovery Box updated and share progress with you.</p>
-        </td></tr>
-        <tr><td style="padding:16px 24px;background:#f0e4cd;color:#5a4630;font-size:12px;text-align:center;">
-          With gratitude, SarvamSai Team<br />
-          <a href="${SITE_URL}" style="color:#5a4630;text-decoration:none;">${SITE_URL}</a>
-        </td></tr>
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#faf6ef;border:1px solid #d9cdb3;">
+        <tr><td style="height:4px;background:linear-gradient(90deg,#c8a84b,#e8cc7a,#c8a84b);"></td></tr>
+        <tr>
+          <td style="background:#1a0a06;text-align:center;padding:0;">
+            <img src="https://sarvamsai.in/sarvamsai-hero-transparent.png"
+                 alt="SarvamSai"
+                 width="280"
+                 style="display:block;margin:0 auto;max-width:280px;width:100%;" />
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#6b1e2a;color:#f3e8c0;text-align:center;padding:14px 24px;border-bottom:1px solid rgba(200,168,75,0.35);">
+            <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#d7b869;">Order Confirmation</div>
+            <div style="font-size:18px;font-weight:600;margin-top:6px;color:#fff4d2;">Thank you for your Discovery Box order</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:30px 28px;">
+            <p style="margin:0 0 16px;font-size:16px;line-height:1.8;">${greetingText}</p>
+            <p style="margin:0 0 16px;font-size:15px;line-height:1.9;">
+              Your order has been received successfully.
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;border:1px solid #e4d6bf;background:#f7f0e4;">
+              <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Order ID:</strong> ${safeOrderId}</td></tr>
+              <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Payment ID:</strong> ${safePaymentId}</td></tr>
+              <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Order Confirm Date:</strong> ${safeOrderDate}</td></tr>
+              <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Figurine Mint Date:</strong> ${safeMintDate}</td></tr>
+              <tr><td style="padding:12px 14px;"><strong>Amount:</strong> INR ${safeAmount}</td></tr>
+            </table>
+            <p style="margin:0;font-size:14px;line-height:1.8;color:#5c4a30;">
+              We will keep you updated with fulfilment and delivery status.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#1a0a06;text-align:center;padding:0;">
+            <img src="https://sarvamsai.in/lotus_feet_footer.png"
+                 alt="Lotus Feet"
+                 width="180"
+                 style="display:block;margin:0 auto;max-width:180px;width:100%;" />
+            <p style="margin:0;padding:4px 0 16px;color:rgba(200,168,75,0.75);font-size:12px;letter-spacing:1px;">
+              Sarvam Sai Mayam - Everything is Sai.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#3a2210;text-align:center;padding:16px 20px;">
+            <p style="margin:0;color:#d7b869;font-size:11px;letter-spacing:2px;text-transform:uppercase;">With gratitude</p>
+            <p style="margin:6px 0 0;color:#f3e8c0;font-size:13px;">The SarvamSai Team</p>
+            <p style="margin:4px 0 0;"><a href="${SITE_URL}" style="color:#c8a84b;text-decoration:none;font-size:12px;">${SITE_URL}</a></p>
+          </td>
+        </tr>
+        <tr><td style="height:4px;background:linear-gradient(90deg,#c8a84b,#e8cc7a,#c8a84b);"></td></tr>
       </table>
     </td></tr>
   </table>
@@ -153,8 +199,8 @@ function buildDiscoveryOrderEmailContent_(orderId, paymentId, amountInr) {
   return { subject: subject, plainBody: plainBody, htmlBody: htmlBody };
 }
 
-function sendDiscoveryOrderEmail_(email, orderId, paymentId, amountInr) {
-  const content = buildDiscoveryOrderEmailContent_(orderId, paymentId, amountInr);
+function sendDiscoveryOrderEmail_(email, orderId, paymentId, amountInr, buyerName, orderDate) {
+  const content = buildDiscoveryOrderEmailContent_(orderId, paymentId, amountInr, buyerName, orderDate);
   const mailOpts = { from: SENDER_EMAIL, htmlBody: content.htmlBody, name: "SarvamSai" };
   if (SENDER_EMAIL !== ADMIN_EMAIL) mailOpts.replyTo = ADMIN_EMAIL;
   sendMailWithFallback_(email, content.subject, content.plainBody, mailOpts);
@@ -242,6 +288,44 @@ function headersMap_(sheet) {
     map[String(h || "").trim()] = i;
   });
   return map;
+}
+
+function getBuyerNameByEmail_(email) {
+  const normalizedEmail = String(email || "")
+    .trim()
+    .toLowerCase();
+  if (!normalizedEmail) return "";
+  const sheet = getOrCreateRegistrationsSheet_();
+  const hm = headersMap_(sheet);
+  if (typeof hm.email !== "number" || typeof hm.name !== "number") return "";
+  const rowIdx = findUserRowIndexByEmail_(sheet, normalizedEmail, hm);
+  if (rowIdx < 2) return "";
+  const name = String(sheet.getRange(rowIdx, hm.name + 1).getValue() || "").trim();
+  return name;
+}
+
+function formatOrderDateDisplay_(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "-";
+  const parsed = new Date(raw);
+  if (isNaN(parsed.getTime())) return raw;
+  return Utilities.formatDate(parsed, "Asia/Kolkata", "dd MMM yyyy, hh:mm a 'IST'");
+}
+
+function formatMintDateDisplay_(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "<DD> <Month> <YYYY>";
+  const parsed = new Date(raw);
+  if (isNaN(parsed.getTime())) return "<DD> <Month> <YYYY>";
+  return Utilities.formatDate(parsed, "Asia/Kolkata", "dd MMM yyyy");
+}
+
+function resolveBuyerName_(params, email) {
+  const inlineName = String(
+    params.buyer_name || params.name || params.customer_name || params.full_name || params.recipient_name || ""
+  ).trim();
+  if (inlineName) return inlineName;
+  return getBuyerNameByEmail_(email);
 }
 
 function findUserRowIndexByEmail_(sheet, email, hm) {
@@ -593,6 +677,8 @@ function recordOrderPayment(params) {
   );
   const phone = String(params.phone || "").trim();
   const shippingAddress = String(params.shipping_address || params.address || "").trim();
+  const buyerName = resolveBuyerName_(params, email);
+  const orderDate = String(params.order_date || params.created_at || params.timestamp || nowIso_()).trim();
 
   if (!orderId || !email) return { success: false, error: "missing_order_or_email" };
 
@@ -604,7 +690,9 @@ function recordOrderPayment(params) {
     status: status,
     total_items: totalItems,
     phone: phone,
-    shipping_address: shippingAddress
+    shipping_address: shippingAddress,
+    buyer_name: buyerName,
+    order_date: orderDate
   };
   let emailSent = "NO";
 
@@ -921,6 +1009,10 @@ function buildDarshanEmailHTML(data) {
   const safeTotalItems = escapeHtml_(String(Math.max(0, safeNumber_(data.total_items, 0)) || 1));
   const safePhone = escapeHtml_(data.phone || "-");
   const safeAddress = escapeHtml_(data.shipping_address || "-");
+  const safeOrderDate = escapeHtml_(formatOrderDateDisplay_(data.order_date));
+  const safeMintDate = escapeHtml_(formatMintDateDisplay_(data.order_date));
+  const safeBuyerName = escapeHtml_(data.buyer_name || "");
+  const greetingText = safeBuyerName ? "Sairam " + safeBuyerName : "Sairam";
 
   return `
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:0;padding:0;background:#f3ede2;font-family:Georgia,serif;color:#2d2215;">
@@ -943,12 +1035,14 @@ function buildDarshanEmailHTML(data) {
 
           <tr>
             <td style="padding:28px;">
-              <p style="margin:0 0 14px;font-size:16px;line-height:1.8;">Sairam,</p>
+              <p style="margin:0 0 14px;font-size:16px;line-height:1.8;">${greetingText}</p>
               <p style="margin:0 0 16px;font-size:15px;line-height:1.9;">Your order has been received successfully.</p>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;border:1px solid #e4d6bf;background:#f7f0e4;">
                 <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Order ID:</strong> ${safeOrderId}</td></tr>
                 <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Payment ID:</strong> ${safePaymentId}</td></tr>
+                <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Order Confirm Date:</strong> ${safeOrderDate}</td></tr>
+                <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Figurine Mint Date:</strong> ${safeMintDate}</td></tr>
                 <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Amount:</strong> INR ${safeAmount}</td></tr>
                 <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Number of Discovery Boxes:</strong> ${safeTotalItems}</td></tr>
                 <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Phone:</strong> ${safePhone}</td></tr>
@@ -1146,9 +1240,10 @@ function helperSendStyledOrderEmail() {
   }
 
   const latestOrder = getLatestOrderByEmail_(normalizedEmail);
+  const buyerName = resolveBuyerName_({}, normalizedEmail);
   if (latestOrder && latestOrder.orderId) {
     const amountInr = Math.max(0, safeNumber_(latestOrder.amountInr, 0));
-    sendDiscoveryOrderEmail_(normalizedEmail, latestOrder.orderId, latestOrder.paymentId, amountInr);
+    sendDiscoveryOrderEmail_(normalizedEmail, latestOrder.orderId, latestOrder.paymentId, amountInr, buyerName, nowIso_());
 
     Logger.log(
       "Styled order email sent from sheet data to %s for order %s (payment %s).",
@@ -1171,7 +1266,9 @@ function helperSendStyledOrderEmail() {
     normalizedEmail,
     String(fallbackOrderId).trim(),
     String(fallbackPaymentId || "").trim(),
-    Math.max(0, safeNumber_(fallbackAmountInr, 0))
+    Math.max(0, safeNumber_(fallbackAmountInr, 0)),
+    buyerName,
+    nowIso_()
   );
 
   Logger.log(

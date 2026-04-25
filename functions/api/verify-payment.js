@@ -197,7 +197,8 @@ async function sendOrderToGoogleScript(env, order) {
       status: "paid",
       total_items: Math.max(0, Number(order.totalItems) || items.length),
       phone: String(primaryRecipient.phone || "").trim(),
-      shipping_address: shippingAddress
+      shipping_address: shippingAddress,
+      order_date: new Date().toISOString()
     })
   });
 }

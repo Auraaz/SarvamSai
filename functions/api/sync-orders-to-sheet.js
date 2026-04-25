@@ -132,7 +132,8 @@ export async function onRequestPost({ request, env }) {
       status: String(row.status || "paid").trim() || "paid",
       total_items: Math.max(0, Number(row.total_items) || 0),
       phone: recipientDetails.phone,
-      shipping_address: recipientDetails.shippingAddress
+      shipping_address: recipientDetails.shippingAddress,
+      order_date: String(row.created_at || "").trim()
     };
 
     try {
