@@ -21,6 +21,32 @@ function escapeCsv(value) {
   return text;
 }
 
+function parsePrimaryRecipientDetails(itemsJsonRaw) {
+  try {
+    const items = JSON.parse(String(itemsJsonRaw || "[]"));
+    if (!Array.isArray(items) || !items.length) {
+      return { phone: "", shippingAddress: "" };
+    }
+    const first = items[0] || {};
+    const shippingAddress = [
+      String(first.addressLine1 || "").trim(),
+      String(first.addressLine2 || "").trim(),
+      String(first.city || "").trim(),
+      String(first.state || "").trim(),
+      String(first.pincode || "").trim(),
+      String(first.country || "").trim()
+    ]
+      .filter(Boolean)
+      .join(", ");
+    return {
+      phone: String(first.phone || "").trim(),
+      shippingAddress
+    };
+  } catch (_error) {
+    return { phone: "", shippingAddress: "" };
+  }
+}
+
 async function ensureOrdersTable(db) {
   await db
     .prepare(
@@ -67,7 +93,7 @@ export async function onRequestGet({ request, env }) {
   const limit = Math.max(1, Math.min(20000, Number.isFinite(limitRaw) ? limitRaw : 5000));
 
   let query = `
-    SELECT order_id, payment_id, email, total_amount, currency, status, created_at
+    SELECT order_id, payment_id, email, total_amount, total_items, items_json, status, created_at
     FROM orders
   `;
   const binds = [];
@@ -81,18 +107,32 @@ export async function onRequestGet({ request, env }) {
   const result = await env.DB.prepare(query).bind(...binds).all();
   const rows = Array.isArray(result?.results) ? result.results : [];
 
-  const header = ["Order ID", "Payment ID", "Email", "Amount", "Currency", "Status", "Email Sent", "Timestamp"];
+  const header = [
+    "Order ID",
+    "Payment ID",
+    "Email",
+    "Amount",
+    "Status",
+    "Email Sent",
+    "Number of Discovery Boxes",
+    "Phone",
+    "Shipping Address",
+    "Timestamp"
+  ];
   const lines = [header.join(",")];
   for (const row of rows) {
+    const recipientDetails = parsePrimaryRecipientDetails(row.items_json);
     lines.push(
       [
         escapeCsv(row.order_id),
         escapeCsv(row.payment_id),
         escapeCsv(String(row.email || "").trim().toLowerCase()),
         escapeCsv(Number(row.total_amount) || 0),
-        escapeCsv(String(row.currency || "INR").trim().toUpperCase()),
         escapeCsv(String(row.status || "confirmed").trim()),
         "NO",
+        escapeCsv(Math.max(0, Number(row.total_items) || 0)),
+        escapeCsv(recipientDetails.phone),
+        escapeCsv(recipientDetails.shippingAddress),
         escapeCsv(String(row.created_at || ""))
       ].join(",")
     );

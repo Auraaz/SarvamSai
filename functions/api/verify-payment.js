@@ -46,6 +46,20 @@ function normalizeItems(itemsRaw) {
     .filter((item) => item.name || item.addressLine1 || item.phone);
 }
 
+function toSingleLineAddress(item) {
+  if (!item || typeof item !== "object") return "";
+  return [
+    String(item.addressLine1 || "").trim(),
+    String(item.addressLine2 || "").trim(),
+    String(item.city || "").trim(),
+    String(item.state || "").trim(),
+    String(item.pincode || "").trim(),
+    String(item.country || "").trim()
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
 async function ensureOrdersTable(db) {
   await db
     .prepare(
@@ -165,6 +179,10 @@ async function sendOrderToGoogleScript(env, order) {
   if (!googleScriptUrl) return;
   if (!order?.email) return;
 
+  const items = Array.isArray(order.items) ? order.items : [];
+  const primaryRecipient = items[0] || {};
+  const shippingAddress = toSingleLineAddress(primaryRecipient);
+
   await fetch(googleScriptUrl, {
     method: "POST",
     headers: {
@@ -176,7 +194,10 @@ async function sendOrderToGoogleScript(env, order) {
       payment_id: order.paymentId,
       email: order.email,
       amount: Math.round((Number(order.totalAmount) || 0) * 100),
-      status: "paid"
+      status: "paid",
+      total_items: Math.max(0, Number(order.totalItems) || items.length),
+      phone: String(primaryRecipient.phone || "").trim(),
+      shipping_address: shippingAddress
     })
   });
 }

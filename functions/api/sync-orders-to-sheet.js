@@ -34,6 +34,32 @@ async function ensureOrdersTable(db) {
     .run();
 }
 
+function parsePrimaryRecipientDetails(itemsJsonRaw) {
+  try {
+    const items = JSON.parse(String(itemsJsonRaw || "[]"));
+    if (!Array.isArray(items) || !items.length) {
+      return { phone: "", shippingAddress: "" };
+    }
+    const first = items[0] || {};
+    const shippingAddress = [
+      String(first.addressLine1 || "").trim(),
+      String(first.addressLine2 || "").trim(),
+      String(first.city || "").trim(),
+      String(first.state || "").trim(),
+      String(first.pincode || "").trim(),
+      String(first.country || "").trim()
+    ]
+      .filter(Boolean)
+      .join(", ");
+    return {
+      phone: String(first.phone || "").trim(),
+      shippingAddress
+    };
+  } catch (_error) {
+    return { phone: "", shippingAddress: "" };
+  }
+}
+
 export async function onRequestPost({ request, env }) {
   const expectedToken = String(env.ADMIN_DASHBOARD_TOKEN || "").trim();
   if (!expectedToken) {
@@ -62,7 +88,7 @@ export async function onRequestPost({ request, env }) {
   await ensureOrdersTable(env.DB);
 
   let query = `
-    SELECT order_id, payment_id, email, total_amount, currency, status, created_at
+    SELECT order_id, payment_id, email, total_amount, total_items, items_json, status, created_at
     FROM orders
   `;
   const binds = [];
@@ -96,13 +122,17 @@ export async function onRequestPost({ request, env }) {
   const failures = [];
 
   for (const row of orders) {
+    const recipientDetails = parsePrimaryRecipientDetails(row.items_json);
     const payload = {
       action: "recordOrderPayment",
       id: String(row.order_id || "").trim(),
       payment_id: String(row.payment_id || "").trim(),
       email: String(row.email || "").trim().toLowerCase(),
       amount: Math.round((Number(row.total_amount) || 0) * 100),
-      status: String(row.status || "paid").trim() || "paid"
+      status: String(row.status || "paid").trim() || "paid",
+      total_items: Math.max(0, Number(row.total_items) || 0),
+      phone: recipientDetails.phone,
+      shipping_address: recipientDetails.shippingAddress
     };
 
     try {

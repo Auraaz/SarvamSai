@@ -583,23 +583,88 @@ function recordOrderPayment(params) {
   const status = String(params.status || "paid")
     .trim()
     .toLowerCase();
+  const totalItems = Math.max(
+    0,
+    safeNumber_(params.total_items || params.totalItems || params.quantity || params.box_count, 0)
+  );
+  const phone = String(params.phone || "").trim();
+  const shippingAddress = String(params.shipping_address || params.address || "").trim();
 
   if (!orderId || !email) return { success: false, error: "missing_order_or_email" };
 
-  const amountInr = Math.max(0, amountPaise / 100);
+  const data = {
+    id: orderId,
+    payment_id: paymentId,
+    email: email,
+    amount: amountPaise,
+    status: status,
+    total_items: totalItems,
+    phone: phone,
+    shipping_address: shippingAddress
+  };
   let emailSent = "NO";
 
   try {
-    sendDiscoveryOrderEmail_(email, orderId, paymentId, amountInr);
+    const html = buildDarshanEmailHTML(data);
+    MailApp.sendEmail({
+      to: data.email,
+      subject: "Thank you for your Discovery Box order - SarvamSai",
+      htmlBody: html
+    });
     emailSent = "YES";
   } catch (e) {
     logEmailFailure_("recordOrderPayment", e);
   }
 
+  appendOrderTrackingRow(data, emailSent);
+
   const sheet = getOrCreateOrderSheet_();
   sheet.appendRow([orderId, paymentId, email, amountPaise, status, emailSent, nowIso_()]);
 
   return { success: true, email_sent: emailSent };
+}
+
+function getOrCreateOrderTrackingSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName("Order Tracking");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("Order Tracking");
+  }
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      "Order ID",
+      "Payment ID",
+      "Email",
+      "Amount",
+      "Status",
+      "Email Sent",
+      "Fulfilment Status",
+      "Tracking ID",
+      "Notes",
+      "Timestamp"
+    ]);
+  }
+
+  return sheet;
+}
+
+function appendOrderTrackingRow(data, emailSent) {
+  const sheet = getOrCreateOrderTrackingSheet();
+
+  sheet.appendRow([
+    data.id,
+    data.payment_id || "",
+    data.email,
+    data.amount,
+    data.status || "paid",
+    emailSent || "NO",
+    "PENDING",
+    "",
+    "",
+    new Date().toISOString()
+  ]);
 }
 
 // -- GET USER / LEADERBOARD -------------------------------------
@@ -843,6 +908,76 @@ function sendConfirmationEmail(name, email, rank) {
   } catch (e) {
     logEmailFailure_("admin notify", e);
   }
+}
+
+function buildDarshanEmailHTML(data) {
+  const safeOrderId = escapeHtml_(data.id || "-");
+  const safePaymentId = escapeHtml_(data.payment_id || "-");
+  const safeAmount = escapeHtml_((Math.max(0, safeNumber_(data.amount, 0)) / 100).toFixed(2));
+  const safeTotalItems = escapeHtml_(String(Math.max(0, safeNumber_(data.total_items, 0)) || 1));
+  const safePhone = escapeHtml_(data.phone || "-");
+  const safeAddress = escapeHtml_(data.shipping_address || "-");
+
+  return `
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0;padding:0;background:#f3ede2;font-family:Georgia,serif;color:#2d2215;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#faf6ef;border:1px solid #d9cdb3;">
+          <tr><td style="height:4px;background:linear-gradient(90deg,#c8a84b,#e8cc7a,#c8a84b);"></td></tr>
+
+          <tr>
+            <td style="background:#1a0a06;text-align:center;padding:0;">
+              <img src="https://sarvamsai.in/sarvamsai-hero-transparent.png" alt="SarvamSai" width="280" style="display:block;margin:0 auto;max-width:280px;width:100%;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#6b1e2a;color:#f3e8c0;text-align:center;padding:14px 24px;border-bottom:1px solid rgba(200,168,75,0.35);">
+              <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#d7b869;">Order Confirmation</div>
+              <div style="font-size:18px;font-weight:600;margin-top:6px;color:#fff4d2;">Thank you for your Discovery Box order</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:28px;">
+              <p style="margin:0 0 14px;font-size:16px;line-height:1.8;">Sairam,</p>
+              <p style="margin:0 0 16px;font-size:15px;line-height:1.9;">Your order has been received successfully.</p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;border:1px solid #e4d6bf;background:#f7f0e4;">
+                <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Order ID:</strong> ${safeOrderId}</td></tr>
+                <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Payment ID:</strong> ${safePaymentId}</td></tr>
+                <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Amount:</strong> INR ${safeAmount}</td></tr>
+                <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Number of Discovery Boxes:</strong> ${safeTotalItems}</td></tr>
+                <tr><td style="padding:12px 14px;border-bottom:1px solid #e4d6bf;"><strong>Phone:</strong> ${safePhone}</td></tr>
+                <tr><td style="padding:12px 14px;"><strong>Shipping Address:</strong> ${safeAddress}</td></tr>
+              </table>
+
+              <p style="margin:0;font-size:14px;line-height:1.8;color:#5c4a30;">
+                We will keep you updated with fulfilment and delivery status.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background:#1a0a06;text-align:center;padding:0;">
+              <img src="https://sarvamsai.in/lotus_feet_footer.png" alt="Lotus Feet" width="180" style="display:block;margin:0 auto;max-width:180px;width:100%;" />
+              <p style="margin:0;padding:4px 0 16px;color:rgba(200,168,75,0.75);font-size:12px;letter-spacing:1px;">
+                Sarvam Sai Mayam - Everything is Sai.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#3a2210;text-align:center;padding:16px 20px;">
+              <p style="margin:0;color:#d7b869;font-size:11px;letter-spacing:2px;text-transform:uppercase;">With gratitude</p>
+              <p style="margin:6px 0 0;color:#f3e8c0;font-size:13px;">The SarvamSai Team</p>
+              <p style="margin:4px 0 0;"><a href="https://sarvamsai.in" style="color:#c8a84b;text-decoration:none;font-size:12px;">sarvamsai.in</a></p>
+            </td>
+          </tr>
+          <tr><td style="height:4px;background:linear-gradient(90deg,#c8a84b,#e8cc7a,#c8a84b);"></td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  `;
 }
 
 function escapeHtml_(value) {
