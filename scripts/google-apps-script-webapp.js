@@ -201,7 +201,7 @@ function getLatestOrderByEmail_(email) {
           orderId: String(rows[i][idxOrder] || "").trim(),
           paymentId: idxPayment >= 0 ? String(rows[i][idxPayment] || "").trim() : "",
           email: rowEmail,
-          amountPaise: safeNumber_(rows[i][idxAmount], 0),
+          amountInr: safeNumber_(rows[i][idxAmount], 0),
           status: idxStatus >= 0 ? String(rows[i][idxStatus] || "").trim() : ""
         };
       }
@@ -580,6 +580,10 @@ function recordOrderPayment(params) {
     .trim()
     .toLowerCase();
   const amountPaise = safeNumber_(params.amount, 0);
+  const amountInrFromParam = Number(params.amount_inr);
+  const amountInr = Number.isFinite(amountInrFromParam) && amountInrFromParam >= 0
+    ? amountInrFromParam
+    : Math.max(0, amountPaise / 100);
   const status = String(params.status || "paid")
     .trim()
     .toLowerCase();
@@ -596,7 +600,7 @@ function recordOrderPayment(params) {
     id: orderId,
     payment_id: paymentId,
     email: email,
-    amount: amountPaise,
+    amount_inr: amountInr,
     status: status,
     total_items: totalItems,
     phone: phone,
@@ -619,7 +623,7 @@ function recordOrderPayment(params) {
   appendOrderTrackingRow(data, emailSent);
 
   const sheet = getOrCreateOrderSheet_();
-  sheet.appendRow([orderId, paymentId, email, amountPaise, status, emailSent, nowIso_()]);
+  sheet.appendRow([orderId, paymentId, email, amountInr, status, emailSent, nowIso_()]);
 
   return { success: true, email_sent: emailSent };
 }
@@ -657,7 +661,7 @@ function appendOrderTrackingRow(data, emailSent) {
     data.id,
     data.payment_id || "",
     data.email,
-    data.amount,
+    data.amount_inr,
     data.status || "paid",
     emailSent || "NO",
     "PENDING",
@@ -913,7 +917,7 @@ function sendConfirmationEmail(name, email, rank) {
 function buildDarshanEmailHTML(data) {
   const safeOrderId = escapeHtml_(data.id || "-");
   const safePaymentId = escapeHtml_(data.payment_id || "-");
-  const safeAmount = escapeHtml_((Math.max(0, safeNumber_(data.amount, 0)) / 100).toFixed(2));
+  const safeAmount = escapeHtml_(Math.max(0, safeNumber_(data.amount_inr, 0)).toFixed(2));
   const safeTotalItems = escapeHtml_(String(Math.max(0, safeNumber_(data.total_items, 0)) || 1));
   const safePhone = escapeHtml_(data.phone || "-");
   const safeAddress = escapeHtml_(data.shipping_address || "-");
@@ -1143,7 +1147,7 @@ function helperSendStyledOrderEmail() {
 
   const latestOrder = getLatestOrderByEmail_(normalizedEmail);
   if (latestOrder && latestOrder.orderId) {
-    const amountInr = Math.max(0, safeNumber_(latestOrder.amountPaise, 0) / 100);
+    const amountInr = Math.max(0, safeNumber_(latestOrder.amountInr, 0));
     sendDiscoveryOrderEmail_(normalizedEmail, latestOrder.orderId, latestOrder.paymentId, amountInr);
 
     Logger.log(

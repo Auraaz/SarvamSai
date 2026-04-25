@@ -111,7 +111,7 @@ export async function onRequestPost({ request, env }) {
         id: String(row.order_id || "").trim(),
         payment_id: String(row.payment_id || "").trim(),
         email: String(row.email || "").trim().toLowerCase(),
-        amount: Math.round((Number(row.total_amount) || 0) * 100),
+        amount_inr: Math.max(0, Number(row.total_amount) || 0),
         status: String(row.status || "paid").trim() || "paid"
       }))
     });
@@ -128,7 +128,7 @@ export async function onRequestPost({ request, env }) {
       id: String(row.order_id || "").trim(),
       payment_id: String(row.payment_id || "").trim(),
       email: String(row.email || "").trim().toLowerCase(),
-      amount: Math.round((Number(row.total_amount) || 0) * 100),
+      amount_inr: Math.max(0, Number(row.total_amount) || 0),
       status: String(row.status || "paid").trim() || "paid",
       total_items: Math.max(0, Number(row.total_items) || 0),
       phone: recipientDetails.phone,

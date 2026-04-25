@@ -193,7 +193,7 @@ async function sendOrderToGoogleScript(env, order) {
       id: order.orderId,
       payment_id: order.paymentId,
       email: order.email,
-      amount: Math.round((Number(order.totalAmount) || 0) * 100),
+      amount_inr: Math.max(0, Number(order.totalAmount) || 0),
       status: "paid",
       total_items: Math.max(0, Number(order.totalItems) || items.length),
       phone: String(primaryRecipient.phone || "").trim(),
