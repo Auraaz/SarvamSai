@@ -711,7 +711,9 @@ function recordOrderPayment(params) {
   appendOrderTrackingRow(data, emailSent);
 
   const sheet = getOrCreateOrderSheet_();
-  sheet.appendRow([orderId, paymentId, email, amountInr, status, emailSent, nowIso_()]);
+  if (!hasExistingOrderRow_(sheet, orderId, paymentId)) {
+    sheet.appendRow([orderId, paymentId, email, amountInr, status, emailSent, nowIso_()]);
+  }
 
   return { success: true, email_sent: emailSent };
 }
@@ -742,8 +744,39 @@ function getOrCreateOrderTrackingSheet() {
   return sheet;
 }
 
+function hasExistingOrderRow_(sheet, orderId, paymentId) {
+  const normalizedOrderId = String(orderId || "").trim();
+  const normalizedPaymentId = String(paymentId || "").trim();
+  if (!normalizedOrderId && !normalizedPaymentId) return false;
+
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) return false;
+
+  const headers = sheet
+    .getRange(1, 1, 1, lastCol)
+    .getValues()[0]
+    .map(function (h) {
+      return String(h || "").trim().toLowerCase();
+    });
+
+  const idxOrder = headers.indexOf("order id");
+  const idxPayment = headers.indexOf("payment id");
+  if (idxOrder < 0 && idxPayment < 0) return false;
+
+  const values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  for (let i = 0; i < values.length; i += 1) {
+    const rowOrderId = idxOrder >= 0 ? String(values[i][idxOrder] || "").trim() : "";
+    const rowPaymentId = idxPayment >= 0 ? String(values[i][idxPayment] || "").trim() : "";
+    if (normalizedPaymentId && rowPaymentId && rowPaymentId === normalizedPaymentId) return true;
+    if (normalizedOrderId && rowOrderId && rowOrderId === normalizedOrderId) return true;
+  }
+  return false;
+}
+
 function appendOrderTrackingRow(data, emailSent) {
   const sheet = getOrCreateOrderTrackingSheet();
+  if (hasExistingOrderRow_(sheet, data.id, data.payment_id)) return false;
 
   sheet.appendRow([
     data.id,
@@ -757,6 +790,7 @@ function appendOrderTrackingRow(data, emailSent) {
     "",
     new Date().toISOString()
   ]);
+  return true;
 }
 
 // -- GET USER / LEADERBOARD -------------------------------------
