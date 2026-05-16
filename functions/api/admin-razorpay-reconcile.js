@@ -1,6 +1,7 @@
 /**
  * Fetches captured Razorpay payments using env RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET,
  * inserts missing rows into D1 `orders` (by payment_id), optional Apps Script notify.
+ * Shipping is restored from Razorpay order notes when create-order saved them.
  * Auth: ADMIN_DASHBOARD_TOKEN (query, header bearer, or JSON body.token).
  *
  * POST JSON body (optional):
@@ -8,6 +9,11 @@
  *
  * GET query: ?token=...&count=100&skip=0&dryRun=1&syncToSheet=0
  */
+
+import {
+  checkoutEmailFromNotes,
+  parseCheckoutItemsFromNotes
+} from "./razorpay-shipping-notes.js";
 
 function unauthorized() {
   return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -46,6 +52,31 @@ async function ensureOrdersTable(db) {
     .run();
   await db.prepare("CREATE INDEX IF NOT EXISTS idx_orders_email_created_at ON orders(email, created_at DESC)").run();
   await db.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_payment_id ON orders(payment_id)").run();
+
+  await db
+    .prepare(
+      `
+        CREATE TABLE IF NOT EXISTS order_items (
+          id TEXT PRIMARY KEY,
+          payment_id TEXT NOT NULL,
+          order_id TEXT NOT NULL,
+          email TEXT NOT NULL,
+          item_index INTEGER NOT NULL,
+          item_type TEXT,
+          recipient_name TEXT,
+          recipient_phone TEXT,
+          address_line1 TEXT,
+          address_line2 TEXT,
+          city TEXT,
+          state TEXT,
+          pincode TEXT,
+          country TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      `
+    )
+    .run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_order_items_payment_id ON order_items(payment_id)").run();
 }
 
 function razorpayBasicAuth(env) {
@@ -75,7 +106,7 @@ async function sendOrderToGoogleScript(env, row) {
   if (!googleScriptUrl) return { skipped: true, reason: "no_GOOGLE_SCRIPT_URL" };
   if (!row?.email) return { skipped: true, reason: "no_email" };
 
-  const items = [];
+  const items = Array.isArray(row?.items) ? row.items : [];
   const primary = items[0] || {};
   const shippingAddress = [
     String(primary.addressLine1 || "").trim(),
@@ -120,15 +151,74 @@ async function orderExists(db, paymentId) {
   return Boolean(res?.ok);
 }
 
-async function insertOrderFromRazorpay(db, payment) {
+async function fetchRazorpayOrder(authHeader, orderId) {
+  const id = String(orderId || "").trim();
+  if (!id) return null;
+  const res = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(id)}`, {
+    headers: { Authorization: authHeader }
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return null;
+  return data;
+}
+
+async function resolveOrderNotes(authHeader, payment) {
+  const paymentNotes = payment?.notes;
+  if (paymentNotes && typeof paymentNotes === "object" && Object.keys(paymentNotes).length) {
+    return paymentNotes;
+  }
+  const orderId = String(payment?.order_id || "").trim();
+  if (!orderId) return {};
+  const order = await fetchRazorpayOrder(authHeader, orderId);
+  return order?.notes && typeof order.notes === "object" ? order.notes : {};
+}
+
+async function insertOrderItems(db, orderId, paymentId, email, items) {
+  await db.prepare("DELETE FROM order_items WHERE payment_id = ?").bind(paymentId).run();
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index] || {};
+    await db
+      .prepare(
+        `
+          INSERT INTO order_items (
+            id, payment_id, order_id, email, item_index, item_type,
+            recipient_name, recipient_phone, address_line1, address_line2,
+            city, state, pincode, country, created_at
+          )
+          VALUES (lower(hex(randomblob(16))), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        `
+      )
+      .bind(
+        paymentId,
+        orderId,
+        email,
+        index,
+        String(item.type || ""),
+        String(item.name || ""),
+        String(item.phone || ""),
+        String(item.addressLine1 || ""),
+        String(item.addressLine2 || ""),
+        String(item.city || ""),
+        String(item.state || ""),
+        String(item.pincode || ""),
+        String(item.country || "")
+      )
+      .run();
+  }
+}
+
+async function insertOrderFromRazorpay(db, payment, authHeader) {
   const paymentId = String(payment?.id || "").trim();
   const orderId = String(payment?.order_id || "").trim();
   if (!paymentId || !orderId) return { ok: false, error: "missing_ids" };
 
-  const email = paymentEmail_(payment);
+  const orderNotes = await resolveOrderNotes(authHeader, payment);
+  const items = parseCheckoutItemsFromNotes(orderNotes);
+  const email = checkoutEmailFromNotes(orderNotes, paymentEmail_(payment));
   const totalAmount = amountInrFromRazorpayPayment(payment);
   const currency = String(payment?.currency || "INR").trim().toUpperCase() || "INR";
-  const itemsJson = "[]";
+  const totalItems = Math.max(0, items.length);
+  const itemsJson = JSON.stringify(items);
 
   await db
     .prepare(
@@ -136,17 +226,25 @@ async function insertOrderFromRazorpay(db, payment) {
         INSERT INTO orders (
           id, email, order_id, payment_id, total_items, total_amount, currency, status, items_json, created_at
         )
-        VALUES (lower(hex(randomblob(16))), ?, ?, ?, 0, ?, ?, 'confirmed', ?, datetime('now'))
+        VALUES (lower(hex(randomblob(16))), ?, ?, ?, ?, ?, ?, 'confirmed', ?, datetime('now'))
       `
     )
-    .bind(email, orderId, paymentId, totalAmount, currency, itemsJson)
+    .bind(email, orderId, paymentId, totalItems, totalAmount, currency, itemsJson)
     .run();
+
+  if (items.length) {
+    await insertOrderItems(db, orderId, paymentId, email, items);
+  }
+
   return {
     ok: true,
     orderId,
     paymentId,
     email,
     totalAmount,
+    totalItems,
+    items,
+    hasAddress: items.some((item) => item.addressLine1 || item.name),
     currency,
     createdAt: payment?.created_at ? new Date(Number(payment.created_at) * 1000).toISOString() : new Date().toISOString()
   };
@@ -255,18 +353,22 @@ async function handle(request, env, body) {
     }
 
     if (dryRun) {
+      const orderNotes = await resolveOrderNotes(authHeader, payment);
+      const items = parseCheckoutItemsFromNotes(orderNotes);
       summary.would_insert += 1;
       summary.inserted_rows.push({
         payment_id: paymentId,
         order_id: orderIdForPayment,
-        email: paymentEmail_(payment),
-        amount_inr: amountInrFromRazorpayPayment(payment)
+        email: checkoutEmailFromNotes(orderNotes, paymentEmail_(payment)),
+        amount_inr: amountInrFromRazorpayPayment(payment),
+        total_items: items.length,
+        has_address: items.some((item) => item.addressLine1 || item.name)
       });
       continue;
     }
 
     try {
-      const inserted = await insertOrderFromRazorpay(env.DB, payment);
+      const inserted = await insertOrderFromRazorpay(env.DB, payment, authHeader);
       if (!inserted.ok) {
         continue;
       }
@@ -275,7 +377,9 @@ async function handle(request, env, body) {
         payment_id: inserted.paymentId,
         order_id: inserted.orderId,
         email: inserted.email,
-        amount_inr: inserted.totalAmount
+        amount_inr: inserted.totalAmount,
+        total_items: inserted.totalItems,
+        has_address: inserted.hasAddress
       });
 
       if (syncToSheet && String(env.GOOGLE_SCRIPT_URL || "").trim()) {
@@ -286,7 +390,8 @@ async function handle(request, env, body) {
             orderId: inserted.orderId,
             paymentId: inserted.paymentId,
             totalAmount: inserted.totalAmount,
-            totalItems: 0,
+            totalItems: inserted.totalItems,
+            items: inserted.items,
             createdAt: inserted.createdAt
           });
         } catch (err) {
@@ -304,7 +409,7 @@ async function handle(request, env, body) {
 
   summary.next_skip = skip + items.length;
   summary.hint =
-    "Rows are inserted into D1 only (items_json empty). Run POST /api/sync-orders-to-sheet to push to Google Sheet, or use syncToSheet=true on this request.";
+    "Rows use Razorpay order notes for shipping when create-order saved them. Older payments may still have has_address=false. Run POST /api/sync-orders-to-sheet to push to Google Sheet, or use syncToSheet=true.";
 
   return Response.json(summary);
 }

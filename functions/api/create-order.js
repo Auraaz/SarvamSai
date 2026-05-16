@@ -1,3 +1,5 @@
+import { buildRazorpayOrderNotes, normalizeCheckoutItems } from "./razorpay-shipping-notes.js";
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   const body = await request.json();
@@ -15,6 +17,10 @@ export async function onRequestPost(context) {
     return Response.json({ error: "Minimum amount is 100 paise." }, { status: 400 });
   }
 
+  const email = String(body?.email || "").trim().toLowerCase();
+  const items = normalizeCheckoutItems(body?.items);
+  const notes = buildRazorpayOrderNotes(email, items);
+
   const auth = btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`);
   const response = await fetch("https://api.razorpay.com/v1/orders", {
     method: "POST",
@@ -25,7 +31,8 @@ export async function onRequestPost(context) {
     body: JSON.stringify({
       amount: computedAmount,
       currency: "INR",
-      receipt: `receipt_${Date.now()}`
+      receipt: `receipt_${Date.now()}`,
+      notes
     })
   });
 

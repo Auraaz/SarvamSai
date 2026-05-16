@@ -757,13 +757,39 @@ async function createOrderHandler(req, res) {
     computedAmountPaise = totals.totalAmount * 100;
     orderCurrency = "INR";
     orderReceipt = `receipt_${Date.now()}`;
+    const primary = normalizedItems[0] || {};
     orderNotes = {
-      email: String(email),
-      itemsCount: String(normalizedItems.length),
+      checkout_email: String(email).trim().toLowerCase(),
+      total_items: String(normalizedItems.length),
       internationalCount: String(totals.internationalCount),
       highQuantityOrder: softLimitFlag ? "true" : "false",
       repeatBuyer: isRepeatBuyer ? "true" : "false"
     };
+    if (normalizedItems.length === 1) {
+      orderNotes.item_0_type = String(primary.type || "gift");
+      orderNotes.item_0_name = String(primary.name || "").slice(0, 256);
+      orderNotes.item_0_phone = String(primary.phone || "").slice(0, 256);
+      orderNotes.item_0_addr1 = String(primary.addressLine1 || "").slice(0, 256);
+      orderNotes.item_0_addr2 = String(primary.addressLine2 || "").slice(0, 256);
+      orderNotes.item_0_city = String(primary.city || "").slice(0, 256);
+      orderNotes.item_0_state = String(primary.state || "").slice(0, 256);
+      orderNotes.item_0_pin = String(primary.pincode || "").slice(0, 256);
+      orderNotes.item_0_country = String(primary.country || "India").slice(0, 256);
+    } else if (normalizedItems.length > 1) {
+      orderNotes.items_json = JSON.stringify(
+        normalizedItems.map((item) => ({
+          t: item.type === "self" ? "s" : "g",
+          n: item.name,
+          p: item.phone,
+          a1: item.addressLine1,
+          a2: item.addressLine2,
+          c: item.city,
+          s: item.state,
+          pin: item.pincode,
+          co: item.country || "India"
+        }))
+      ).slice(0, 256);
+    }
   }
 
   if (computedAmountPaise < 100) {

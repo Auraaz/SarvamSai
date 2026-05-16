@@ -573,6 +573,176 @@ function sendDailyDarshanInvitesToUnsent() {
   return { success: true, processed: processed, sent: sent, failed: failed, skipped: skipped };
 }
 
+/**
+ * Reminder batch job:
+ * Re-sends Darshan invites to users who were already invited (active/used or invite timestamp present),
+ * but have NOT placed an order in OrderPayments.
+ * Access code and passphrase are reused as-is (never regenerated).
+ */
+function sendDarshanInviteRemindersToUnpurchased(limit) {
+  const maxToSend = Math.max(1, safeNumber_(limit, 200));
+  const registrationsSheet = getOrCreateRegistrationsSheet_();
+  const hm = headersMap_(registrationsSheet);
+  const lastRow = registrationsSheet.getLastRow();
+  if (lastRow < 2) {
+    return { success: true, scanned: 0, eligible: 0, sent: 0, failed: 0, skipped: 0 };
+  }
+
+  const purchasedEmails = getOrderPaymentEmailSet_();
+  const rows = registrationsSheet.getRange(2, 1, lastRow - 1, registrationsSheet.getLastColumn()).getValues();
+  let scanned = 0;
+  let eligible = 0;
+  let sent = 0;
+  let failed = 0;
+  let skipped = 0;
+
+  for (let i = 0; i < rows.length; i += 1) {
+    if (sent >= maxToSend) break;
+    scanned += 1;
+    const row = rows[i];
+    const rowIdx = i + 2;
+    const email = String(row[hm.email] || "")
+      .trim()
+      .toLowerCase();
+    const accessCode = String(row[hm.darshan_access_code] || "").trim();
+    const passphrase = String(row[hm.darshan_passphrase] || "").trim();
+    const inviteAt = String(row[hm.darshan_invite_sent_at] || "").trim();
+    const status = String(row[hm.darshan_status] || "")
+      .trim()
+      .toLowerCase();
+
+    const alreadyInvited = Boolean(inviteAt || status === "active" || status === "used");
+    const hasReusableInvite = Boolean(accessCode && passphrase);
+    if (!email || !alreadyInvited || !hasReusableInvite) {
+      skipped += 1;
+      continue;
+    }
+    if (purchasedEmails.has(email)) {
+      skipped += 1;
+      continue;
+    }
+
+    eligible += 1;
+    const link = SITE_URL + "/store?email=" + encodeURIComponent(email) + "&code=" + encodeURIComponent(accessCode);
+    try {
+      sendDarshanInviteEmail_(email, passphrase, link);
+      // Keep code/passphrase untouched; only refresh reminder timestamp.
+      registrationsSheet.getRange(rowIdx, hm.darshan_invite_sent_at + 1).setValue(nowIso_());
+      sent += 1;
+    } catch (e) {
+      failed += 1;
+      logEmailFailure_("darshan_invite_reminder " + email, e);
+    }
+  }
+
+  return {
+    success: true,
+    scanned: scanned,
+    eligible: eligible,
+    sent: sent,
+    failed: failed,
+    skipped: skipped,
+    limit: maxToSend
+  };
+}
+
+function helperSendDarshanReminderToHardcodedUnpurchased() {
+  // Set this before running the helper.
+  const hardcodedEmail = "vinnakota.gupta@gmail.com";
+  const email = String(hardcodedEmail || "")
+    .trim()
+    .toLowerCase();
+  if (!email || email.indexOf("@") < 1) {
+    throw new Error("Please set a valid hardcodedEmail in helperSendDarshanReminderToHardcodedUnpurchased().");
+  }
+
+  const purchasedEmails = getOrderPaymentEmailSet_();
+  if (purchasedEmails.has(email)) {
+    const result = { success: false, skipped: true, reason: "already_purchased", email: email };
+    Logger.log("helperSendDarshanReminderToHardcodedUnpurchased skip: %s", JSON.stringify(result));
+    return result;
+  }
+
+  const sheet = getOrCreateRegistrationsSheet_();
+  const hm = headersMap_(sheet);
+  const rowIdx = findUserRowIndexByEmail_(sheet, email, hm);
+  if (rowIdx < 2) {
+    const result = { success: false, skipped: true, reason: "user_not_found", email: email };
+    Logger.log("helperSendDarshanReminderToHardcodedUnpurchased skip: %s", JSON.stringify(result));
+    return result;
+  }
+
+  const row = sheet.getRange(rowIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const accessCode = String(row[hm.darshan_access_code] || "").trim();
+  const passphrase = String(row[hm.darshan_passphrase] || "").trim();
+  const status = String(row[hm.darshan_status] || "")
+    .trim()
+    .toLowerCase();
+  const inviteAt = String(row[hm.darshan_invite_sent_at] || "").trim();
+
+  const alreadyInvited = Boolean(inviteAt || status === "active" || status === "used");
+  if (!alreadyInvited || !accessCode || !passphrase) {
+    const result = {
+      success: false,
+      skipped: true,
+      reason: "invite_data_missing_or_not_previously_invited",
+      email: email
+    };
+    Logger.log("helperSendDarshanReminderToHardcodedUnpurchased skip: %s", JSON.stringify(result));
+    return result;
+  }
+
+  const link = SITE_URL + "/store?email=" + encodeURIComponent(email) + "&code=" + encodeURIComponent(accessCode);
+  try {
+    sendDarshanInviteEmail_(email, passphrase, link);
+    sheet.getRange(rowIdx, hm.darshan_invite_sent_at + 1).setValue(nowIso_());
+    const result = {
+      success: true,
+      email: email,
+      reminder_sent_at: nowIso_(),
+      reused_access_code: accessCode,
+      reused_passphrase: passphrase
+    };
+    Logger.log("helperSendDarshanReminderToHardcodedUnpurchased sent: %s", JSON.stringify(result));
+    return result;
+  } catch (e) {
+    logEmailFailure_("hardcoded_darshan_reminder " + email, e);
+    const result = {
+      success: false,
+      email: email,
+      error: String(e && e.message ? e.message : e)
+    };
+    Logger.log("helperSendDarshanReminderToHardcodedUnpurchased error: %s", JSON.stringify(result));
+    return result;
+  }
+}
+
+function getOrderPaymentEmailSet_() {
+  const sheet = getOrCreateOrderSheet_();
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) return new Set();
+
+  const headers = sheet
+    .getRange(1, 1, 1, lastCol)
+    .getValues()[0]
+    .map(function (h) {
+      return String(h || "").trim().toLowerCase();
+    });
+  const idxEmail = headers.indexOf("email");
+  if (idxEmail < 0) return new Set();
+
+  const rows = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  const set = new Set();
+  for (let i = 0; i < rows.length; i += 1) {
+    const email = String(rows[i][idxEmail] || "")
+      .trim()
+      .toLowerCase();
+    if (email) set.add(email);
+  }
+  return set;
+}
+
 function validateDarshanAccess(params) {
   const email = String(params.email || "")
     .trim()
