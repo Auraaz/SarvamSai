@@ -1,0 +1,133 @@
+{
+  "routes": [
+    {
+      "routePath": "/api/access-profile",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/access-profile.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/admin-orders",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/admin-orders.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/admin-orders-csv",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/admin-orders-csv.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/admin-razorpay-reconcile",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/admin-razorpay-reconcile.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/admin-razorpay-reconcile",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/admin-razorpay-reconcile.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/availability-today",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/availability-today.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/create-order",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/create-order.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/orders-by-email",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/orders-by-email.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/payment-config",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/payment-config.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/send-darshan-invite",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/send-darshan-invite.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/sync-orders-to-sheet",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/sync-orders-to-sheet.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/test-darshan-email",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/test-darshan-email.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/validate-access",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/validate-access.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/verify-passphrase",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/verify-passphrase.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/verify-payment",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/verify-payment.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/:path*",
+      "mountPath": "/api",
+      "method": "",
+      "module": [
+        "api/[[path]].js:onRequest"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}
